@@ -64,13 +64,13 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, titleId, title, c
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink-900/60 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`bg-white rounded-2xl ${maxWidth} w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in duration-200`}
+        className={`bg-white rounded-display ${maxWidth} w-full max-h-[90vh] flex flex-col shadow-level-3 border border-ink-200 overflow-hidden animate-fadeIn`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && <h2 id={titleId} className="sr-only">{title}</h2>}

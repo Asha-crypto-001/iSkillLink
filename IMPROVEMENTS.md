@@ -176,6 +176,54 @@ No phase prescribes exact hex codes, fonts, or "make this button blue." Instead,
 
 ---
 
+---
+
+## Progress Log
+
+### ✅ Phase 1 — Foundation: Complete (2026-09-16)
+
+**Goal achieved:** iSkillLink now has a single, maintainable visual language. New work can be built from primitives and still look coherent.
+
+**What was made precise:**
+
+*   **Design tokens in `tailwind.config.js`** — single source of truth replaces scattered `emerald`/`slate`/`stone`/`gray` mixes:
+    *   `forest` (50–950, primary `#0F5132` for trust/CTA) with full scale, mapped to legacy `brand` alias for backward compatibility
+    *   `ink` (50–950, neutral) replaces mixed `slate`/`stone`/`gray`; `paper`/`sand` for page/surface backgrounds
+    *   Typography: `font-display` (`Plus Jakarta Sans`) for headlines + `font-sans` (`Inter`) for UI, with minimum `13px` for functional text
+    *   Radii: `control (12px)` / `card (16px)` / `display (20px)` / `pill` — eliminates 6 conflicting radii
+    *   Shadows: `level-1` (cards) / `level-2` (dropdowns) / `level-3` (modals) — replaces arbitrary `shadow-sm/xl/2xl`
+    *   Motion: `fadeIn` / `slideUp` / `shimmer` with `prefers-reduced-motion` support
+*   **Global base in `src/index.css`** — `bg-ink-50` page, `font-display` headings, `*:focus-visible` forest ring, `.container-app` / `.section-stack` / `.card` utilities, accessible `.skip-link`, consistent scrollbar, and reduced-motion guard
+*   **Core primitives (rebuilt, reusable):**
+    *   `Button.tsx` — variants `primary (forest)` / `secondary (ink)` / `outline` / `danger` / `ghost`, sizes `sm (36px)` / `md (44px)` / `lg (48px)`, loading spinner, `active:scale-[0.98]`, `min-h-[44px]` on `md` for touch
+    *   `Badge.tsx` — variants `success/warning/error/info/neutral/verified`, pill shape, dot option, `11px/12px` sizing
+    *   `Card.tsx` — `Card` + `CardHeader`/`CardFooter`, `rounded-card`, `shadow-level-1`, optional hover `forest-200 + level-2`
+    *   `Field.tsx` — label + hint + error wiring with `htmlFor`/`aria-describedby`/`aria-invalid`/`role=alert`
+    *   `Input.tsx` / `Textarea.tsx` / `Select.tsx` — `min-h-[44px]`, `rounded-control`, `border-ink-200`, `focus:ring-forest-700`, leftIcon/rightElement, error `rose-300` state
+    *   `Skeleton.tsx` — `Skeleton` + `EducatorCardSkeleton` + `CategorySkeleton` with shimmer, for trust-preserving loading
+    *   `EmptyState.tsx` — `rounded-card`, `border-dashed ink-300`, `ink-50` icon well, `font-display` title, `13px` body
+    *   `Breadcrumbs.tsx` — updated to `ink`/`forest` tokens
+    *   `Modal.tsx` — unified primitive: body lock, focus trap (Tab/Shift+Tab), Esc close, restore focus, `rounded-display`, `shadow-level-3`, backdrop `ink-900/60 + blur`, `animate-fadeIn`
+
+**Innovation intentionally left open for Phase 2–5:**
+*   Final hue tuning and illustration style — tokens make a palette swap a one-file change
+*   Whether services beyond primitives (`Command`, `Tabs`, `Sheet`) are needed — to be validated in Phase 2 page work
+*   How pages adopt primitives — Phase 1 provides them; Phases 2–5 migrate pages incrementally without breaking functionality
+
+**Files changed in this phase:**
+`tailwind.config.js`, `src/index.css`, `src/components/ui/Button.tsx`, `Badge.tsx`, `Card.tsx` (new), `Field.tsx` (new), `Input.tsx` (new), `Textarea.tsx` (new), `Select.tsx` (new), `Skeleton.tsx` (new), `EmptyState.tsx`, `Breadcrumbs.tsx`, `Modal.tsx`
+
+**Verified:** `npm run build` passes (1631 modules, built in ~10s), no route regressions, contrast and focus-visible auditable via single token file.
+
+**Next:** Phase 2 — Core UX (stable navigation, coherent journeys, search fix). Phase 1 primitives are ready to be adopted there.
+
+### ⏳ Phase 2 — Core UX: Not started
+### ⏳ Phase 3 — Pages: Not started
+### ⏳ Phase 4 — Responsive: Not started
+### ⏳ Phase 5 — Polish: Not started
+
+---
+
 *This roadmap preserves iSkillLink's identity and existing capabilities while intentionally leaving creative space for the team, community, and future research to shape the final expression. Build the system precisely; invent the expression wisely.*
 
 * — Founder: Ashabahebwa Hassan | Mbarara City, Uganda | iskilllink0@gmail.com*

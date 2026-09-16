@@ -3,12 +3,72 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+    @apply bg-ink-50 text-ink-900 antialiased font-sans selection:bg-forest-100 selection:text-forest-900;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+
+  /* Typography scale — precise hierarchy */
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+
+  h1 {
+    @apply text-[1.75rem] sm:text-4xl md:text-5xl font-bold leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl font-bold leading-tight;
+  }
+
+  h3 {
+    @apply text-lg sm:text-xl font-bold leading-snug;
+  }
+
+  /* Accessible focus — forest ring, always visible */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-forest-700 ring-offset-2 ring-offset-white;
+  }
+
+  /* Skip link for keyboard users */
+  .skip-link {
+    @apply absolute left-4 top-4 z-[100] -translate-y-20 bg-ink-900 text-white px-4 py-2 rounded-control text-sm font-semibold shadow-level-3 focus:translate-y-0 transition-transform;
   }
 }
 
-/* Custom subtle scrollbar */
+@layer components {
+  /* Container — single max width, consistent gutters */
+  .container-app {
+    @apply max-w-container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-stack {
+    @apply space-y-10 md:space-y-16;
+  }
+
+  /* Card base — level-1 elevation, card radius, ink border */
+  .card {
+    @apply bg-white rounded-card border border-ink-200 shadow-level-1;
+  }
+
+  .card-hover {
+    @apply hover:border-forest-200 hover:shadow-level-2 transition-all duration-200;
+  }
+}
+
+/* Scrollbar — subtle, ink-based */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -27,17 +87,53 @@
   background: #94a3b8;
 }
 
+/* Motion tokens */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.98);
+    transform: scale(0.98) translateY(4px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .animate-fadeIn {
   animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Selection for paper */
+::selection {
+  background: #d1fae5;
+  color: #052e16;
 }
