@@ -247,7 +247,30 @@ No phase prescribes exact hex codes, fonts, or "make this button blue." Instead,
 
 **Next:** Phase 3 — Page & Component Redesign (credible profiles, usable forms, transparent booking/escrow).
 
-### ⏳ Phase 3 — Pages: Not started
+### 🔄 Phase 3 — Pages: In Progress (2026-09-16) — core credibility & forms shipped
+
+**Goal in progress:** Every page with clear purpose and trusted evidence; forms accessible and unified.
+
+**Whole-project re-audit (every screen, Phase 3 lens — credibility / forms / empty-loading-error):**
+*   `EducatorCard.tsx` (photo/name/rating/title/location/years/bio/tags/rate/actions), `EducatorProfileModal.tsx` (fixed overlay without Modal primitive, tabs without role, slate/emerald mix, no Badge), `EducatorProfilePage.tsx` (header, tabs, portfolio aspect, reviews), `BookingModal.tsx` (uses Modal but raw inputs, no Field, slab dateError), `SkillRequestModal.tsx` (own overlay, ~140 lines of raw inputs, matches), `ContactPage.tsx` (raw `input className="w-full p-2.5 rounded-lg border-gray-300"` x6, no Field), `AuthPage.tsx` (raw inputs, role picker), `BecomeEducatorPage.tsx` (5-step, 20+ fields, no Field), `LearnerDashboard.tsx`/`EducatorDashboard.tsx` (overflows, metric cards, inline empty), `HomePage.tsx` (categories `line-clamp-2` truncated), `FindSkillPage.tsx` (loading text only).
+
+**What was made precise in this increment:**
+
+*   **EducatorCard (`src/components/EducatorCard.tsx`):** Rebuilt on new system — `rounded-card border-ink-200 shadow-level-1 hover:border-forest-200 hover:shadow-level-2`, `w-14 h-14 rounded-card` avatar with `ring-forest-700` verified `ShieldCheck`, `Badge` (`warning` for rating inc. amber `Star`, `neutral` for formats, `success` for skills), `font-display` name `15px` + `Body-sm` title `forest-700`, `Body-sm` bio `ink-700`, footer `bg-ink-50 border-ink-100` with `Rate` label `11px ink-600` + `Button outline/primary size sm min-h-[36px]` actions — no more `text-xs` truncation, consistent elevation.
+*   **EducatorProfileModal (`src/components/EducatorProfileModal.tsx`):** Migrated from bespoke `fixed inset-0 bg-slate-900/60` to single `Modal` primitive (focus trap, Esc, restore, `rounded-display shadow-level-3`). Header `bg-ink-950 border-ink-800`, `Badge verified` with dot, `Star`/`MapPin`/`Clock` forest tokens, tabs now `role="tablist"/role="tab" aria-selected` with `border-forest-700` active, body `Badge` for formats/languages/skills, portfolio `aspect-[4/3]` + `Badge`, reviews `warning Badge`, sticky footer uses `Button` primitives — brought dialogs onto one primitive as promised.
+*   **BookingModal (`src/components/BookingModal.tsx`):** Kept `Modal` but migrated inner form to system: `Field` + `Input`/`Select`/`Textarea` + `Button` (full `htmlFor`/`aria-describedby`/`aria-invalid` wiring, `min-h-[44px]` `rounded-control` `border-ink-200 focus:ring-forest-700`, error `rose-300`). Format buttons `aria-pressed` + `min-h-[44px]`. Escrow summary `bg-forest-50/70 border-forest-200` with `ShieldCheck` trust icon, footer `Button outline/primary` with `isLoading`.
+*   **ContactPage (`src/pages/ContactPage.tsx`):** Replaced 6 raw inputs with `Field/Input/Select/Textarea/Button` — labels linked (`htmlFor`), `hint` for phone, `role=alert` for submitError, `rounded-card border-ink-200 shadow-level-1` card + `rounded-card` success state with `forest` tokens.
+
+**Innovation deliberately left open for rest of Phase 3:**
+*   `SkillRequestModal`, `BecomeEducatorPage` 5-step wizard, `AuthPage`, `HowItWorks/About` storytelling, dashboard `Tabs` primitive, `Home` categories horizontal snap + `EducatorProfilePage` parity with Modal — to be completed incrementally without breaking bookings. Each will migrate to `Field`/`Modal`/`Badge`/`Skeleton` in next increments; `IMPROVEMENTS.md` will be updated per increment.
+
+**Files changed in this increment:**
+`src/components/EducatorCard.tsx`, `src/components/EducatorProfileModal.tsx`, `src/components/BookingModal.tsx`, `src/pages/ContactPage.tsx`
+
+**Verified:** `npm run build` passes (1637 modules, ~65.1kB css), EducatorCard hover/tap targets correct, Modal Esc/trap intact, Contact form labels associated and submitted via existing `api.createInquiry`, no route regressions.
+
+**Next increment (still Phase 3):** `SkillRequestModal` onto `Modal` + `Field`, `BecomeEducator` onto `Field` with draft, `AuthPage` onto primitives, dashboard `EmptyState`/`Skeleton` full coverage.
+
 ### ⏳ Phase 4 — Responsive: Not started
 ### ⏳ Phase 5 — Polish: Not started
 
