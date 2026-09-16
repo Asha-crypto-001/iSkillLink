@@ -7,6 +7,7 @@ import {
   X, Calendar, Clock, MapPin, ShieldCheck, CheckCircle2,
   AlertCircle, ChevronRight, CreditCard
 } from 'lucide-react';
+import { Modal } from './ui/Modal';
 
 interface BookingModalProps {
   educator: Educator | null;
@@ -96,10 +97,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
+    <Modal isOpen={!!educator} onClose={onClose} titleId="booking-modal-title" title="Book Practical Learning Session" maxWidth="max-w-xl">
         {/* Header — pinned */}
-        <div className="shrink-0 bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+        <div id="booking-modal-title" className="shrink-0 bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <img
               src={educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
@@ -295,7 +295,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };

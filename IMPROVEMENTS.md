@@ -14,7 +14,7 @@
 | **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🟢 Completed |
 | **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟢 Completed |
 | **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟢 Completed |
-| **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟡 Planned |
+| **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟢 Completed |
 | **Iteration 6** | Code Modularization & Architecture Cleanup | Component Decomposition, Reusable UI, Schema Migration | 🟢 In Progress |
 
 ---
@@ -112,24 +112,24 @@
 ### Iteration 5: Accessibility (a11y) & Interaction Design
 *Ensure WCAG 2.1 AA compliance, inclusive keyboard navigation, and clear feedback loops.*
 
-- [ ] **5.1 Accessible Modal Primitive**
+- [x] **5.1 Accessible Modal Primitive**
   - Wrap all modals in a reusable dialog container enforcing `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`.
   - Trap keyboard focus inside active modals and restore focus to the triggering element upon dismissal.
   - Support `Escape` key listeners for rapid dismissal.
 
-- [ ] **5.2 Keyboard Dropdown Navigation**
+- [x] **5.2 Keyboard Dropdown Navigation**
   - Enable keyboard navigation (Arrow Up / Arrow Down, Enter, Escape) for navigation dropdowns and notification panels.
   - Add `aria-expanded` and `aria-haspopup` attributes to trigger buttons.
 
-- [ ] **5.3 Accessible Toast & Live Region System**
+- [x] **5.3 Accessible Toast & Live Region System**
   - Replace the single-string toast with a queued notification manager utilizing `role="status"` and `aria-live="polite"`.
   - Distinguish success, error, and informational states through semantic styling and icons.
 
-- [ ] **5.4 Color Contrast & Typography Audit**
+- [x] **5.4 Color Contrast & Typography Audit**
   - Audit text-to-background contrast ratios for muted gray text (`text-slate-400`, `text-slate-500`) to guarantee a minimum 4.5:1 ratio.
   - Standardize typographical sizing onto a unified 5-step scale.
 
-- [ ] **5.5 Meaningful Zero-State Screens**
+- [x] **5.5 Meaningful Zero-State Screens**
   - Implement illustrated, informative empty states across all dashboard tabs (empty bookings, empty leads, empty verification queue) with immediate call-to-action buttons.
 
 ---

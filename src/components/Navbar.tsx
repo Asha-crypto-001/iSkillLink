@@ -218,6 +218,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    aria-expanded={userDropdownOpen}
+                    aria-haspopup="menu"
+                    aria-label="User menu"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setUserDropdownOpen(false);
+                      if (e.key === 'ArrowDown' && !userDropdownOpen) setUserDropdownOpen(true);
+                    }}
                     className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full border transition shadow-xs ${
                       userDropdownOpen
                         ? 'bg-stone-900 text-white border-stone-900 ring-2 ring-emerald-600/30'
@@ -257,9 +264,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <ChevronDown className={`w-3.5 h-3.5 opacity-70 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Dropdown Menu Card */}
+                  {/* Dropdown Menu Card — keyboard navigable */}
                   {userDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div role="menu" aria-label="User menu" onKeyDown={(e)=>{ if(e.key==='Escape') setUserDropdownOpen(false); }} className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                       {/* User Header Profile */}
                       <div className="p-4 bg-stone-50 border-b border-stone-100 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 overflow-hidden">
@@ -416,6 +423,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 transition"
                 aria-label="Toggle navigation menu"
+                aria-expanded={mobileMenuOpen}
+                aria-haspopup="menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>

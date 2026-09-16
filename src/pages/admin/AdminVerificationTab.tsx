@@ -1,7 +1,8 @@
 import React from 'react';
 import { Educator } from '../../types';
 import { formatUGX, getStatusBadgeClass } from '../../utils/formatters';
-import { Check } from 'lucide-react';
+import { Check, ShieldCheck, UserCheck } from 'lucide-react';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 interface AdminVerificationTabProps {
   verificationQueue: Educator[];
@@ -148,9 +149,12 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
             );
           })
         ) : (
-          <div className="text-center py-12 text-xs text-gray-500 border border-dashed border-gray-300 rounded-2xl">
-            No educator applications currently pending verification.
-          </div>
+          <EmptyState
+            icon={<ShieldCheck className="w-6 h-6" />}
+            title="No pending verifications"
+            description="All educator applications have been reviewed. New submissions will appear here for your 4-step vetting."
+            action={<span className="text-xs text-slate-600 flex items-center gap-1.5"><UserCheck className="w-4 h-4 text-emerald-600" />Awaiting new artisan applications</span>}
+          />
         )}
       </div>
     </div>

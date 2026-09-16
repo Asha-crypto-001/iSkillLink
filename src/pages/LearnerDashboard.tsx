@@ -13,6 +13,7 @@ import {
   PlusCircle, ArrowRight, ShieldCheck, ExternalLink, Send,
   Camera
 } from 'lucide-react';
+import { EmptyState } from '../components/ui/EmptyState';
 
 interface LearnerDashboardProps {
   onOpenSkillRequest: () => void;
@@ -299,9 +300,12 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 text-xs">
-                No active bookings yet. Browse educators to book a practical learning session.
-              </div>
+              <EmptyState
+                icon={<Calendar className="w-6 h-6" />}
+                title="No active bookings yet"
+                description="Browse verified educators to book your first practical learning session and start your hands-on journey."
+                action={<button onClick={onOpenSkillRequest} className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800">Find an Educator</button>}
+              />
             )}
           </div>
         </div>
@@ -325,39 +329,48 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           </div>
 
           <div className="space-y-4">
-            {requests.map(req => (
-              <div
-                key={req.id}
-                className="p-5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition space-y-3"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-gray-900 text-base">{req.skill_name}</h3>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(req.status)}`}>
-                        {req.status}
-                      </span>
-                      <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-600">
-                        {req.skill_level}
-                      </span>
+            {requests.length === 0 ? (
+              <EmptyState
+                icon={<Clock className="w-6 h-6" />}
+                title="No skill requests yet"
+                description="You haven't submitted any custom learning requests. Tell us what practical skill you want to master and we'll match you with a verified educator."
+                action={<button onClick={onOpenSkillRequest} className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800">Submit Your First Request</button>}
+              />
+            ) : (
+              requests.map(req => (
+                <div
+                  key={req.id}
+                  className="p-5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition space-y-3"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-gray-900 text-base">{req.skill_name}</h3>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(req.status)}`}>
+                          {req.status}
+                        </span>
+                        <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                          {req.skill_level}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">{req.learning_goal}</p>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">{req.learning_goal}</p>
+
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-black text-gray-900">{formatUGX(req.budget_ugx)}</div>
+                      <div className="text-[11px] text-gray-500 font-medium">Budget Allocation</div>
+                    </div>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <div className="text-sm font-black text-gray-900">{formatUGX(req.budget_ugx)}</div>
-                    <div className="text-[11px] text-gray-500 font-medium">Budget Allocation</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-gray-50 p-3 rounded-lg text-gray-600">
+                    <div><strong>Format:</strong> <span className="capitalize">{req.format_preference}</span></div>
+                    <div><strong>Location:</strong> {req.location}</div>
+                    <div><strong>Schedule:</strong> {req.preferred_schedule}</div>
+                    <div><strong>Frequency:</strong> {req.frequency}</div>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-gray-50 p-3 rounded-lg text-gray-600">
-                  <div><strong>Format:</strong> <span className="capitalize">{req.format_preference}</span></div>
-                  <div><strong>Location:</strong> {req.location}</div>
-                  <div><strong>Schedule:</strong> {req.preferred_schedule}</div>
-                  <div><strong>Frequency:</strong> {req.frequency}</div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -464,56 +477,66 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
             <p className="text-xs text-gray-500">Every shilling is held safely in escrow until your training is completed.</p>
           </div>
 
-          {/* Desktop Table — hidden on mobile */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 text-gray-700 uppercase font-bold border-y border-gray-200">
-                <tr>
-                  <th className="p-3">Reference</th>
-                  <th className="p-3">Session / Educator</th>
-                  <th className="p-3">Amount (UGX)</th>
-                  <th className="p-3">Method</th>
-                  <th className="p-3">Escrow Status</th>
-                  <th className="p-3">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-gray-700">
-                {payments.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50/50">
-                    <td className="p-3 font-mono font-semibold text-gray-900">{p.payment_reference}</td>
-                    <td className="p-3">
-                      Booking #{p.booking_id}
-                    </td>
-                    <td className="p-3 font-bold text-gray-900">{formatUGX(p.amount_ugx)}</td>
-                    <td className="p-3 uppercase font-semibold text-emerald-800">{p.method.replace('_', ' ')}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded border font-bold capitalize ${getStatusBadgeClass(p.status)}`}>
-                        {p.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="p-3 text-gray-500">{formatShortDate(p.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Mobile Stacked Cards — visible only on small screens */}
-          <div className="md:hidden space-y-3">
-            {payments.map(p => (
-              <div key={p.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-gray-900">{p.payment_reference}</span>
-                  <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(p.status)}`}>{p.status.replace('_', ' ')}</span>
-                </div>
-                <div className="text-xs text-gray-600">Booking <span className="font-semibold text-gray-900">#{p.booking_id}</span> • {formatShortDate(p.created_at)}</div>
-                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-100">
-                  <div><span className="text-gray-500">Amount:</span> <span className="font-bold text-gray-900">{formatUGX(p.amount_ugx)}</span></div>
-                  <div><span className="text-gray-500">Method:</span> <span className="font-semibold text-emerald-800 uppercase">{p.method.replace('_', ' ')}</span></div>
-                </div>
+          {payments.length === 0 ? (
+            <EmptyState
+              icon={<CreditCard className="w-6 h-6" />}
+              title="No escrow payments yet"
+              description="Your Mobile Money escrow ledger will appear here once you book a practical session. Funds are held safely until milestone completion."
+              action={<button onClick={() => setActiveTab('bookings')} className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800">View Bookings</button>}
+            />
+          ) : (
+            <>
+              {/* Desktop Table — hidden on mobile */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-gray-50 text-gray-700 uppercase font-bold border-y border-gray-200">
+                    <tr>
+                      <th className="p-3">Reference</th>
+                      <th className="p-3">Session / Educator</th>
+                      <th className="p-3">Amount (UGX)</th>
+                      <th className="p-3">Method</th>
+                      <th className="p-3">Escrow Status</th>
+                      <th className="p-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-gray-700">
+                    {payments.map(p => (
+                      <tr key={p.id} className="hover:bg-gray-50/50">
+                        <td className="p-3 font-mono font-semibold text-gray-900">{p.payment_reference}</td>
+                        <td className="p-3">
+                          Booking #{p.booking_id}
+                        </td>
+                        <td className="p-3 font-bold text-gray-900">{formatUGX(p.amount_ugx)}</td>
+                        <td className="p-3 uppercase font-semibold text-emerald-800">{p.method.replace('_', ' ')}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded border font-bold capitalize ${getStatusBadgeClass(p.status)}`}>
+                            {p.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="p-3 text-gray-500">{formatShortDate(p.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
-            {payments.length === 0 && <div className="text-center py-8 text-xs text-gray-400">No escrow payments yet.</div>}
-          </div>
+              {/* Mobile Stacked Cards — visible only on small screens */}
+              <div className="md:hidden space-y-3">
+                {payments.map(p => (
+                  <div key={p.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-xs text-gray-900">{p.payment_reference}</span>
+                      <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(p.status)}`}>{p.status.replace('_', ' ')}</span>
+                    </div>
+                    <div className="text-xs text-gray-600">Booking <span className="font-semibold text-gray-900">#{p.booking_id}</span> • {formatShortDate(p.created_at)}</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-100">
+                      <div><span className="text-gray-500">Amount:</span> <span className="font-bold text-gray-900">{formatUGX(p.amount_ugx)}</span></div>
+                      <div><span className="text-gray-500">Method:</span> <span className="font-semibold text-emerald-800 uppercase">{p.method.replace('_', ' ')}</span></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 

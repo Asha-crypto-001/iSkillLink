@@ -154,11 +154,13 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 text-xs font-semibold flex items-center gap-2 animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 text-xs font-semibold flex items-center gap-2 animate-bounce">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" aria-hidden="true"></span>
           <span>{toastMessage}</span>
         </div>
       )}
+      {/* Live region for screen readers */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">{toastMessage}</div>
 
       <Navbar
         currentView={currentView}
