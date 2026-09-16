@@ -11,7 +11,7 @@
 | Iteration | Title | Focus Area | Status |
 | :--- | :--- | :--- | :--- |
 | **Iteration 1** | Security Hardening & Session Integrity | Auth, Password Hashing, JWT, Server Authorization | 🟢 Completed |
-| **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🟡 Planned |
+| **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🔵 In Progress |
 | **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟡 Planned |
 | **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟡 Planned |
 | **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟡 Planned |
@@ -49,7 +49,7 @@
 ### Iteration 2: URL Routing & Navigation Architecture
 *Replace in-memory view switching with declarative, bookmarkable, and shareable URL routes.*
 
-- [ ] **2.1 Declarative Routing Integration**
+- [x] **2.1 Declarative Routing Integration**
   - Integrate a modern routing solution (e.g. `react-router-dom`) with browser history support.
   - Establish clear top-level public paths: `/`, `/find-skill`, `/become-educator`, `/how-it-works`, `/about`, `/contact`, `/auth`.
 
