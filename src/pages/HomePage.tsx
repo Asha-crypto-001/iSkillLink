@@ -186,22 +186,22 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Skill Categories Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container-app">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+            <div className="text-xs font-bold uppercase tracking-wider text-forest-700">
               Explore By Trade & Discipline
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight mt-1">
               Skill Categories
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm text-ink-500 mt-1">
               Discover experienced practitioners across vocational, creative, agricultural, and technical trades.
             </p>
           </div>
           <button
             onClick={() => setCurrentView('find-skill')}
-            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+            className="text-xs font-bold text-forest-700 hover:text-forest-800 flex items-center gap-1"
           >
             <span>View All Trades</span>
             <ChevronRight className="w-4 h-4" />
@@ -213,16 +213,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className="p-4 rounded-xl border border-gray-200 bg-white hover:border-emerald-600 hover:shadow-sm text-left transition group flex flex-col justify-between"
+              className="p-4 rounded-card border border-ink-200 bg-white hover:border-forest-600 hover:shadow-level-1 text-left transition group flex flex-col justify-between"
             >
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3 group-hover:bg-emerald-700 group-hover:text-white transition">
+              <div className="w-10 h-10 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center mb-3 group-hover:bg-forest-700 group-hover:text-white transition">
                 {getCategoryIcon(cat.icon_name)}
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-xs sm:text-sm group-hover:text-emerald-800 transition">
+                <h3 className="font-bold text-ink-900 text-xs sm:text-sm group-hover:text-forest-800 transition">
                   {cat.name}
                 </h3>
-                <p className="text-[11px] text-gray-500 line-clamp-2 mt-1 leading-snug">
+                <p className="text-[11px] text-ink-500 line-clamp-2 mt-1 leading-snug">
                   {cat.description}
                 </p>
               </div>
@@ -232,25 +232,25 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* How It Works Section */}
-      <section className="bg-gray-50 border-y border-gray-200 py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-8">
+      <section className="bg-ink-50 border-y border-ink-200 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="container-app max-w-5xl !px-0 space-y-8">
           <div className="text-center space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+            <div className="text-xs font-bold uppercase tracking-wider text-forest-700">
               Clear & Transparent Workflow
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
               How iSkillLink Works
             </h2>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-xl mx-auto">
+            <p className="text-xs sm:text-sm text-ink-600 max-w-xl mx-auto">
               We do not teach the skills ourselves. We verify masters, facilitate structured matching, protect payments, and ensure hands-on learning occurs safely.
             </p>
 
             {/* Switch Tabs */}
-            <div className="inline-flex p-1 bg-white rounded-xl border border-gray-200 text-xs font-bold shadow-sm">
+            <div className="inline-flex p-1 bg-white rounded-card border border-ink-200 text-xs font-bold shadow-level-1">
               <button
                 onClick={() => setHowTab('learners')}
                 className={`px-5 py-2 rounded-lg transition ${
-                  howTab === 'learners' ? 'bg-emerald-700 text-white shadow' : 'text-gray-600 hover:text-gray-900'
+                  howTab === 'learners' ? 'bg-forest-700 text-white shadow' : 'text-ink-600 hover:text-ink-900'
                 }`}
               >
                 For Students & Apprentices
@@ -258,7 +258,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <button
                 onClick={() => setHowTab('educators')}
                 className={`px-5 py-2 rounded-lg transition ${
-                  howTab === 'educators' ? 'bg-emerald-700 text-white shadow' : 'text-gray-600 hover:text-gray-900'
+                  howTab === 'educators' ? 'bg-forest-700 text-white shadow' : 'text-ink-600 hover:text-ink-900'
                 }`}
               >
                 For Educators & Artisans
@@ -268,84 +268,84 @@ export const HomePage: React.FC<HomePageProps> = ({
 
           {howTab === 'learners' ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4">
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-forest-100 text-forest-800 text-xs font-bold flex items-center justify-center">
                   1
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Discover or Request</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Discover or Request</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Browse verified educators by trade, location, and rate, or submit your custom learning goal.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-forest-100 text-forest-800 text-xs font-bold flex items-center justify-center">
                   2
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Rule-Based Match</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Rule-Based Match</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Get matched based on proximity, format (in-person workshop or online), schedule, and budget.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-forest-100 text-forest-800 text-xs font-bold flex items-center justify-center">
                   3
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Escrow Protection</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Escrow Protection</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Pay securely via MTN or Airtel MoMo. Funds remain in escrow until training milestones are delivered.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-forest-100 text-forest-800 text-xs font-bold flex items-center justify-center">
                   4
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Mastery & Review</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Mastery & Review</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Complete your hands-on practical sessions, build real projects, and leave verified feedback.
                 </p>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4">
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-slate-100 text-ink-800 text-xs font-bold flex items-center justify-center">
                   1
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Apply & Verify Identity</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Apply & Verify Identity</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Submit your national ID, trade qualifications, and workshop location for verification.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-slate-100 text-ink-800 text-xs font-bold flex items-center justify-center">
                   2
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Set UGX Rates</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Set UGX Rates</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Define your hourly or course package pricing, availability, and practical workshop equipment.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-slate-100 text-ink-800 text-xs font-bold flex items-center justify-center">
                   3
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Accept Learner Bookings</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Accept Learner Bookings</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Review student goals, confirm schedules, and mentor apprentices in your workshop or online.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-800 text-xs font-black flex items-center justify-center">
+              <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-2 relative">
+                <span className="w-7 h-7 rounded-full bg-slate-100 text-ink-800 text-xs font-bold flex items-center justify-center">
                   4
                 </span>
-                <h3 className="font-bold text-gray-900 text-sm">Guaranteed Payouts</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <h3 className="font-bold text-ink-900 text-sm">Guaranteed Payouts</h3>
+                <p className="text-xs text-ink-600 leading-relaxed">
                   Receive 90% of the session fee directly to your Mobile Money account upon milestone completion.
                 </p>
               </div>
@@ -355,22 +355,22 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Featured Verified Educators */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container-app">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+            <div className="text-xs font-bold uppercase tracking-wider text-forest-700">
               Vetted Artisans & Practitioners
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight mt-1">
               Featured Verified Educators
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm text-ink-500 mt-1">
               Identity verified, workshop inspected, and highly rated by previous apprentices.
             </p>
           </div>
           <button
             onClick={() => setCurrentView('find-skill')}
-            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+            className="text-xs font-bold text-forest-700 hover:text-forest-800 flex items-center gap-1"
           >
             <span>Browse All Verified Mentors</span>
             <ChevronRight className="w-4 h-4" />
@@ -389,32 +389,32 @@ export const HomePage: React.FC<HomePageProps> = ({
             ))}
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-white to-emerald-50/40 rounded-3xl border border-emerald-100 p-8 sm:p-12 text-center shadow-sm space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-xs">
+          <div className="bg-gradient-to-br from-white to-emerald-50/40 rounded-3xl border border-emerald-100 p-8 sm:p-12 text-center shadow-level-1 space-y-6">
+            <div className="w-16 h-16 rounded-card bg-forest-100 text-forest-800 flex items-center justify-center mx-auto shadow-xs">
               <Award className="w-8 h-8" />
             </div>
             <div className="max-w-xl mx-auto space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-forest-100 text-forest-800 px-2.5 py-1 rounded-full border border-forest-200">
                 Educator Onboarding Open • Mbarara & Across Uganda
               </span>
-              <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+              <h3 className="text-xl sm:text-2xl font-bold text-ink-900 tracking-tight">
                 Be Among the First Verified Educators on iSkillLink
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-ink-600 leading-relaxed">
                 We are actively onboarding verified artisans, technicians, software developers, pastry chefs, and master practitioners. Teach your craft, set your UGX pricing, and mentor motivated Ugandan apprentices.
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => setCurrentView('become-educator')}
-                className="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm transition shadow-sm flex items-center gap-2"
+                className="px-6 py-3 rounded-card bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs sm:text-sm transition shadow-level-1 flex items-center gap-2"
               >
                 <span>Apply to Teach Practical Skills</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={onOpenSkillRequest}
-                className="px-6 py-3 rounded-xl bg-white hover:bg-gray-50 text-gray-800 font-bold text-xs sm:text-sm border border-gray-300 transition shadow-xs"
+                className="px-6 py-3 rounded-card bg-white hover:bg-ink-50 text-ink-800 font-bold text-xs sm:text-sm border border-ink-200 transition shadow-xs"
               >
                 Request a Custom Skill
               </button>
@@ -424,10 +424,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Educator CTA Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-emerald-800 rounded-3xl p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+      <section className="container-app">
+        <div className="bg-forest-800 rounded-3xl p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-level-3">
           <div className="space-y-3 max-w-xl">
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
               Are you a skilled artisan, professional, or craftsperson?
             </h2>
             <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
@@ -437,13 +437,13 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             <button
               onClick={() => setCurrentView('become-educator')}
-              className="px-6 py-3 rounded-xl bg-white hover:bg-gray-100 text-emerald-900 font-bold text-xs sm:text-sm transition shadow"
+              className="px-6 py-3 rounded-card bg-white hover:bg-ink-50 text-emerald-900 font-bold text-xs sm:text-sm transition shadow"
             >
               Apply to Teach
             </button>
             <button
               onClick={() => setCurrentView('how-it-works')}
-              className="px-6 py-3 rounded-xl bg-emerald-900/60 hover:bg-emerald-900 text-white font-bold text-xs sm:text-sm border border-emerald-700 transition"
+              className="px-6 py-3 rounded-card bg-emerald-900/60 hover:bg-emerald-900 text-white font-bold text-xs sm:text-sm border border-emerald-700 transition"
             >
               Educator Standards
             </button>
@@ -452,7 +452,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Newsletter Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container-app">
         <NewsletterSection />
       </div>
     </div>

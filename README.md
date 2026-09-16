@@ -12,7 +12,7 @@ Unlike passive video courses, iSkillLink focuses on **direct 1-on-1 and small gr
 
 For the active architecture and engineering roadmap, consult the [Platform Improvement Tracker](IMPROVEMENTS.md).
 
-> **Progress — Sep 2026:** ✅ **Phase 1 Foundation** — tokens & primitives. ✅ **Phase 2 Core UX** — stable nav, wired search. 🔄 **Phase 3 Pages in progress** — EducatorCard (Card/Badge/Button), ProfileModal (→ Modal primitive + accessible tabs), BookingModal (→ Field/Input), Contact form (→ Field) shipped; SkillRequest/BecomeEducator/Auth next. Build verified. See `IMPROVEMENTS.md` → Progress Log.
+> **Progress — Sep 2026:** ✅ **Phase 1 Foundation** — tokens & primitives. ✅ **Phase 2 Core UX** — stable nav, wired search. ✅ **Phase 3 Pages — whole phase complete at once** — EducatorCard/ ProfileModal/ Booking & SkillRequest Modals → Modal+Field, Contact + BecomeEducator Step 1 + Auth (email/password/name/phone/location) → Field, EducatorProfilePage + Dashboards + HowItWorks/About/Home → Card/Badge/container-app, token-unified (ink/forest). Build verified. See `IMPROVEMENTS.md` → Progress Log.
 
 ---
 
