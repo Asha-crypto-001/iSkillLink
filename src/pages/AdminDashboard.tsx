@@ -204,7 +204,16 @@ export const AdminDashboard: React.FC = () => {
   const isLeadAdmin = user?.email === 'ashabahebwahassan665@gmail.com' || user?.role === 'admin';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <nav aria-label="Breadcrumb" className="text-xs">
+        <ol className="flex items-center gap-1.5 text-gray-500">
+          <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-emerald-700 font-medium">Home</a></li>
+          <li className="text-gray-400">›</li>
+          <li><a href="/dashboard/admin" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/admin');}} className="hover:text-emerald-700 font-medium">Operations</a></li>
+          <li className="text-gray-400">›</li>
+          <li className="text-gray-900 font-semibold capitalize">{activeTab}</li>
+        </ol>
+      </nav>
       {/* Operations Header */}
       <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-start sm:items-center gap-4">

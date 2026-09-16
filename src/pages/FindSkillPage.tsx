@@ -8,6 +8,7 @@ import {
   Search, Filter, SlidersHorizontal,
   X, RotateCcw
 } from 'lucide-react';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
 interface FindSkillPageProps {
   initialCategoryId?: string;
@@ -151,7 +152,8 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
     minRating > 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <Breadcrumbs items={[{ label: 'Explore Skills', to: '/find-skill' }]} />
       <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">

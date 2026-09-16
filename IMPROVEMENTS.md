@@ -11,7 +11,7 @@
 | Iteration | Title | Focus Area | Status |
 | :--- | :--- | :--- | :--- |
 | **Iteration 1** | Security Hardening & Session Integrity | Auth, Password Hashing, JWT, Server Authorization | 🟢 Completed |
-| **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🔵 In Progress |
+| **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🟢 Completed |
 | **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟡 Planned |
 | **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟡 Planned |
 | **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟡 Planned |
@@ -61,7 +61,7 @@
   - Support nested routes for user portals (`/dashboard/learner/bookings`, `/dashboard/educator/earnings`, `/dashboard/admin/verification`).
   - Ensure page refreshes retain the active dashboard tab and prevent unwanted navigation back to the homepage.
 
-- [ ] **2.4 Breadcrumbs & History Management**
+- [x] **2.4 Breadcrumbs & History Management**
   - Implement accessible breadcrumb navigation across deep views.
   - Guarantee intuitive browser Back and Forward button behavior.
 

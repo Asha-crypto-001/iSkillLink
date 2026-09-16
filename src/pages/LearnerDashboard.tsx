@@ -106,7 +106,20 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
     .reduce((sum, p) => sum + p.amount_ugx, 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <nav aria-label="Breadcrumb" className="text-xs">
+            <ol className="flex items-center gap-1.5 text-gray-500">
+              <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-emerald-700 font-medium">Home</a></li>
+              <li className="text-gray-400">›</li>
+              <li><a href="/dashboard/learner" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/learner');}} className="hover:text-emerald-700 font-medium">Dashboard</a></li>
+              <li className="text-gray-400">›</li>
+              <li className="text-gray-900 font-semibold capitalize">{activeTab}</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
       {/* Top Banner with Persona Profile */}
       <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">

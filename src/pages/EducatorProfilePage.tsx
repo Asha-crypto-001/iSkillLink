@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Educator } from '../types';
 import { api } from '../services/api';
 import { formatUGX, formatShortDate } from '../utils/formatters';
 import { BookingModal } from '../components/BookingModal';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import {
   ShieldCheck, Star, MapPin, Clock, Award, Globe, Wrench, CheckCircle2,
-  Calendar, ChevronRight, ArrowLeft, Share2, MessageCircle
+  Calendar, ArrowLeft, Share2, MessageCircle
 } from 'lucide-react';
 
 export const EducatorProfilePage: React.FC = () => {
@@ -94,13 +95,7 @@ export const EducatorProfilePage: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Breadcrumb & Share */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-        <nav className="flex items-center gap-1.5 text-gray-500" aria-label="Breadcrumb">
-          <Link to="/" className="hover:text-emerald-700 font-medium">Home</Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link to="/find-skill" className="hover:text-emerald-700 font-medium">Explore Skills</Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-gray-900 font-semibold truncate max-w-[150px]">{name}</span>
-        </nav>
+        <Breadcrumbs items={[{ label: 'Explore Skills', to: '/find-skill' }, { label: name }]} />
         <div className="flex items-center gap-2">
           <button onClick={handleShare} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-xs font-semibold">
             <Share2 className="w-3.5 h-3.5" />
