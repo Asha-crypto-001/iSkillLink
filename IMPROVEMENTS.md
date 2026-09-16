@@ -12,7 +12,7 @@
 | :--- | :--- | :--- | :--- |
 | **Iteration 1** | Security Hardening & Session Integrity | Auth, Password Hashing, JWT, Server Authorization | 🟢 Completed |
 | **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🟢 Completed |
-| **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟡 Planned |
+| **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🔵 In Progress |
 | **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟡 Planned |
 | **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟡 Planned |
 | **Iteration 6** | Code Modularization & Architecture Cleanup | Component Decomposition, Reusable UI, Schema Migration | 🟢 In Progress |
@@ -70,11 +70,11 @@
 ### Iteration 3: Mobile Experience & Responsive Layouts
 *Deliver an ergonomic mobile-first experience across smartphone and tablet viewports.*
 
-- [ ] **3.1 Mobile Table Adaptation**
+- [x] **3.1 Mobile Table Adaptation**
   - Convert multi-column desktop `<table>` elements in Learner, Educator, and Admin dashboards into stacked card views on screens below 768px (`block md:table`).
   - Prevent horizontal viewport clipping and horizontal scrollbars on smaller smartphones.
 
-- [ ] **3.2 Header & Ribbon Optimization**
+- [x] **3.2 Header & Ribbon Optimization**
   - Refactor top heritage ribbon to collapse gracefully on mobile viewports, recovering 30–40px of vertical viewing space.
   - Implement scroll-direction awareness to auto-hide the top bar on scroll down and reveal on scroll up.
 

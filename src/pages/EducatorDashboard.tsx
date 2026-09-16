@@ -432,7 +432,8 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto pt-2">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto pt-2">
             <table className="w-full text-left text-xs">
               <thead className="bg-gray-50 text-gray-700 uppercase font-bold border-y border-gray-200">
                 <tr>
@@ -461,6 +462,24 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3 pt-2">
+            {payments.map(p => (
+              <div key={p.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-xs text-gray-900">{p.payment_reference}</span>
+                  <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(p.status)}`}>{p.status.replace('_', ' ')}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="text-gray-500">Gross:</span> <span className="font-bold">{formatUGX(p.amount_ugx)}</span></div>
+                  <div><span className="text-gray-500">Net:</span> <span className="font-bold text-emerald-800">{formatUGX(p.payout_amount_ugx)}</span></div>
+                  <div><span className="text-gray-500">Fee:</span> <span className="text-gray-600">{formatUGX(p.platform_fee_ugx)}</span></div>
+                  <div><span className="text-gray-500">Date:</span> <span className="text-gray-600">{formatShortDate(p.created_at)}</span></div>
+                </div>
+              </div>
+            ))}
+            {payments.length === 0 && <div className="text-center py-8 text-xs text-gray-400">No earnings yet.</div>}
           </div>
         </div>
       )}

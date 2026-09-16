@@ -83,7 +83,7 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
           Live Learner Requests & Contact Records
         </h3>
 
-        <div className="overflow-x-auto border border-gray-200 rounded-xl">
+        <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-xl">
           <table className="w-full text-left text-xs">
             <thead className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
               <tr>
@@ -123,6 +123,23 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="md:hidden space-y-3">
+          {learnerRequests.map(r => (
+            <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-sm text-gray-900">{r.learner_name}</span>
+                <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(r.status)}`}>{r.status}</span>
+              </div>
+              <div className="text-xs font-semibold text-emerald-950">{r.skill_name} • {r.location}</div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div><span className="text-gray-500">Budget:</span> <span className="font-bold">{formatUGX(r.budget_ugx)}</span></div>
+                <div><span className="text-gray-500">Date:</span> <span className="text-gray-600">{formatShortDate(r.created_at)}</span></div>
+              </div>
+              <a href={`tel:${r.contact_phone}`} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 hover:underline">{r.contact_phone}</a>
+            </div>
+          ))}
+          {learnerRequests.length===0 && <div className="text-center py-8 text-xs text-gray-400">No learner requests yet.</div>}
         </div>
       </div>
     </div>

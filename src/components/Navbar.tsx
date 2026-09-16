@@ -32,6 +32,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [ribbonCollapsed, setRibbonCollapsed] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Close dropdown on outside click
@@ -44,6 +47,29 @@ export const Navbar: React.FC<NavbarProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Scroll-direction awareness: auto-hide header on scroll down, reveal on scroll up; collapse ribbon on mobile for viewport recovery
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const isMobile = window.innerWidth < 640;
+      // Header auto-hide: hide when scrolling down past 80px, show when scrolling up
+      if (currentY > lastScrollY && currentY > 80) {
+        setHeaderVisible(false);
+      } else {
+        setHeaderVisible(true);
+      }
+      // Ribbon collapse on mobile: hide ribbon after 40px to recover ~30px vertical space
+      if (isMobile) {
+        setRibbonCollapsed(currentY > 40);
+      } else {
+        setRibbonCollapsed(false);
+      }
+      setLastScrollY(currentY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const getDashboardTarget = () => {
     if (user?.role === 'admin' || user?.role === 'secondary_admin') return 'admin-dashboard';
@@ -68,9 +94,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] transition-all">
-        {/* Heritage Ribbon (Nostalgic Top Tape) */}
-        <div className="bg-[#101b17] text-stone-300 text-[11px] py-1 px-4 sm:px-8 border-b border-[#1c2e27] tracking-normal">
+      <header className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] transition-transform duration-300 ease-in-out ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        {/* Heritage Ribbon (Nostalgic Top Tape) — collapses on mobile to recover 30-40px */}
+        <div className={`bg-[#101b17] text-stone-300 text-[11px] px-4 sm:px-8 border-b border-[#1c2e27] tracking-normal overflow-hidden transition-all duration-300 ease-in-out ${ribbonCollapsed ? 'max-h-0 opacity-0 py-0 border-transparent' : 'max-h-10 opacity-100 py-1'}`}>
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             {/* Heritage Registry Origin */}
             <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">

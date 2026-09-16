@@ -16,7 +16,7 @@ export const AdminAuditTab: React.FC<AdminAuditTabProps> = ({ auditLogs }) => {
         </p>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
             <tr>
@@ -39,6 +39,19 @@ export const AdminAuditTab: React.FC<AdminAuditTabProps> = ({ auditLogs }) => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="md:hidden space-y-3">
+        {auditLogs.map(log => (
+          <div key={log.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono font-bold text-slate-800">{log.action_type}</span>
+              <span className="text-gray-500">{formatShortDate(log.created_at)}</span>
+            </div>
+            <div className="text-xs"><span className="text-gray-500">Admin:</span> <span className="font-semibold text-gray-900">{log.admin_name}</span> • <span className="text-gray-600">{log.target_entity} #{log.target_id}</span></div>
+            <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">{log.details}</div>
+          </div>
+        ))}
+        {auditLogs.length===0 && <div className="text-center py-8 text-xs text-gray-400">No audit records yet.</div>}
       </div>
     </div>
   );
