@@ -72,8 +72,8 @@ For security, credentials are managed securely via environment variables:
 
 ```bash
 # 1. Clone your repository from GitHub
-git clone https://github.com/Asha-crypto-001/arena_ai.git
-cd arena_ai
+git clone https://github.com/Asha-crypto-001/iSkillLink-.git
+cd iSkillLink-
 
 # 2. Install dependencies
 npm install
