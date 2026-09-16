@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Educator, Category, TeachingFormat, SkillLevel } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { Educator, Category } from '../types';
 import { api } from '../services/api';
 import { EducatorCard } from '../components/EducatorCard';
 import { formatUGX } from '../utils/formatters';
 import {
-  Search, Filter, SlidersHorizontal, MapPin, Star,
-  X, RotateCcw, PlusCircle, CheckCircle2, ChevronDown
+  Search, Filter, SlidersHorizontal,
+  X, RotateCcw
 } from 'lucide-react';
 
 interface FindSkillPageProps {
@@ -21,18 +22,25 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
   onRequestBooking,
   onOpenSkillRequest
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [educators, setEducators] = useState<Educator[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategoryId || 'all');
-  const [selectedFormat, setSelectedFormat] = useState<string>('all');
-  const [selectedLocation, setSelectedLocation] = useState<string>('all');
-  const [maxPrice, setMaxPrice] = useState<number>(60000);
-  const [minRating, setMinRating] = useState<number>(0);
-  const [sortOption, setSortOption] = useState<string>('relevance');
+  // Initialize from URL or prop
+  const getInitial = (key: string, fallback: string) => searchParams.get(key) || fallback;
+  const getInitialNum = (key: string, fallback: number) => {
+    const v = searchParams.get(key);
+    return v ? Number(v) : fallback;
+  };
+
+  const [search, setSearch] = useState(getInitial('search', ''));
+  const [selectedCategory, setSelectedCategory] = useState<string>(getInitial('category', initialCategoryId || 'all'));
+  const [selectedFormat, setSelectedFormat] = useState<string>(getInitial('format', 'all'));
+  const [selectedLocation, setSelectedLocation] = useState<string>(getInitial('location', 'all'));
+  const [maxPrice, setMaxPrice] = useState<number>(getInitialNum('maxPrice', 60000));
+  const [minRating, setMinRating] = useState<number>(getInitialNum('rating', 0));
+  const [sortOption, setSortOption] = useState<string>(getInitial('sort', 'relevance'));
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const ugandanLocations = [
@@ -46,6 +54,46 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
     { value: 'wakiso', label: 'Wakiso' },
     { value: 'online', label: 'Online Remote Mentoring' }
   ];
+
+  // Sync URL -> state when browser navigates (back/forward)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    if (urlSearch !== search) setSearch(urlSearch);
+    const urlCat = searchParams.get('category') || 'all';
+    if (urlCat !== selectedCategory) setSelectedCategory(urlCat);
+    const urlFormat = searchParams.get('format') || 'all';
+    if (urlFormat !== selectedFormat) setSelectedFormat(urlFormat);
+    const urlLoc = searchParams.get('location') || 'all';
+    if (urlLoc !== selectedLocation) setSelectedLocation(urlLoc);
+    const urlMax = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : 60000;
+    if (urlMax !== maxPrice) setMaxPrice(urlMax);
+    const urlRating = searchParams.get('rating') ? Number(searchParams.get('rating')) : 0;
+    if (urlRating !== minRating) setMinRating(urlRating);
+    const urlSort = searchParams.get('sort') || 'relevance';
+    if (urlSort !== sortOption) setSortOption(urlSort);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // Sync state -> URL
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    if (selectedCategory !== 'all') params.category = selectedCategory;
+    if (selectedFormat !== 'all') params.format = selectedFormat;
+    if (selectedLocation !== 'all') params.location = selectedLocation;
+    if (maxPrice !== 60000) params.maxPrice = String(maxPrice);
+    if (minRating > 0) params.rating = String(minRating);
+    if (sortOption !== 'relevance') params.sort = sortOption;
+
+    const current = Object.fromEntries(searchParams.entries());
+    const sameKeys = Object.keys(params).length === Object.keys(current).length &&
+      Object.keys(params).every(k => current[k] === params[k]);
+    if (!sameKeys || Object.keys(params).some(k => current[k] !== params[k])) {
+      const hasDiff = JSON.stringify(params) !== JSON.stringify(current);
+      if (hasDiff) setSearchParams(params, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, selectedCategory, selectedFormat, selectedLocation, maxPrice, minRating, sortOption]);
 
   const fetchEducators = async () => {
     try {
@@ -91,6 +139,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
     setMaxPrice(60000);
     setMinRating(0);
     setSortOption('relevance');
+    setSearchParams({}, { replace: true });
   };
 
   const hasActiveFilters =
@@ -103,7 +152,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Top Title & Search Header */}
       <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
@@ -114,7 +162,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </p>
         </div>
 
-        {/* Search Input Bar */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
@@ -136,7 +183,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            {/* Sort Selector */}
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
@@ -149,7 +195,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
               <option value="price_desc">Sort: Price (High to Low)</option>
             </select>
 
-            {/* Mobile filter toggle */}
             <button
               onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
               className="lg:hidden p-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 flex items-center gap-1.5 text-xs font-semibold shrink-0"
@@ -160,7 +205,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
         </div>
 
-        {/* Active Filter Chips */}
         {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 text-xs">
             <span className="text-gray-500 font-medium">Active Filters:</span>
@@ -199,9 +243,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
         )}
       </div>
 
-      {/* Main Content: Sidebar Filters + Educator Cards Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Desktop Filter Sidebar */}
         <div className="hidden lg:block bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6 sticky top-24">
           <div className="flex items-center justify-between pb-3 border-b border-gray-100">
             <h3 className="font-bold text-xs uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
@@ -218,7 +260,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             )}
           </div>
 
-          {/* Category Filter */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-2">
               Skill Category
@@ -235,7 +276,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             </select>
           </div>
 
-          {/* Learning Format Filter */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-2">
               Learning Format
@@ -266,7 +306,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             </div>
           </div>
 
-          {/* Location Filter */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-2">
               Service Location
@@ -282,7 +321,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             </select>
           </div>
 
-          {/* Max Hourly Rate Filter */}
           <div>
             <div className="flex justify-between items-center text-xs mb-1">
               <span className="font-bold text-gray-700">Max Hourly Rate</span>
@@ -303,7 +341,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             </div>
           </div>
 
-          {/* Minimum Rating */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-2">
               Minimum Rating
@@ -330,7 +367,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             </div>
           </div>
 
-          {/* Skill Request Prompt in Sidebar */}
           <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 space-y-2">
             <h4 className="font-bold text-xs text-emerald-950">Can't find a specific skill?</h4>
             <p className="text-[11px] text-emerald-900 leading-relaxed">
@@ -345,7 +381,6 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
         </div>
 
-        {/* Results Grid Area */}
         <div className="lg:col-span-3 space-y-4">
           <div className="flex items-center justify-between text-xs text-gray-500 px-1">
             <span>Showing <span className="font-bold text-gray-900">{educators.length}</span> verified educators</span>

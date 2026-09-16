@@ -53,7 +53,7 @@
   - Integrate a modern routing solution (e.g. `react-router-dom`) with browser history support.
   - Establish clear top-level public paths: `/`, `/find-skill`, `/become-educator`, `/how-it-works`, `/about`, `/contact`, `/auth`.
 
-- [ ] **2.2 Deep-Linkable Profile & Catalog Routes**
+- [x] **2.2 Deep-Linkable Profile & Catalog Routes**
   - Support parameterized educator profiles (`/educators/:id`) allowing learners to share direct profile links via WhatsApp or social media.
   - Sync catalog filters (category, format, location, price, rating) with URL query parameters (`/find-skill?category=fashion&location=mbarara`).
 

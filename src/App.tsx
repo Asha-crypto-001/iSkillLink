@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { FindSkillPage } from './pages/FindSkillPage';
+import { EducatorProfilePage } from './pages/EducatorProfilePage';
 import { BecomeEducatorPage } from './pages/BecomeEducatorPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
 import { AboutPage } from './pages/AboutPage';
@@ -185,6 +186,7 @@ const AppContent: React.FC = () => {
               onOpenSkillRequest={() => setShowSkillRequestModal(true)}
             />
           } />
+          <Route path="/educators/:id" element={<EducatorProfilePage />} />
           <Route path="/become-educator" element={
             <BecomeEducatorPage
               onApplicationSubmitted={() => showToast('Educator application received in verification queue!')}
