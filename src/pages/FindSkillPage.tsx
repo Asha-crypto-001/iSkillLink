@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Educator, Category } from '../types';
 import { api } from '../services/api';
+import { useDebounce } from '../hooks/useDebounce';
 import { EducatorCard } from '../components/EducatorCard';
 import { formatUGX } from '../utils/formatters';
 import {
@@ -36,6 +37,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
   };
 
   const [search, setSearch] = useState(getInitial('search', ''));
+  const debouncedSearch = useDebounce(search, 300);
   const [selectedCategory, setSelectedCategory] = useState<string>(getInitial('category', initialCategoryId || 'all'));
   const [selectedFormat, setSelectedFormat] = useState<string>(getInitial('format', 'all'));
   const [selectedLocation, setSelectedLocation] = useState<string>(getInitial('location', 'all'));
@@ -110,7 +112,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
     try {
       setLoading(true);
       const data = await api.getEducators({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
         format: selectedFormat !== 'all' ? selectedFormat : undefined,
         location: selectedLocation !== 'all' ? selectedLocation : undefined,
@@ -140,7 +142,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
 
   useEffect(() => {
     fetchEducators();
-  }, [search, selectedCategory, selectedFormat, selectedLocation, maxPrice, minRating, sortOption]);
+  }, [debouncedSearch, selectedCategory, selectedFormat, selectedLocation, maxPrice, minRating, sortOption]);
 
   const resetFilters = () => {
     setSearch('');

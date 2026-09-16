@@ -21,6 +21,14 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const isValidUgPhone = (p: string) => {
+    const digits = p.replace(/[^0-9]/g, '');
+    return digits.length >= 12 && digits.startsWith('256') && /^2567\d{8}$/.test(digits) || /^0?7\d{8}$/.test(p.replace(/\s/g,''));
+  };
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const isValidHourlyRate = (r: number) => r >= 15000 && r <= 100000;
 
   // Step 1: Personal & Contact Details
   const [name, setName] = useState('');
@@ -103,27 +111,27 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
 
   const handleNextStep = () => {
     setErrorMsg('');
+    const errs: Record<string,string> = {};
     if (currentStep === 1) {
-      if (!name || !email || !phone || !location) {
-        setErrorMsg('Please complete all required contact information.');
-        return;
-      }
+      if (!name.trim()) errs.name = 'Full legal name is required.';
+      if (!email.trim() || !isValidEmail(email)) errs.email = 'Valid email address is required.';
+      if (!phone.trim() || !isValidUgPhone(phone)) errs.phone = 'Valid Ugandan phone (+256 7XXXXXXXX) is required.';
+      if (!location.trim()) errs.location = 'Location is required.';
+      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please correct the highlighted contact fields.'); return; }
     } else if (currentStep === 2) {
-      if (!title || !bio) {
-        setErrorMsg('Please provide your professional title and craft background bio.');
-        return;
-      }
+      if (!title.trim()) errs.title = 'Professional headline is required.';
+      if (!bio.trim() || bio.trim().length < 20) errs.bio = 'Bio must be at least 20 characters.';
+      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please complete your craft background.'); return; }
     } else if (currentStep === 3) {
-      if (!primarySkill || !hourlyRateUGX) {
-        setErrorMsg('Please enter your primary skill name and hourly pricing in UGX.');
-        return;
-      }
+      if (!primarySkill.trim() || primarySkill.trim().length < 3) errs.primarySkill = 'Primary skill must be at least 3 characters.';
+      if (!hourlyRateUGX || !isValidHourlyRate(hourlyRateUGX)) errs.hourlyRateUGX = 'Hourly rate must be UGX 15,000 – 100,000.';
+      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please correct skill and pricing fields.'); return; }
     } else if (currentStep === 4) {
-      if (teachingFormats.length === 0 || !serviceArea) {
-        setErrorMsg('Please select at least one teaching format and specify your service area.');
-        return;
-      }
+      if (teachingFormats.length === 0) errs.teachingFormats = 'Select at least one teaching format.';
+      if (!serviceArea.trim()) errs.serviceArea = 'Service area is required.';
+      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please complete workshop details.'); return; }
     }
+    setFieldErrors({});
     setCurrentStep(prev => prev + 1);
   };
 
@@ -323,11 +331,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => { setName(e.target.value); if(fieldErrors.name) setFieldErrors(prev=>({...prev, name:''})); }}
                   placeholder="e.g. Your Full Legal Name"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.name ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.name && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.name}</span>}
               </div>
 
               <div>
@@ -337,11 +346,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); if(fieldErrors.email) setFieldErrors(prev=>({...prev, email:''})); }}
                   placeholder="e.g. joseph.mukasa@gmail.com"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.email ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.email && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.email}</span>}
               </div>
 
               <div>
@@ -351,11 +361,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => { setPhone(e.target.value); if(fieldErrors.phone) setFieldErrors(prev=>({...prev, phone:''})); }}
                   placeholder="+256 77X XXX XXX"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.phone ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.phone && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.phone}</span>}
               </div>
 
               <div>
@@ -378,11 +389,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <input
                   type="text"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => { setLocation(e.target.value); if(fieldErrors.location) setFieldErrors(prev=>({...prev, location:''})); }}
                   placeholder="e.g. Kiyembe Lane, Kampala Central"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.location ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.location && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.location}</span>}
               </div>
 
               <div>
@@ -476,11 +488,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => { setTitle(e.target.value); if(fieldErrors.title) setFieldErrors(prev=>({...prev, title:''})); }}
                     placeholder="e.g. Master Tailor & Pattern Construction Instructor"
-                    className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                    className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.title ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                     required
                   />
+                  {fieldErrors.title && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.title}</span>}
                 </div>
 
                 <div>
@@ -506,11 +519,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <textarea
                   rows={4}
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+                  onChange={(e) => { setBio(e.target.value); if(fieldErrors.bio) setFieldErrors(prev=>({...prev, bio:''})); }}
                   placeholder="Describe your background, workshops you run, techniques you specialize in, and how you teach apprentices step-by-step..."
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.bio ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.bio && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.bio}</span>}
               </div>
             </div>
           </div>
@@ -532,11 +546,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <input
                   type="text"
                   value={primarySkill}
-                  onChange={(e) => setPrimarySkill(e.target.value)}
+                  onChange={(e) => { setPrimarySkill(e.target.value); if(fieldErrors.primarySkill) setFieldErrors(prev=>({...prev, primarySkill:''})); }}
                   placeholder="e.g. Garment Pattern Drafting & Cutting"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${fieldErrors.primarySkill ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.primarySkill && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.primarySkill}</span>}
               </div>
 
               <div>
@@ -571,14 +586,13 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   type="number"
                   step={5000}
                   min={15000}
+                  max={100000}
                   value={hourlyRateUGX}
-                  onChange={(e) => setHourlyRateUGX(Number(e.target.value))}
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600"
+                  onChange={(e) => { setHourlyRateUGX(Number(e.target.value)); if(fieldErrors.hourlyRateUGX) setFieldErrors(prev=>({...prev, hourlyRateUGX:''})); }}
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 ${fieldErrors.hourlyRateUGX ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
-                <span className="text-[11px] text-emerald-800 font-semibold mt-0.5 block">
-                  {formatUGX(hourlyRateUGX)} / hr (You receive 90% via Mobile Money)
-                </span>
+                {fieldErrors.hourlyRateUGX ? <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.hourlyRateUGX}</span> : <span className="text-[11px] text-emerald-800 font-semibold mt-0.5 block">{formatUGX(hourlyRateUGX)} / hr (You receive 90% via Mobile Money)</span>}
               </div>
 
               <div>
@@ -635,7 +649,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     <button
                       type="button"
                       key={f.id}
-                      onClick={() => toggleFormat(f.id)}
+                      onClick={() => { toggleFormat(f.id); if(fieldErrors.teachingFormats) setFieldErrors(prev=>({...prev, teachingFormats:''})); }}
                       className={`p-3 rounded-xl border text-left transition ${
                         teachingFormats.includes(f.id)
                           ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold ring-2 ring-emerald-500/20'
@@ -650,6 +664,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     </button>
                   ))}
                 </div>
+                {fieldErrors.teachingFormats && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.teachingFormats}</span>}
               </div>
 
               <div>
@@ -659,11 +674,12 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 <input
                   type="text"
                   value={serviceArea}
-                  onChange={(e) => setServiceArea(e.target.value)}
+                  onChange={(e) => { setServiceArea(e.target.value); if(fieldErrors.serviceArea) setFieldErrors(prev=>({...prev, serviceArea:''})); }}
                   placeholder="e.g. Kampala Central, Nakawa, Makindye, Wakiso"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600"
+                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 ${fieldErrors.serviceArea ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                   required
                 />
+                {fieldErrors.serviceArea && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.serviceArea}</span>}
               </div>
 
               <div>

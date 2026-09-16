@@ -13,7 +13,7 @@
 | **Iteration 1** | Security Hardening & Session Integrity | Auth, Password Hashing, JWT, Server Authorization | 🟢 Completed |
 | **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🟢 Completed |
 | **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟢 Completed |
-| **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟡 Planned |
+| **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟢 Completed |
 | **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟡 Planned |
 | **Iteration 6** | Code Modularization & Architecture Cleanup | Component Decomposition, Reusable UI, Schema Migration | 🟢 In Progress |
 
@@ -91,19 +91,19 @@
 ### Iteration 4: Form Usability & Input Validation
 *Enhance form interactions, prevent invalid submissions, and optimize network efficiency.*
 
-- [ ] **4.1 Per-Step Validation in Educator Onboarding**
+- [x] **4.1 Per-Step Validation in Educator Onboarding**
   - Prevent applicants from skipping ahead in the 5-step wizard without fulfilling required fields.
   - Add inline validation feedback for phone numbers, hourly rates, and trade certifications.
 
-- [ ] **4.2 Input Debouncing & Rate Throttling**
+- [x] **4.2 Input Debouncing & Rate Throttling**
   - Debounce search inputs in `FindSkillPage` by 300ms to eliminate redundant network requests on every keystroke.
   - Debounce milestone progress sliders in `EducatorDashboard` to prevent PATCH request flooding.
 
-- [ ] **4.3 Date Selection Constraints**
+- [x] **4.3 Date Selection Constraints**
   - Restrict the booking date picker in `BookingModal` to prevent selection of past dates.
   - Add conflict checks against educator availability calendars.
 
-- [ ] **4.4 Functional Contact & Inquiry Ingestion**
+- [x] **4.4 Functional Contact & Inquiry Ingestion**
   - Connect the contact form on `ContactPage` to a persistent backend endpoint that records inquiries and notifies administrative staff.
   - Replace `mailto:` newsletter submissions with direct database persistence and instant inline confirmation.
 

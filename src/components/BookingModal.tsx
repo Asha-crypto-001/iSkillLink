@@ -40,6 +40,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [customLocation, setCustomLocation] = useState(educator.location);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [dateError, setDateError] = useState('');
 
   const hourlyRate = educator.hourly_rate_ugx || 35000;
   const totalAmount = hourlyRate * durationHours;
@@ -48,6 +49,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setDateError('');
+    // 4.3 Date constraints: past date + 90-day window + conflict check
+    const today = new Date().toISOString().split('T')[0];
+    if (scheduledDate < today) {
+      setDateError('Cannot book a past date. Please select today or a future date.');
+      return;
+    }
+    const maxDate = new Date(); maxDate.setDate(maxDate.getDate() + 90);
+    if (scheduledDate > maxDate.toISOString().split('T')[0]) {
+      setDateError('Bookings can only be made up to 90 days in advance.');
+      return;
+    }
+    try {
+      const existing = await api.getBookings({ educator_id: educator.id });
+      const conflict = existing.some(b => b.scheduled_date === scheduledDate && !['cancelled','declined'].includes(b.status));
+      if (conflict) {
+        setDateError('Educator already has a booking on this date. Please choose another date.');
+        return;
+      }
+    } catch {}
     setIsSubmitting(true);
     setErrorMsg('');
 
@@ -176,11 +197,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <input
                 type="date"
                 value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
+                onChange={(e) => { setScheduledDate(e.target.value); if(dateError) setDateError(''); }}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                className={`w-full text-xs rounded-lg border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none ${dateError ? 'border-rose-300 bg-rose-50' : 'border-gray-300'}`}
                 required
               />
+              {dateError && <span className="text-[11px] text-rose-600 mt-1 block">{dateError}</span>}
             </div>
 
             <div>

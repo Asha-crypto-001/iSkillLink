@@ -5,7 +5,7 @@ import {
   User, Learner, Educator, Category, Skill, EducatorSkill,
   Qualification, Portfolio, Verification, LearnerRequest,
   Match, Booking, Availability, Payment, Transaction, Review,
-  Message, Notification, AdminAction
+  Message, Notification, AdminAction, Inquiry, NewsletterSubscriber
 } from './types.js';
 import {
   initialCategories, initialSkills, initialUsers, initialLearners,
@@ -40,6 +40,8 @@ export interface DatabaseState {
   messages: Message[];
   notifications: Notification[];
   adminActions: AdminAction[];
+  inquiries: Inquiry[];
+  newsletterSubscribers: NewsletterSubscriber[];
 }
 
 class Database {
@@ -77,6 +79,8 @@ class Database {
         if (!parsed.users.some((u: User) => u.email === 'ashabahebwahassan665@gmail.com')) {
           return this.resetToDefault();
         }
+        if (!parsed.inquiries) parsed.inquiries = [];
+        if (!parsed.newsletterSubscribers) parsed.newsletterSubscribers = [];
         return parsed;
       }
     } catch (err) {
@@ -122,7 +126,9 @@ class Database {
       reviews: initialReviews,
       messages: initialMessages,
       notifications: initialNotifications,
-      adminActions: initialAdminActions
+      adminActions: initialAdminActions,
+      inquiries: [],
+      newsletterSubscribers: []
     };
     this.saveData();
     return this.data;
@@ -147,6 +153,8 @@ class Database {
   public getMessages() { return this.data.messages; }
   public getNotifications() { return this.data.notifications; }
   public getAdminActions() { return this.data.adminActions; }
+  public getInquiries() { return this.data.inquiries || []; }
+  public getNewsletterSubscribers() { return this.data.newsletterSubscribers || []; }
 
   // Specific Entity Operations
   public findUserById(id: string) {
@@ -494,6 +502,22 @@ class Database {
       return this.data.verifications[idx];
     }
     return null;
+  }
+
+  public createInquiry(inquiry: Inquiry) {
+    if (!this.data.inquiries) this.data.inquiries = [];
+    this.data.inquiries.unshift(inquiry);
+    this.saveData();
+    return inquiry;
+  }
+
+  public createNewsletterSubscriber(sub: NewsletterSubscriber) {
+    if (!this.data.newsletterSubscribers) this.data.newsletterSubscribers = [];
+    const exists = this.data.newsletterSubscribers.some(s => s.email.toLowerCase() === sub.email.toLowerCase());
+    if (exists) return sub;
+    this.data.newsletterSubscribers.unshift(sub);
+    this.saveData();
+    return sub;
   }
 }
 

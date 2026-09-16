@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, MapPin, Phone, Mail, Award, CheckCircle, Send, CheckCircle2 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface FooterProps {
   setCurrentView: (view: string) => void;
@@ -9,25 +10,13 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
   const [footerEmail, setFooterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleFooterSubscribe = (e: React.FormEvent) => {
+  const handleFooterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!footerEmail || !footerEmail.includes('@')) return;
-
     try {
-      const existing = JSON.parse(localStorage.getItem('iskilllink_newsletter_subscribers') || '[]');
-      existing.push({ email: footerEmail, source: 'footer', date: new Date().toISOString() });
-      localStorage.setItem('iskilllink_newsletter_subscribers', JSON.stringify(existing));
-    } catch {
-      // ignore
-    }
-
-    const subject = encodeURIComponent(`Newsletter Subscription: ${footerEmail}`);
-    const body = encodeURIComponent(
-      `Hello iSkillLink Uganda,\n\nPlease subscribe this email (${footerEmail}) to practical skills news and workshops in Uganda.\n\nThank you!`
-    );
-
+      await api.subscribeNewsletter(footerEmail, 'All Practical Trades');
+    } catch {}
     setSubscribed(true);
-    window.open(`mailto:iskilllink0@gmail.com?subject=${subject}&body=${body}`, '_blank');
   };
 
   return (

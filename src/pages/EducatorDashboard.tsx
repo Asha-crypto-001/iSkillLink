@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Educator, Booking, Review, LearnerRequest, Payment, Message } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -78,14 +78,18 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     }
   };
 
-  const handleUpdateProgress = async (bookingId: string, progress: number) => {
-    try {
-      await api.updateBookingProgress(bookingId, progress);
-      loadDashboardData();
-    } catch (e) {
-      console.error('Failed to update progress:', e);
-    }
-  };
+  const progressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleUpdateProgress = useCallback((bookingId: string, progress: number) => {
+    if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current);
+    progressTimeoutRef.current = setTimeout(async () => {
+      try {
+        await api.updateBookingProgress(bookingId, progress);
+        loadDashboardData();
+      } catch (e) {
+        console.error('Failed to update progress:', e);
+      }
+    }, 300);
+  }, []);
 
   const handleReplyReview = async (reviewId: string) => {
     const text = replyText[reviewId];

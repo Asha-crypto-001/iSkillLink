@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, MessageSquare, CheckCircle2, ChevronDown } from 'lucide-react';
+import { api } from '../services/api';
 
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -8,6 +9,8 @@ export const ContactPage: React.FC = () => {
   const [subject, setSubject] = useState('General Inquiry');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -31,9 +34,18 @@ export const ContactPage: React.FC = () => {
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError('');
+    try {
+      await api.createInquiry({ name, email, phone, subject, message });
+      setSubmitted(true);
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to send message. Please try again or contact via WhatsApp.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -174,11 +186,17 @@ export const ContactPage: React.FC = () => {
                 />
               </div>
 
+              {submitError && (
+                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                  <span>{submitError}</span>
+                </div>
+              )}
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition disabled:opacity-50 flex items-center gap-2"
               >
-                Send Message to iSkillLink
+                {isSubmitting ? <span>Sending...</span> : <span>Send Message to iSkillLink</span>}
               </button>
             </form>
           )}

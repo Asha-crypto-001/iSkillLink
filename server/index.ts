@@ -7,7 +7,7 @@ import { computeMatchesForRequest } from './matching.js';
 import {
   User, Learner, Educator, EducatorSkill, Qualification,
   Portfolio, Verification, LearnerRequest, Booking, Payment,
-  Review, Message, Notification
+  Review, Message, Notification, Inquiry, NewsletterSubscriber
 } from './types.js';
 import {
   hashPassword,
@@ -1441,6 +1441,68 @@ app.get('/api/admin/interests-demand', authenticateToken, requireRole('admin'), 
     openRequestsCount: requests.filter(r => r.status === 'open').length,
     matchedRequestsCount: requests.filter(r => r.status === 'matched' || r.status === 'fulfilled').length
   });
+});
+
+// Contact Inquiries & Newsletter — 4.4 Functional Ingestion
+app.post('/api/inquiries', (req: Request, res: Response) => {
+  const { name, email, phone, subject, message } = req.body;
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'Name, email, and message are required' });
+  }
+  const inquiry: Inquiry = {
+    id: `inq-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+    name: String(name).trim(),
+    email: String(email).trim().toLowerCase(),
+    phone: phone ? String(phone).trim() : undefined,
+    subject: subject ? String(subject).trim() : 'General Inquiry',
+    message: String(message).trim(),
+    status: 'open',
+    created_at: new Date().toISOString()
+  };
+  db.createInquiry(inquiry);
+  // Notify admin
+  db.createNotification({
+    id: `notif-${Date.now()}`,
+    user_id: 'usr-admin-ashabahebwa',
+    type: 'system_alert',
+    title: 'New Contact Inquiry',
+    message: `${inquiry.name} (${inquiry.email}) sent: ${inquiry.subject}`,
+    link: '/dashboard/admin',
+    is_read: false,
+    created_at: new Date().toISOString()
+  });
+  db.logAdminAction({
+    admin_id: 'system',
+    admin_name: 'System',
+    action_type: 'INQUIRY_RECEIVED',
+    target_entity: 'Inquiry',
+    target_id: inquiry.id,
+    details: `${inquiry.name} <${inquiry.email}> — ${inquiry.subject}`
+  });
+  res.status(201).json({ success: true, inquiry });
+});
+
+app.get('/api/admin/inquiries', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+  res.json(db.getInquiries());
+});
+
+app.post('/api/newsletter/subscribe', (req: Request, res: Response) => {
+  const { email, interest } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+    return res.status(400).json({ error: 'Valid email is required' });
+  }
+  const sub: NewsletterSubscriber = {
+    id: `news-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+    email: String(email).trim().toLowerCase(),
+    interest: interest ? String(interest).trim() : 'All Practical Trades',
+    created_at: new Date().toISOString()
+  };
+  db.createNewsletterSubscriber(sub);
+  res.status(201).json({ success: true, subscriber: sub });
+});
+
+app.get('/api/admin/newsletter-subscribers', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+  res.json(db.getNewsletterSubscribers());
 });
 
 // Reset Database - Restricted strictly to Primary Administrator
