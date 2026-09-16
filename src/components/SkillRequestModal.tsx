@@ -4,9 +4,15 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatUGX } from '../utils/formatters';
 import {
-  X, CheckCircle2, Sparkles, MapPin, Calendar, Clock,
-  DollarSign, ArrowRight, AlertCircle, ShieldCheck, UserCheck
+  X, CheckCircle2, ArrowRight, AlertCircle, ShieldCheck
 } from 'lucide-react';
+import { Modal } from './ui/Modal';
+import { Field } from './ui/Field';
+import { Input } from './ui/Input';
+import { Select } from './ui/Select';
+import { Textarea } from './ui/Textarea';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
 
 interface SkillRequestModalProps {
   onClose: () => void;
@@ -86,21 +92,20 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Header — pinned */}
-        <div className="shrink-0 bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+    <Modal isOpen={true} onClose={onClose} titleId="skill-request-title" title={step === 'form' ? 'Submit a Custom Skill Request' : 'Verified Educator Matches'} maxWidth="max-w-2xl">
+        <div className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
           <div>
-            <span className="text-[10px] uppercase tracking-wider font-bold bg-emerald-900/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700">
+            <span className="text-[11px] uppercase tracking-wider font-bold bg-forest-900/80 text-forest-300 px-2 py-0.5 rounded border border-forest-700">
               Personalized Learning Match
             </span>
-            <h3 className="font-bold text-base text-white mt-1">
+            <h3 id="skill-request-title" className="font-bold text-base text-white mt-1 font-display">
               {step === 'form' ? 'Submit a Custom Skill Request' : 'Verified Educator Matches'}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+            aria-label="Close"
+            className="p-2 rounded-control bg-ink-800 hover:bg-ink-700 text-ink-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -110,249 +115,201 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {errorMsg && (
-              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-200">
-              Tell us what practical skill you want to learn. Our rule-based matchmaking algorithm will instantly evaluate verified educators across Mbarara, Ankole, and Uganda based on skill fit, location, budget, and format.
+            <div className="text-[13px] text-ink-600 bg-ink-50 p-3 rounded-card border border-ink-200">
+              Tell us what practical skill you want to learn. Our rule-based matchmaking will instantly evaluate verified educators across Mbarara, Ankole, and Uganda based on skill fit, location, budget, and format.
             </div>
 
-            {/* Skill wanted */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Skill Wanted <span className="text-rose-500">*</span>
-              </label>
-              <input
+            <Field label="Skill Wanted" htmlFor="skill-wanted" required>
+              <Input
+                id="skill-wanted"
                 type="text"
                 list="popular-skills"
                 value={skillName}
                 onChange={(e) => setSkillName(e.target.value)}
                 placeholder="e.g. Garment Pattern Drafting & Cutting, Solar Installation..."
-                className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 required
               />
-              <datalist id="popular-skills">
-                {predefinedPopularSkills.map(s => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
-            </div>
+            </Field>
+            <datalist id="popular-skills">
+              {predefinedPopularSkills.map(s => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
 
-            {/* Current Level & Learning Goal */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Your Current Skill Level
-                </label>
-                <select
+              <Field label="Your Current Skill Level" htmlFor="skill-level">
+                <Select
+                  id="skill-level"
                   value={skillLevel}
                   onChange={(e) => setSkillLevel(e.target.value as SkillLevel)}
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 >
                   <option value="beginner">Beginner (No prior experience)</option>
                   <option value="intermediate">Intermediate (Some foundation)</option>
                   <option value="advanced">Advanced (Looking for mastery / certification)</option>
-                </select>
-              </div>
+                </Select>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Format Preference
-                </label>
-                <select
+              <Field label="Format Preference" htmlFor="format-pref">
+                <Select
+                  id="format-pref"
                   value={formatPreference}
                   onChange={(e) => setFormatPreference(e.target.value as TeachingFormat)}
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 >
                   <option value="in-person">In-Person Workshop (Hands-on bench/site)</option>
                   <option value="hybrid">Hybrid (Practical in-person + online theory)</option>
                   <option value="online">Online Live (Screen share & 1-on-1 calls)</option>
-                </select>
-              </div>
+                </Select>
+              </Field>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Specific Learning Goals & Outcome <span className="text-rose-500">*</span>
-              </label>
-              <textarea
+            <Field label="Specific Learning Goals & Outcome" htmlFor="learning-goal" required>
+              <Textarea
+                id="learning-goal"
                 rows={2}
                 value={learningGoal}
                 onChange={(e) => setLearningGoal(e.target.value)}
                 placeholder="e.g. Master pattern drafting for blazers and dresses; learn how to calibrate industrial straight stitch machines."
-                className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 required
               />
-            </div>
+            </Field>
 
-            {/* Location & Schedule */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Your General Location (City / Suburb)
-                </label>
-                <input
+              <Field label="Your General Location (City / Suburb)" htmlFor="req-location" required>
+                <Input
+                  id="req-location"
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Mbarara High Street, Kakoba, Ruharo, Booma, Kampala"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   required
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Total Budget for Training (UGX) <span className="text-rose-500">*</span>
-                </label>
-                <input
+              <Field label="Total Budget for Training (UGX)" htmlFor="req-budget" required>
+                <Input
+                  id="req-budget"
                   type="number"
                   step={10000}
                   min={30000}
                   value={budgetUGX}
                   onChange={(e) => setBudgetUGX(Number(e.target.value))}
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   required
                 />
-                <span className="text-[11px] text-emerald-800 font-semibold mt-0.5 block">
-                  {formatUGX(budgetUGX)} Total Allocation
-                </span>
-              </div>
+              </Field>
             </div>
+            <p className="text-xs text-forest-700 font-semibold -mt-2">
+              {formatUGX(budgetUGX)} Total Allocation
+            </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Preferred Schedule
-                </label>
-                <input
+              <Field label="Preferred Schedule" htmlFor="req-schedule">
+                <Input
+                  id="req-schedule"
                   type="text"
                   value={preferredSchedule}
                   onChange={(e) => setPreferredSchedule(e.target.value)}
                   placeholder="e.g. Weekends, or Tuesday & Thursday evenings"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Frequency & Target Duration
-                </label>
-                <input
+              <Field label="Frequency & Target Duration" htmlFor="req-frequency">
+                <Input
+                  id="req-frequency"
                   type="text"
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value)}
                   placeholder="e.g. 2 sessions per week (4 weeks)"
-                  className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 />
-              </div>
+              </Field>
             </div>
 
-            {/* Learner Contact */}
-            <div className="border-t border-gray-200 pt-3">
-              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">
+            <div className="border-t border-ink-200 pt-4">
+              <h4 className="text-xs font-bold text-ink-800 uppercase tracking-wider mb-3">
                 Your Contact Information
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-700 mb-0.5">Your Name</label>
-                  <input
+                <Field label="Your Name" htmlFor="req-name" required>
+                  <Input
+                    id="req-name"
                     type="text"
                     value={learnerName}
                     onChange={(e) => setLearnerName(e.target.value)}
-                    className="w-full text-xs rounded-lg border-gray-300 border p-2 bg-white text-gray-900"
                     required
                   />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-700 mb-0.5">Phone / WhatsApp</label>
-                  <input
+                </Field>
+                <Field label="Phone / WhatsApp" htmlFor="req-phone" required>
+                  <Input
+                    id="req-phone"
                     type="tel"
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    className="w-full text-xs rounded-lg border-gray-300 border p-2 bg-white text-gray-900"
                     required
                   />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-700 mb-0.5">Email</label>
-                  <input
+                </Field>
+                <Field label="Email" htmlFor="req-email" required>
+                  <Input
+                    id="req-email"
                     type="email"
                     value={learnerEmail}
                     onChange={(e) => setLearnerEmail(e.target.value)}
-                    className="w-full text-xs rounded-lg border-gray-300 border p-2 bg-white text-gray-900"
                     required
                   />
-                </div>
+                </Field>
               </div>
             </div>
 
             </div>
-            {/* Footer — pinned */}
-            <div className="shrink-0 p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2.5 text-xs font-semibold rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              >
+            <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3">
+              <Button variant="outline" size="sm" type="button" onClick={onClose}>
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <span>Evaluating Matches...</span>
-                ) : (
-                  <>
-                    <span>Submit & Find Verified Matches</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" isLoading={isSubmitting} rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                Submit & Find Verified Matches
+              </Button>
             </div>
           </form>
         ) : (
-          /* Matches Result View — flex column with scrollable body + pinned footer */
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
-            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-              <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Skill Request Submitted Successfully!</span>
+            <div className="bg-forest-50 rounded-card p-4 border border-forest-200 flex gap-3">
+              <div className="w-8 h-8 rounded-control bg-forest-100 border border-forest-200 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-forest-700" />
               </div>
-              <p className="text-xs text-emerald-800 mt-1">
-                Your request for <span className="font-bold">{skillName}</span> is now active in the matching pool. Here are verified educators matched via rule-based scoring:
-              </p>
+              <div>
+                <div className="font-bold text-forest-900 text-[13px]">Skill Request Submitted Successfully!</div>
+                <p className="text-[13px] text-forest-800 mt-1">
+                  Your request for <span className="font-bold">{skillName}</span> is now active in the matching pool. Here are verified educators matched via rule-based scoring:
+                </p>
+              </div>
             </div>
 
             {matches.length > 0 ? (
               <div className="space-y-3">
-                {matches.map((m, idx) => (
+                {matches.map((m) => (
                   <div
                     key={m.educator.id}
-                    className="p-4 rounded-xl border border-gray-200 bg-white hover:border-emerald-500 transition shadow-sm space-y-3"
+                    className="p-4 rounded-card border border-ink-200 bg-white hover:border-forest-200 hover:shadow-level-1 transition space-y-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={m.educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                           alt={m.educator.user?.name}
-                          className="w-12 h-12 rounded-xl object-cover border border-gray-200"
+                          className="w-12 h-12 rounded-card object-cover border border-ink-200"
                         />
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-gray-900 text-sm">{m.educator.user?.name}</h4>
-                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
-                              {m.match_score}% MATCH
-                            </span>
+                            <h4 className="font-bold text-ink-900 text-[15px] font-display">{m.educator.user?.name}</h4>
+                            <Badge variant="success" size="sm">{m.match_score}% MATCH</Badge>
                           </div>
-                          <p className="text-xs text-gray-600">{m.educator.title}</p>
-                          <div className="text-[11px] text-gray-500 flex items-center gap-2 mt-0.5">
+                          <p className="text-[13px] text-ink-600">{m.educator.title}</p>
+                          <div className="text-xs text-ink-500 flex items-center gap-2 mt-0.5">
                             <span>{m.educator.location}</span>
                             <span>•</span>
                             <span>{formatUGX(m.educator.hourly_rate_ugx)}/hr</span>
@@ -360,25 +317,25 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                         </div>
                       </div>
 
-                      <button
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={() => {
                           onClose();
                           if (onSelectEducator) onSelectEducator(m.educator.id);
                         }}
-                        className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition shrink-0"
                       >
                         View & Book
-                      </button>
+                      </Button>
                     </div>
 
-                    {/* Match Reasons Breakdown */}
-                    <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100 text-[11px] space-y-1">
-                      <span className="font-semibold text-gray-700 block text-[10px] uppercase">
+                    <div className="bg-ink-50 p-3 rounded-control border border-ink-100 text-xs space-y-1.5">
+                      <span className="font-semibold text-ink-700 block text-[11px] uppercase tracking-wider">
                         Rule-Based Match Criteria:
                       </span>
                       {m.match_reasons.map((r, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-gray-600">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <div key={i} className="flex items-center gap-1.5 text-ink-600">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-forest-600 shrink-0" />
                           <span>{r}</span>
                         </div>
                       ))}
@@ -387,23 +344,19 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center text-xs text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="p-6 text-center text-[13px] text-ink-600 bg-ink-50 rounded-card border border-ink-200">
                 Our operations team will review your request and match you with a verified educator within 24 hours.
               </div>
             )}
 
             </div>
-            <div className="shrink-0 p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
-              <button
-                onClick={onClose}
-                className="px-5 py-2.5 text-xs font-bold rounded-lg bg-slate-900 text-white hover:bg-slate-800"
-              >
+            <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-100 flex items-center justify-end">
+              <Button variant="secondary" size="sm" onClick={onClose}>
                 Go to Dashboard
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 };
