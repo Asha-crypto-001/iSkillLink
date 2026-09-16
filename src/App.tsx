@@ -152,11 +152,13 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-screen bg-ink-50 text-ink-900 font-sans flex flex-col justify-between selection:bg-forest-100 selection:text-forest-900">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       {toastMessage && (
-        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 text-xs font-semibold flex items-center gap-2 animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" aria-hidden="true"></span>
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 right-5 z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[13px] font-semibold flex items-center gap-2 animate-fadeIn">
+          <span className="w-2 h-2 rounded-full bg-forest-400" aria-hidden="true"></span>
           <span>{toastMessage}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 p-1 rounded hover:bg-ink-800 text-ink-300" aria-label="Dismiss notification">×</button>
         </div>
       )}
       {/* Live region for screen readers */}
@@ -169,7 +171,7 @@ const AppContent: React.FC = () => {
         onOpenAuth={() => navigate('/auth')}
       />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1 focus:outline-none" tabIndex={-1}>
         <Routes>
           <Route path="/" element={
             <HomePage

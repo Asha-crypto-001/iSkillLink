@@ -164,14 +164,14 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
     minRating > 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="container-app py-6 space-y-6">
       <Breadcrumbs items={[{ label: 'Explore Skills', to: '/find-skill' }]} />
-      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+      <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight font-display">
             Find a Verified Skill Educator
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <p className="text-[13px] sm:text-body-sm text-ink-600 mt-1">
             Browse vetted master artisans, practical technicians, and trainers in Mbarara and across Uganda.
           </p>
         </div>
@@ -312,7 +312,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        <div className="hidden lg:block bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6 sticky top-24">
+        <div className="hidden lg:block bg-white p-5 rounded-card border border-ink-200 shadow-level-1 space-y-6 sticky top-28">
           <div className="flex items-center justify-between pb-3 border-b border-gray-100">
             <h3 className="font-bold text-xs uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
               <SlidersHorizontal className="w-4 h-4 text-emerald-700" />

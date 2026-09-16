@@ -12,7 +12,7 @@ Unlike passive video courses, iSkillLink focuses on **direct 1-on-1 and small gr
 
 For the active architecture and engineering roadmap, consult the [Platform Improvement Tracker](IMPROVEMENTS.md).
 
-> **Progress — Sep 2026:** ✅ **Phase 1 Foundation complete** — unified design tokens (`forest`/`ink`/`paper`), typography & elevation system, and reusable primitives (`Button`, `Badge`, `Card`, `Field`, `Input`, `Textarea`, `Select`, `Skeleton`, `Modal`, `EmptyState`). Build verified. Next: Phase 2 Core UX. See `IMPROVEMENTS.md` → Progress Log for details.
+> **Progress — Sep 2026:** ✅ **Phase 1 Foundation complete** — unified tokens & primitives. ✅ **Phase 2 Core UX complete** — stable nav (no auto-hide), static ribbon, overlay mobile sheet with focus trap, wired hero search → `?search=` (no dead end), single-primary hero, consistent `container-app` rhythm. Build verified. Next: Phase 3 Pages. See `IMPROVEMENTS.md` → Progress Log for details.
 
 ---
 

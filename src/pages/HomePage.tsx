@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Category, Educator, Skill } from '../types';
 import { api } from '../services/api';
 import { EducatorCard } from '../components/EducatorCard';
@@ -26,6 +27,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onViewEducator,
   onRequestBooking
 }) => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredEducators, setFeaturedEducators] = useState<Educator[]>([]);
   const [popularSkills, setPopularSkills] = useState<Skill[]>([]);
@@ -52,7 +54,12 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentView('find-skill');
+    const q = searchQuery.trim();
+    if (q) {
+      navigate(`/find-skill?search=${encodeURIComponent(q)}`);
+    } else {
+      navigate('/find-skill');
+    }
   };
 
   const getCategoryIcon = (iconName: string) => {
@@ -73,101 +80,105 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="space-y-16 pb-16">
-      {/* Hero Section */}
-      <section className="relative bg-slate-900 text-white pt-16 pb-20 px-4 sm:px-6 lg:px-8 border-b border-slate-800">
-        <div className="max-w-6xl mx-auto text-center space-y-6">
+    <div className="section-stack pb-16">
+      {/* Hero Section — wired search (Phase 2 precise: real workflow) */}
+      <section className="relative bg-ink-950 text-white pt-12 sm:pt-16 pb-16 sm:pb-20 border-b border-ink-800">
+        <div className="container-app text-center space-y-6">
           {/* Tagline Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700 text-slate-200 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-ink-900 border border-ink-800 text-ink-200 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-forest-400" aria-hidden="true"></span>
             <span>Where Skills Meet Opportunity • Founded by Ashabahebwa Hassan</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-tight font-display">
             Learn Practical Skills From People Who Know Them.
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-[15px] sm:text-base text-ink-300 max-w-2xl mx-auto leading-relaxed">
             iSkillLink connects learners across Mbarara, Greater Ankole, and Uganda with verified educators, master artisans, trainers, and seasoned practitioners for hands-on vocational, creative, and technical mastery.
           </p>
 
-          {/* Quick Search Bar */}
+          {/* Quick Search Bar — now wired to ?search= (Phase 2 fix) */}
           <div className="max-w-2xl mx-auto pt-2">
             <form
               onSubmit={handleHeroSearch}
-              className="bg-white p-2 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-2 border border-slate-200"
+              className="bg-white p-2 rounded-card shadow-level-3 flex flex-col sm:flex-row items-center gap-2 border border-ink-200"
+              role="search"
+              aria-label="Find a skill educator"
             >
-              <div className="flex-1 flex items-center gap-2 px-3 w-full text-gray-800">
-                <Search className="w-5 h-5 text-gray-400 shrink-0" />
+              <div className="flex-1 flex items-center gap-2 px-3 w-full text-ink-800">
+                <Search className="w-5 h-5 text-ink-400 shrink-0" aria-hidden="true" />
                 <input
                   type="text"
                   placeholder="What practical skill do you want to learn? (e.g. Tailoring, Solar, Python, Dairy...)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-xs sm:text-sm py-2 text-gray-900 focus:outline-none bg-transparent"
+                  aria-label="Skill search"
+                  className="w-full text-[13px] sm:text-body py-2.5 text-ink-900 placeholder:text-ink-400 focus:outline-none bg-transparent"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shrink-0 shadow-md"
+                className="w-full sm:w-auto px-6 py-3 rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-[13px] sm:text-sm transition flex items-center justify-center gap-2 shrink-0 shadow-soft min-h-[44px]"
               >
                 <span>Find an Educator</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </button>
             </form>
+            <p className="text-xs text-ink-400 mt-2">Try: “Tailoring” → filtered results instantly. No dead-end search.</p>
           </div>
 
-          {/* CTAs */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-4 text-xs">
+          {/* CTAs — single primary hierarchy (Phase 2 precise: one primary per view) */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3 text-[13px]">
             <button
               onClick={() => setCurrentView('find-skill')}
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow"
+              className="px-6 py-3 rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold transition shadow-soft min-h-[44px]"
             >
-              Find a Skill
+              Browse All Skills
             </button>
             <button
               onClick={() => setCurrentView('become-educator')}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold border border-slate-700 transition"
+              className="px-6 py-3 rounded-control bg-white hover:bg-ink-50 text-ink-900 font-bold border border-ink-200 shadow-soft transition min-h-[44px]"
             >
               Teach on iSkillLink
             </button>
             <button
               onClick={onOpenSkillRequest}
-              className="px-5 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-700 text-slate-300 font-semibold border border-slate-700 transition"
+              className="px-5 py-2.5 text-[13px] font-semibold text-ink-300 hover:text-white underline decoration-ink-600 underline-offset-4 transition"
             >
-              Submit Custom Request
+              Submit Custom Request →
             </button>
           </div>
 
           {/* Trust Highlights */}
-          <div className="pt-8 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left max-w-4xl mx-auto">
+          <div className="pt-8 border-t border-ink-800/80 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left max-w-4xl mx-auto">
             <div className="flex items-start gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <ShieldCheck className="w-5 h-5 text-forest-400 shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-slate-100">100% Vetted Identity</div>
-                <div className="text-[11px] text-slate-400">National ID & Trade checks</div>
+                <div className="text-[13px] font-bold text-ink-100">100% Vetted Identity</div>
+                <div className="text-xs text-ink-400">National ID & Trade checks</div>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-forest-400 shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-slate-100">Escrow Protected</div>
-                <div className="text-[11px] text-slate-400">MTN & Airtel MoMo holding</div>
+                <div className="text-[13px] font-bold text-ink-100">Escrow Protected</div>
+                <div className="text-xs text-ink-400">MTN & Airtel MoMo holding</div>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <MapPin className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <MapPin className="w-5 h-5 text-forest-400 shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-slate-100">Based in Mbarara</div>
-                <div className="text-[11px] text-slate-400">Serving Uganda nationwide</div>
+                <div className="text-[13px] font-bold text-ink-100">Based in Mbarara</div>
+                <div className="text-xs text-ink-400">Serving Uganda nationwide</div>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <Award className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <Award className="w-5 h-5 text-forest-400 shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-slate-100">Rule-Based Match</div>
-                <div className="text-[11px] text-slate-400">Skill, budget & proximity</div>
+                <div className="text-[13px] font-bold text-ink-100">Rule-Based Match</div>
+                <div className="text-xs text-ink-400">Skill, budget & proximity</div>
               </div>
             </div>
           </div>

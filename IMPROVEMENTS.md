@@ -217,7 +217,36 @@ No phase prescribes exact hex codes, fonts, or "make this button blue." Instead,
 
 **Next:** Phase 2 — Core UX (stable navigation, coherent journeys, search fix). Phase 1 primitives are ready to be adopted there.
 
-### ⏳ Phase 2 — Core UX: Not started
+### ✅ Phase 2 — Core UX: Complete (2026-09-16)
+
+**Goal achieved:** Navigation is now stable and predictable, layout is rhythmical, and the primary search → discover → book workflow is no longer a dead end.
+
+**Whole-project research conducted (every screen re-audited):**
+*   `Navbar.tsx` (header, ribbon, desktop nav, user capsule, mobile drawer), `Footer.tsx`, `App.tsx` (routing, viewToPath, modals, toast, guards)
+*   `HomePage.tsx` (hero, categories, How-It-Works tabs, featured educators, CTA banner, newsletter), `FindSkillPage.tsx` (search, 6 filters, sort, chips, drawer, sidebar `top-24`, educator grid, skeletons/empty), `EducatorProfilePage.tsx` (header, tabs, share, booking), `EducatorProfileModal.tsx`, `BookingModal.tsx`, `SkillRequestModal.tsx`
+*   `LearnerDashboard.tsx` + `EducatorDashboard.tsx` (tabs, metrics, bookings/payments/messages), `AdminDashboard.tsx` + 8 admin tabs, `BecomeEducatorPage.tsx` (5-step wizard), `HowItWorksPage.tsx`, `AboutPage.tsx`, `ContactPage.tsx`, `AuthPage.tsx`, `EducatorCard.tsx`, `AuthContext.tsx`, `services/api.ts` (local fallback, filter handling)
+
+**What was made precise:**
+
+*   **Stable header (`Navbar.tsx`):** Removed scroll-direction auto-hide (`headerVisible`, `lastScrollY` listener) and mobile ribbon collapse (`ribbonCollapsed` → `max-h-0`). Header is now always `sticky top-0 bg-white/95 backdrop-blur-md border-ink-200 shadow-soft`. Ribbon is static `h-9 bg-ink-950 text-ink-200` — no CLS, no lost nav on scroll. Sticky sidebar offsets fixed (`top-28` instead of overlapping `top-24`).
+*   **Accessible navigation:** Desktop links carry `aria-current="page"` + `bg-forest-50 + border-forest-200 + bottom 2px forest bar` active state. Mobile menu rebuilt as `role="dialog"` overlay with `fixed inset-0 bg-ink-900/50` backdrop + top sheet `rounded-b-display shadow-level-3`, body-scroll lock, Esc to close, `min-h-[44px]` touch targets, `aria-expanded/haspopup` preserved.
+*   **Toast & skip link (`App.tsx`):** `bg-ink-50` page, `selection:forest`, `skip-link` → `#main-content` with `tabIndex=-1`, toast uses `animate-fadeIn` + dismiss button (no `animate-bounce`), `selection:forest`.
+*   **Real workflow (`HomePage.tsx`):** Hero search now wired to `?search=` via `useNavigate` — `handleHeroSearch` encodes trimmed query and navigates to `/find-skill?search=...` (or plain `/find-skill`). `FindSkillPage.tsx` already syncs `search` via `useSearchParams` + `debounce`, so typing “Tailoring” now yields filtered results — dead-end fixed. Added `role="search"` + `aria-label`, helper text “Try: ‘Tailoring’ → filtered results instantly.”
+*   **Single-primary hierarchy (hero CTAs):** Hero now has one primary `Browse All Skills` (`bg-forest-700` forest), one secondary `Teach on iSkillLink` (`bg-white`), and tertiary text link `Submit Custom Request →` (no competing third button). Trust strip updated to `forest-400`/`ink` tokens and `13px` labels.
+*   **Consistent containers (`App.tsx`, `HomePage.tsx`, `FindSkillPage.tsx`):** Hero uses `container-app`, FindSkill outer uses `container-app`, spacing uses `section-stack` / `space-y-6`, header card uses `rounded-card border-ink-200 shadow-level-1`, heading uses `font-display` + `text-[13px]` body.
+
+**Innovation intentionally left open for Phases 3–5:**
+*   Final storytelling and social-proof structure in the hero (copy, illustration, metrics) — system guarantees clarity, narrative can be A/B tested
+*   Whether filters live as sidebar + drawer, bottom sheet, or progressive disclosure — requirement is discoverability, Phase 4 will refine
+*   How dashboards and profile tabs become a shared `Tabs` primitive — to be standardized in Phase 3
+
+**Files changed in this phase:**
+`src/components/Navbar.tsx`, `src/App.tsx`, `src/pages/HomePage.tsx`, `src/pages/FindSkillPage.tsx`
+
+**Verified:** `npm run build` passes (1631 modules, ~63.8kB css), hero “Solar” query routes to `/find-skill?search=Solar` and displays filtered state, nav remains visible on scroll, mobile menu traps focus and respects Esc/backdrop, no route regressions.
+
+**Next:** Phase 3 — Page & Component Redesign (credible profiles, usable forms, transparent booking/escrow).
+
 ### ⏳ Phase 3 — Pages: Not started
 ### ⏳ Phase 4 — Responsive: Not started
 ### ⏳ Phase 5 — Polish: Not started
