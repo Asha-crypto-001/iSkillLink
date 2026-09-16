@@ -23,9 +23,40 @@ import {
   requirePrimaryAdmin,
   requireSelfOrAdmin
 } from './middleware/auth.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const PORT: number = Number(process.env.PORT) || 3001;
+
+// Ensure upload directory exists (6.4 Binary Media Upload Pipeline)
+const UPLOAD_DIR = path.join(__dirname, '../public/uploads/avatars');
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    const name = `avatar-${Date.now()}-${Math.random().toString(36).slice(2,6)}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'));
+  }
+});
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // HTTP Security Headers via Helmet
 app.use(helmet({
@@ -343,6 +374,23 @@ app.patch('/api/users/:id', authenticateToken, requireSelfOrAdmin(req => String(
   }
 
   res.json({ user: sanitizeUser(updatedUser) });
+});
+
+// 6.4 Binary Media Upload Pipeline — multipart handling, store file path not Base64
+app.post('/api/uploads/avatar', authenticateToken, upload.single('avatar'), (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No image file provided. Field name must be \"avatar\".' });
+  }
+  const relativeUrl = `/uploads/avatars/${req.file.filename}`;
+  // Optionally update user if userId provided in body and authorized
+  const userId = (req.body.userId as string) || req.user?.id;
+  if (userId) {
+    const user = db.findUserById(String(userId));
+    if (user && (req.user?.id === String(userId) || req.user?.role === 'admin' || req.user?.is_primary_admin)) {
+      db.updateUser(String(userId), { avatar_url: relativeUrl });
+    }
+  }
+  res.json({ success: true, url: relativeUrl, filename: req.file.filename, size: req.file.size });
 });
 
 // ==========================================

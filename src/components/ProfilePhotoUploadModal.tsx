@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import {
   Camera, Upload, X, Check, Image as ImageIcon,
   Sparkles, RefreshCw, AlertCircle
@@ -29,6 +30,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
 }) => {
   const { user, updateAvatar } = useAuth();
   const [selectedImage, setSelectedImage] = useState<string>(user?.avatar_url || '');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [urlInput, setUrlInput] = useState<string>('');
   const [tab, setTab] = useState<'upload' | 'url' | 'presets'>('upload');
   const [isSaving, setIsSaving] = useState(false);
@@ -38,7 +40,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
 
   if (!isOpen) return null;
 
-  // Process uploaded image and compress to square data URL
+  // Process uploaded image — compress via canvas and prepare binary file for multipart upload (6.4)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMsg('');
     setSuccessMsg('');
@@ -49,6 +51,8 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
       setErrorMsg('Please select a valid image file (JPEG, PNG, or WebP).');
       return;
     }
+    // Keep original file for binary upload pipeline; preview via compressed canvas
+    setSelectedFile(file);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -83,7 +87,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
   };
 
   const handleSave = async () => {
-    if (!selectedImage) {
+    if (!selectedImage && !selectedFile) {
       setErrorMsg('Please upload or choose a photo first.');
       return;
     }
@@ -91,12 +95,23 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
     setIsSaving(true);
     setErrorMsg('');
     try {
-      await updateAvatar(selectedImage);
+      let avatarUrl = selectedImage;
+      // If a binary file was selected, upload via multipart pipeline (6.4) and use returned file path
+      if (selectedFile) {
+        const uploadRes = await api.uploadAvatar(selectedFile, user?.id);
+        if (uploadRes.success && uploadRes.url) {
+          avatarUrl = uploadRes.url;
+        } else if (selectedImage) {
+          avatarUrl = selectedImage;
+        }
+      }
+      await updateAvatar(avatarUrl);
       setSuccessMsg('Profile picture updated successfully!');
-      if (onUpdated) onUpdated(selectedImage);
+      if (onUpdated) onUpdated(avatarUrl);
       setTimeout(() => {
         onClose();
         setSuccessMsg('');
+        setSelectedFile(null);
       }, 1000);
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to update photo. Please try again.');

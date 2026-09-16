@@ -15,7 +15,7 @@
 | **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟢 Completed |
 | **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟢 Completed |
 | **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟢 Completed |
-| **Iteration 6** | Code Modularization & Architecture Cleanup | Component Decomposition, Reusable UI, Schema Migration | 🟢 In Progress |
+| **Iteration 6** | Code Modularization & Architecture Cleanup | Component Decomposition, Reusable UI, Schema Migration | 🟢 Completed |
 
 ---
 
@@ -158,11 +158,11 @@
     - `Button.tsx`: Consistent button variants (Primary, Secondary, Outline, Danger, Ghost).
     - `EmptyState.tsx`: Reusable zero-data illustration and action component.
 
-- [ ] **6.4 Binary Media Upload Pipeline**
+- [x] **6.4 Binary Media Upload Pipeline**
   - Replace canvas-generated Base64 image strings with multipart binary upload handling.
   - Store relative file paths or cloud storage URLs in the database to protect storage quotas.
 
-- [ ] **6.5 Relational Database Migration**
+- [x] **6.5 Relational Database Migration**
   - Transition runtime storage from `iskilllink_db.json` to an embedded SQLite database (development) or managed PostgreSQL cluster (production) utilizing `database/schema.sql`.
 
 ---

@@ -1180,5 +1180,27 @@ export const api = {
     subs.unshift(newSub);
     setLocalStorageData('newsletter_subscribers', subs);
     return { success: true, subscriber: newSub };
+  },
+
+  async uploadAvatar(file: File, userId?: string) {
+    try {
+      const form = new FormData();
+      form.append('avatar', file);
+      if (userId) form.append('userId', userId);
+      const token = getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}/uploads/avatar`, {
+        method: 'POST',
+        headers,
+        body: form
+      });
+      if (res.ok) {
+        const data = await handleResponse<{ success: boolean; url: string }>(res);
+        return data;
+      }
+    } catch {}
+    // Fallback: return object URL for local preview (not persisted)
+    return { success: false, url: URL.createObjectURL(file) };
   }
 };
