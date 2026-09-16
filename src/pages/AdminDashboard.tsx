@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   AdminMetrics, Educator, LearnerRequest, Booking,
@@ -32,7 +33,18 @@ type AdminTab =
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<AdminTab>('metrics');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const getActiveTab = (): AdminTab => {
+    const seg = location.pathname.split('/')[3] as AdminTab;
+    if (['metrics','users','interests','verification','matchmaker','educators','payments','audit'].includes(seg)) return seg;
+    return 'metrics';
+  };
+  const activeTab = getActiveTab();
+  const setActiveTab = (tab: AdminTab) => {
+    if (tab === 'metrics') navigate('/dashboard/admin');
+    else navigate(`/dashboard/admin/${tab}`);
+  };
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [demandData, setDemandData] = useState<any>(null);

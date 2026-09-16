@@ -57,7 +57,7 @@
   - Support parameterized educator profiles (`/educators/:id`) allowing learners to share direct profile links via WhatsApp or social media.
   - Sync catalog filters (category, format, location, price, rating) with URL query parameters (`/find-skill?category=fashion&location=mbarara`).
 
-- [ ] **2.3 Dashboard Nested Routes & Active State**
+- [x] **2.3 Dashboard Nested Routes & Active State**
   - Support nested routes for user portals (`/dashboard/learner/bookings`, `/dashboard/educator/earnings`, `/dashboard/admin/verification`).
   - Ensure page refreshes retain the active dashboard tab and prevent unwanted navigation back to the homepage.
 

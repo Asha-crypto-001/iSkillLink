@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Educator, Booking, Review, LearnerRequest, Payment, Message } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -18,8 +19,19 @@ interface EducatorDashboardProps {
 export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   const { user, educatorProfile } = useAuth();
   const educatorId = educatorProfile?.id || 'edu-1';
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'earnings' | 'reviews' | 'profile'>('overview');
+  const getActiveTab = (): 'overview' | 'bookings' | 'leads' | 'earnings' | 'reviews' | 'profile' => {
+    const seg = location.pathname.split('/')[3];
+    if (['bookings','leads','earnings','reviews','profile'].includes(seg)) return seg as any;
+    return 'overview';
+  };
+  const activeTab = getActiveTab();
+  const setActiveTab = (tab: 'overview' | 'bookings' | 'leads' | 'earnings' | 'reviews' | 'profile') => {
+    if (tab === 'overview') navigate('/dashboard/educator');
+    else navigate(`/dashboard/educator/${tab}`);
+  };
   const [educator, setEducator] = useState<Educator | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);

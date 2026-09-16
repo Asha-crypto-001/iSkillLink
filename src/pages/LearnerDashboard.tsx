@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Booking, LearnerRequest, Payment, Review, Message, Educator } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -24,8 +25,19 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 }) => {
   const { user, learnerProfile } = useAuth();
   const learnerId = learnerProfile?.id || (user?.role === 'learner' ? 'lrn-1' : 'lrn-1');
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'bookings' | 'payments' | 'messages' | 'reviews' | 'profile'>('overview');
+  const getActiveTab = (): 'overview' | 'requests' | 'bookings' | 'payments' | 'messages' | 'reviews' | 'profile' => {
+    const seg = location.pathname.split('/')[3];
+    if (['requests','bookings','payments','messages','reviews','profile'].includes(seg)) return seg as any;
+    return 'overview';
+  };
+  const activeTab = getActiveTab();
+  const setActiveTab = (tab: 'overview' | 'requests' | 'bookings' | 'payments' | 'messages' | 'reviews' | 'profile') => {
+    if (tab === 'overview') navigate('/dashboard/learner');
+    else navigate(`/dashboard/learner/${tab}`);
+  };
   const [requests, setRequests] = useState<LearnerRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
