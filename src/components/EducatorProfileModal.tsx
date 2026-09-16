@@ -26,10 +26,10 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
   const name = educator.user?.name || 'Educator';
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Modal Header */}
-        <div className="relative bg-slate-900 text-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
+        {/* Modal Header — pinned */}
+        <div className="shrink-0 relative bg-slate-900 text-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
@@ -101,8 +101,8 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 px-6 sm:px-8 bg-gray-50 flex space-x-6 text-xs font-semibold">
+        {/* Tab Navigation — pinned */}
+        <div className="shrink-0 border-b border-gray-200 px-6 sm:px-8 bg-gray-50 flex space-x-6 text-xs font-semibold overflow-x-auto">
           <button
             onClick={() => setActiveTab('overview')}
             className={`py-3.5 border-b-2 transition ${
@@ -348,8 +348,8 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
           )}
         </div>
 
-        {/* Modal Sticky Bottom Action */}
-        <div className="p-4 sm:px-8 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-4">
+        {/* Modal Sticky Bottom Action — pinned */}
+        <div className="shrink-0 p-4 sm:px-8 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-4">
           <div className="text-xs text-gray-700 hidden sm:block">
             Protected by iSkillLink Escrow • Satisfaction Guarantee
           </div>

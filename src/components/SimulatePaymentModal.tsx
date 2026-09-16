@@ -52,10 +52,10 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
+        {/* Header — pinned */}
+        <div className="shrink-0 bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-emerald-400" />
             <div>
@@ -72,7 +72,8 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
         </div>
 
         {step === 'input' && (
-          <form onSubmit={handleInitiate} className="p-6 space-y-4">
+          <form onSubmit={handleInitiate} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {errorMsg && (
               <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -179,17 +180,18 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
               </span>
             </div>
 
-            <div className="pt-2 flex items-center justify-end gap-3">
+            </div>
+            <div className="shrink-0 p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className="px-4 py-2.5 text-xs font-semibold rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5"
+                className="px-5 py-2.5 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5"
               >
                 <span>Deposit {formatUGX(total)} into Escrow</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -199,7 +201,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
         )}
 
         {step === 'prompt_simulation' && (
-          <div className="p-8 text-center space-y-4">
+          <div className="flex-1 overflow-y-auto p-8 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto animate-bounce">
               <Smartphone className="w-8 h-8" />
             </div>
@@ -217,7 +219,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
         )}
 
         {step === 'confirmed' && (
-          <div className="p-6 text-center space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 text-center space-y-4">
             <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>

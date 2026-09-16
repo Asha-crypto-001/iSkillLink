@@ -12,7 +12,7 @@
 | :--- | :--- | :--- | :--- |
 | **Iteration 1** | Security Hardening & Session Integrity | Auth, Password Hashing, JWT, Server Authorization | 🟢 Completed |
 | **Iteration 2** | URL Routing & Navigation Architecture | Declarative Routes, Deep Linking, History Management | 🟢 Completed |
-| **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🔵 In Progress |
+| **Iteration 3** | Mobile Experience & Responsive Layouts | Viewport Overflows, Touch Drawers, Responsive Cards | 🟢 Completed |
 | **Iteration 4** | Form Usability & Input Validation | Step Validation, Search Debounce, Date Constraints | 🟡 Planned |
 | **Iteration 5** | Accessibility (a11y) & Interaction Design | Focus Traps, ARIA Semantics, WCAG Contrast Ratios | 🟡 Planned |
 | **Iteration 6** | Code Modularization & Architecture Cleanup | Component Decomposition, Reusable UI, Schema Migration | 🟢 In Progress |
@@ -78,11 +78,11 @@
   - Refactor top heritage ribbon to collapse gracefully on mobile viewports, recovering 30–40px of vertical viewing space.
   - Implement scroll-direction awareness to auto-hide the top bar on scroll down and reveal on scroll up.
 
-- [ ] **3.3 Modal Viewport Fitting**
+- [x] **3.3 Modal Viewport Fitting**
   - Pin modal headers and footers while granting the modal body an independent scrollable container (`max-h-[90vh] flex flex-col`).
   - Ensure booking and application action buttons remain easily reachable above mobile on-screen keyboards.
 
-- [ ] **3.4 Mobile Filter Drawer Ergonomics**
+- [x] **3.4 Mobile Filter Drawer Ergonomics**
   - Implement body scroll locking (`overflow: hidden`) when mobile filter drawers are toggled.
   - Add smooth slide-in and slide-out transitions with clear backdrop dimming.
 

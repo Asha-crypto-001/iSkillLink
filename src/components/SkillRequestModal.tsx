@@ -86,10 +86,10 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
+        {/* Header — pinned */}
+        <div className="shrink-0 bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div>
             <span className="text-[10px] uppercase tracking-wider font-bold bg-emerald-900/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700">
               Personalized Learning Match
@@ -107,7 +107,8 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
         </div>
 
         {step === 'form' ? (
-          <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {errorMsg && (
               <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -289,19 +290,20 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
               </div>
             </div>
 
-            {/* Submit */}
-            <div className="pt-3 flex items-center justify-end gap-3">
+            </div>
+            {/* Footer — pinned */}
+            <div className="shrink-0 p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className="px-4 py-2.5 text-xs font-semibold rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2.5 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <span>Evaluating Matches...</span>
@@ -315,8 +317,9 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
             </div>
           </form>
         ) : (
-          /* Matches Result View */
-          <div className="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+          /* Matches Result View — flex column with scrollable body + pinned footer */
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
             <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
               <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -389,10 +392,11 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
               </div>
             )}
 
-            <div className="pt-2 flex items-center justify-end">
+            </div>
+            <div className="shrink-0 p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
               <button
                 onClick={onClose}
-                className="px-5 py-2 text-xs font-bold rounded-lg bg-slate-900 text-white hover:bg-slate-800"
+                className="px-5 py-2.5 text-xs font-bold rounded-lg bg-slate-900 text-white hover:bg-slate-800"
               >
                 Go to Dashboard
               </button>
