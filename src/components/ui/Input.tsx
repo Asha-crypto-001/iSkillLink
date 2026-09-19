@@ -17,7 +17,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <input
           ref={ref}
-          className={`w-full min-h-[44px] bg-white text-[13px] font-medium text-ink-900 placeholder:text-ink-400 rounded-control border px-3.5 py-2.5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 disabled:bg-ink-50 disabled:text-ink-500 disabled:cursor-not-allowed
+          className={`w-full min-h-[44px] bg-white text-[13px] font-medium text-ink-900 placeholder:text-ink-500 rounded-control border px-3.5 py-2.5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 disabled:bg-ink-50 disabled:text-ink-500 disabled:cursor-not-allowed
           ${leftIcon ? 'pl-10' : ''}
           ${rightElement ? 'pr-10' : ''}
           ${error ? 'border-rose-300 bg-rose-50/50 focus:ring-rose-500 focus:border-rose-500' : 'border-ink-200 hover:border-ink-300'}

@@ -10,9 +10,7 @@
 
 Unlike passive video courses, iSkillLink focuses on **direct 1-on-1 and small group practical mentorship**, workshop safety inspections, transparent rule-based matching, and **Mobile Money Escrow (MTN MoMo & Airtel Money)** that protects both learners and educators.
 
-For the active architecture and engineering roadmap, consult the [Platform Improvement Tracker](IMPROVEMENTS.md).
-
-> **Progress — Sep 2026:** ✅ **Phase 1 Foundation** — tokens & primitives. ✅ **Phase 2 Core UX** — stable nav, wired search. ✅ **Phase 3 Pages — whole phase complete at once** — EducatorCard/ ProfileModal/ Booking & SkillRequest Modals → Modal+Field, Contact + BecomeEducator Step 1 + Auth (email/password/name/phone/location) → Field, EducatorProfilePage + Dashboards + HowItWorks/About/Home → Card/Badge/container-app, token-unified (ink/forest). Build verified. See `IMPROVEMENTS.md` → Progress Log.
+> **Status — Production Ready:** Design system unified, responsive excellence delivered, states & accessibility polished. Built for real hands-on apprenticeships in Mbarara & across Uganda.
 
 ---
 

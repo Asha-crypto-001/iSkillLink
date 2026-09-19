@@ -94,7 +94,7 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
         </div>
       </div>
 
-      <div className="px-5 py-3.5 bg-ink-50 border-t border-ink-100 flex items-center justify-between gap-3">
+      <div className="px-5 py-3.5 bg-ink-50 border-t border-ink-100 flex items-center justify-between gap-3 pb-safe sm:pb-3.5">
         <div>
           <span className="text-[11px] text-ink-600 uppercase font-bold tracking-wider block">Rate</span>
           <span className="text-[15px] font-bold text-ink-900 font-display">
@@ -106,18 +106,20 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            size="sm"
+            size="md"
             onClick={() => onViewProfile(educator)}
-            className="min-h-[36px] px-3.5"
+            className="min-h-[44px] px-4"
+            aria-label={`View profile of ${name}`}
           >
             View Profile
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => onRequestBooking(educator)}
             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-            className="min-h-[36px] px-3.5"
+            className="min-h-[44px] px-4 shadow-soft"
+            aria-label={`Book session with ${name}`}
           >
             Learn
           </Button>

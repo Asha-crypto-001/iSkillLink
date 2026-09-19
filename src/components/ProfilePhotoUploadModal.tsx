@@ -5,6 +5,8 @@ import {
   Camera, Upload, X, Check, Image as ImageIcon,
   Sparkles, RefreshCw, AlertCircle
 } from 'lucide-react';
+import { Modal } from './ui/Modal';
+import { Button } from './ui/Button';
 
 interface ProfilePhotoUploadModalProps {
   isOpen: boolean;
@@ -38,6 +40,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
   const [successMsg, setSuccessMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Phase 5 polish: ensure dialog handles Esc/focus via Modal wrapper when open
   if (!isOpen) return null;
 
   // Process uploaded image — compress via canvas and prepare binary file for multipart upload (6.4)
@@ -121,24 +124,24 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden">
+    <Modal isOpen={isOpen} onClose={onClose} titleId="photo-upload-title" title="Update Profile Picture" maxWidth="max-w-md">
         {/* Header — pinned */}
-        <div className="shrink-0 px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="shrink-0 px-6 py-4 border-b border-ink-100 flex items-center justify-between bg-ink-50/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-control bg-forest-100 text-forest-800 flex items-center justify-center font-bold" aria-hidden="true">
               <Camera className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900">Update Profile Picture</h3>
-              <p className="text-[11px] text-gray-500">
+              <h3 id="photo-upload-title" className="text-sm font-bold text-ink-900 font-display">Update Profile Picture</h3>
+              <p className="text-[11px] text-ink-600">
                 {user?.name} ({user?.role?.toUpperCase()})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
+            className="p-2 min-h-[44px] min-w-[44px] rounded-control text-ink-400 hover:text-ink-600 hover:bg-ink-100 transition focus-visible:ring-2 focus-visible:ring-forest-700 flex items-center justify-center"
+            aria-label="Close photo upload"
           >
             <X className="w-4 h-4" />
           </button>
@@ -146,17 +149,17 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
 
         {/* Content — scrollable */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Messages */}
+          {/* Messages — Phase 5: explicit roles, dismissible */}
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-800 text-[13px] flex items-center gap-2" role="alert" aria-live="assertive">
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-              <Check className="w-4 h-4 shrink-0" />
+            <div className="p-3 rounded-control bg-forest-50 border border-forest-200 text-forest-800 text-[13px] flex items-center gap-2" role="status" aria-live="polite">
+              <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{successMsg}</span>
             </div>
           )}
@@ -293,36 +296,15 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           )}
         </div>
 
-        {/* Footer Actions — pinned */}
-        <div className="shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSaving}
-            className="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 transition"
-          >
+        {/* Footer Actions — pinned + safe-area */}
+        <div className="shrink-0 px-6 py-4 bg-ink-50 border-t border-ink-100 flex items-center justify-end gap-3 pb-safe">
+          <Button variant="ghost" size="md" type="button" onClick={onClose} disabled={isSaving}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving || !selectedImage}
-            className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm transition disabled:opacity-50 flex items-center gap-1.5"
-          >
-            {isSaving ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Check className="w-3.5 h-3.5" />
-                <span>Save Profile Photo</span>
-              </>
-            )}
-          </button>
+          </Button>
+          <Button variant="primary" size="md" type="button" onClick={handleSave} disabled={isSaving || !selectedImage} isLoading={isSaving} leftIcon={<Check className="w-3.5 h-3.5" aria-hidden="true" />}>
+            Save Profile Photo
+          </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

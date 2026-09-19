@@ -1,6 +1,7 @@
 import React from 'react';
 import { Educator } from '../../types';
-import { formatUGX, getStatusBadgeClass } from '../../utils/formatters';
+import { formatUGX } from '../../utils/formatters';
+import { StatusBadge } from '../../components/ui/Badge';
 import { Check, ShieldCheck, UserCheck } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 
@@ -81,9 +82,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-gray-700">1. National ID (NIN)</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border capitalize ${getStatusBadgeClass(v?.national_id_status || 'pending')}`}>
-                        {v?.national_id_status || 'pending'}
-                      </span>
+                      <StatusBadge status={v?.national_id_status || 'pending'} />
                     </div>
                     <div className="font-mono text-[11px] text-gray-600">{v?.national_id_number || 'CM-NOT-SUBMITTED'}</div>
                     <button
@@ -98,9 +97,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-gray-700">2. Police / BG Check</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border capitalize ${getStatusBadgeClass(v?.background_check_status || 'pending')}`}>
-                        {v?.background_check_status || 'pending'}
-                      </span>
+                      <StatusBadge status={v?.background_check_status || 'pending'} />
                     </div>
                     <div className="text-[11px] text-gray-500">LC1 & Police clearance</div>
                     <button
@@ -115,9 +112,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-gray-700">3. Practical Interview</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border capitalize ${getStatusBadgeClass(v?.interview_status || 'pending')}`}>
-                        {v?.interview_status || 'pending'}
-                      </span>
+                      <StatusBadge status={v?.interview_status || 'pending'} />
                     </div>
                     <div className="text-[11px] text-gray-500">Phone or in-person review</div>
                     <button
@@ -132,9 +127,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-gray-700">4. Skill Assessment</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border capitalize ${getStatusBadgeClass(v?.skill_assessment_status || 'pending')}`}>
-                        {v?.skill_assessment_status || 'pending'}
-                      </span>
+                      <StatusBadge status={v?.skill_assessment_status || 'pending'} />
                     </div>
                     <div className="text-[11px] text-gray-500">Workshop & tools review</div>
                     <button

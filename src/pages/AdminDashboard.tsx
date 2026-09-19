@@ -310,8 +310,8 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm overflow-x-auto flex space-x-1">
+      {/* Navigation Tabs — Phase 4: 44px, snap, no squeeze */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Admin operations sections">
         {[
           { id: 'metrics', label: 'Platform Metrics', icon: ShieldCheck },
           { id: 'users', label: `User Directory & Contacts (${allUsers.length})`, icon: Users },
@@ -323,17 +323,20 @@ export const AdminDashboard: React.FC = () => {
           { id: 'audit', label: `Audit Trail (${auditLogs.length})`, icon: FileText }
         ].map(tab => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setActiveTab(tab.id as AdminTab)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id
+              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                isActive
                   ? 'bg-slate-900 text-white shadow'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );

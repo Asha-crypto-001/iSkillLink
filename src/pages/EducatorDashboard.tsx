@@ -3,8 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Educator, Booking, Review, LearnerRequest, Payment, Message } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { formatUGX, formatShortDate, getStatusBadgeClass } from '../utils/formatters';
+import { formatUGX, formatShortDate } from '../utils/formatters';
+import { StatusBadge } from '../components/ui/Badge';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
+import { Skeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import {
   GraduationCap, Calendar, Clock, DollarSign, Star,
   MessageSquare, Settings, ShieldCheck, CheckCircle2,
@@ -111,14 +114,32 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     .filter(p => p.status === 'paid' || p.status === 'completed')
     .reduce((sum, p) => sum + p.payout_amount_ugx, 0);
 
+  if (loading) {
+    return (
+      <div className="container-app py-6 space-y-6" aria-busy="true" aria-live="polite">
+        <div className="h-32 rounded-3xl bg-white border border-ink-200 shadow-level-1 relative overflow-hidden">
+          <Skeleton className="w-full h-full" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-card" />)}
+        </div>
+        <div className="p-8 rounded-card border border-ink-200 bg-white">
+          <Skeleton className="h-6 w-48 mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-5/6" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container-app py-6 space-y-6">
       <nav aria-label="Breadcrumb" className="text-xs">
         <ol className="flex items-center gap-1.5 text-ink-500">
-          <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-forest-700 font-medium">Home</a></li>
-          <li className="text-ink-400">›</li>
-          <li><a href="/dashboard/educator" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/educator');}} className="hover:text-forest-700 font-medium">Dashboard</a></li>
-          <li className="text-ink-400">›</li>
+          <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Home</a></li>
+          <li className="text-ink-400" aria-hidden="true">›</li>
+          <li><a href="/dashboard/educator" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/educator');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Dashboard</a></li>
+          <li className="text-ink-400" aria-hidden="true">›</li>
           <li className="text-ink-900 font-semibold capitalize">{activeTab}</li>
         </ol>
       </nav>
@@ -177,8 +198,8 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-card border border-ink-200 p-2 shadow-level-1 overflow-x-auto flex space-x-1">
+      {/* Navigation Tabs — Phase 4: snap, 44px, thumb-reach */}
+      <div className="bg-white rounded-card border border-ink-200 p-2 shadow-level-1 overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Educator dashboard sections">
         {[
           { id: 'overview', label: 'Overview', icon: GraduationCap },
           { id: 'bookings', label: `Bookings (${bookings.length})`, icon: Calendar },
@@ -188,17 +209,20 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           { id: 'profile', label: 'Workshop & Rates', icon: Settings }
         ].map(tab => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 rounded-card text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id
+              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-card text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                isActive
                   ? 'bg-forest-700 text-white shadow'
                   : 'text-ink-600 hover:text-ink-900 hover:bg-ink-50'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );
@@ -270,16 +294,16 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                       {b.notes && <p className="text-xs text-ink-500 italic mt-0.5">"{b.notes}"</p>}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')}
-                        className="px-4 py-2 rounded-lg bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-level-1"
+                        className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-level-1"
                       >
                         Accept & Confirm
                       </button>
                       <button
                         onClick={() => handleUpdateBookingStatus(b.id, 'declined')}
-                        className="px-4 py-2 rounded-lg bg-ink-50 hover:bg-gray-200 text-ink-700 font-semibold text-xs"
+                        className="px-4 py-2.5 min-h-[44px] rounded-control bg-ink-50 hover:bg-ink-100 text-ink-700 font-bold text-xs border border-ink-200"
                       >
                         Decline
                       </button>
@@ -314,9 +338,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-ink-900 text-base">{b.skill_name}</h3>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(b.status)}`}>
-                        {b.status.replace('_', ' ')}
-                      </span>
+                      <StatusBadge status={b.status} />
                     </div>
                     <div className="text-xs text-ink-600 mt-1">
                       Learner: <strong className="text-ink-900">{b.learnerUser?.name || 'Registered Student'}</strong> {b.learnerUser?.phone ? `(${b.learnerUser.phone})` : ''}
@@ -457,9 +479,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     <td className="p-3 text-ink-500">{formatUGX(p.platform_fee_ugx)}</td>
                     <td className="p-3 font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded border font-bold capitalize ${getStatusBadgeClass(p.status)}`}>
-                        {p.status.replace('_', ' ')}
-                      </span>
+                      <StatusBadge status={p.status} />
                     </td>
                     <td className="p-3 text-ink-500">{formatShortDate(p.created_at)}</td>
                   </tr>
@@ -473,7 +493,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
               <div key={p.id} className="p-4 rounded-card border border-ink-200 bg-white shadow-level-1 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-xs text-ink-900">{p.payment_reference}</span>
-                  <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(p.status)}`}>{p.status.replace('_', ' ')}</span>
+                  <StatusBadge status={p.status} />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div><span className="text-ink-500">Gross:</span> <span className="font-bold">{formatUGX(p.amount_ugx)}</span></div>

@@ -265,11 +265,11 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
             </div>
 
             </div>
-            <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3">
-              <Button variant="outline" size="sm" type="button" onClick={onClose}>
+            <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3 pb-safe">
+              <Button variant="outline" size="md" type="button" onClick={onClose}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" type="submit" isLoading={isSubmitting} rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+              <Button variant="primary" size="md" type="submit" isLoading={isSubmitting} rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                 Submit & Find Verified Matches
               </Button>
             </div>
@@ -350,8 +350,8 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
             )}
 
             </div>
-            <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-100 flex items-center justify-end">
-              <Button variant="secondary" size="sm" onClick={onClose}>
+            <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-100 flex items-center justify-end pb-safe">
+              <Button variant="secondary" size="md" onClick={onClose}>
                 Go to Dashboard
               </Button>
             </div>

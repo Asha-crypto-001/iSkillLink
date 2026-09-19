@@ -1,6 +1,7 @@
 import React from 'react';
 import { LearnerRequest, MatchEvaluation } from '../../types';
-import { formatUGX, getStatusBadgeClass } from '../../utils/formatters';
+import { formatUGX } from '../../utils/formatters';
+import { StatusBadge } from '../../components/ui/Badge';
 import { CheckCircle2 } from 'lucide-react';
 
 interface AdminMatchmakerTabProps {
@@ -51,9 +52,7 @@ export const AdminMatchmakerTab: React.FC<AdminMatchmakerTabProps> = ({
               >
                 <div className="flex items-center justify-between font-bold">
                   <span>{req.skill_name}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded border capitalize ${getStatusBadgeClass(req.status)}`}>
-                    {req.status}
-                  </span>
+                  <StatusBadge status={req.status} />
                 </div>
                 <div className="text-[11px] text-gray-600 mt-1">
                   {req.learner_name} • {req.location}

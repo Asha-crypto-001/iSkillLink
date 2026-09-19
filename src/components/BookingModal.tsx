@@ -250,11 +250,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           </div>
-          <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3">
-            <Button variant="outline" size="sm" type="button" onClick={onClose}>
+          <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3 pb-safe">
+            <Button variant="outline" size="md" type="button" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit" isLoading={isSubmitting} leftIcon={<CheckCircle2 className="w-4 h-4" />}>
+            <Button variant="primary" size="md" type="submit" isLoading={isSubmitting} leftIcon={<CheckCircle2 className="w-4 h-4" />}>
               Confirm & Send Request
             </Button>
           </div>

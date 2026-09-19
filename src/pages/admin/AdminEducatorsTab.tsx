@@ -1,6 +1,7 @@
 import React from 'react';
 import { Educator } from '../../types';
-import { formatUGX, getStatusBadgeClass } from '../../utils/formatters';
+import { formatUGX } from '../../utils/formatters';
+import { StatusBadge } from '../../components/ui/Badge';
 
 interface AdminEducatorsTabProps {
   educators: Educator[];
@@ -28,9 +29,7 @@ export const AdminEducatorsTab: React.FC<AdminEducatorsTabProps> = ({ educators 
               <div>
                 <h3 className="font-bold text-xs text-gray-900">{edu.user?.name}</h3>
                 <div className="text-[11px] text-gray-500">{edu.title}</div>
-                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border uppercase mt-1 inline-block ${getStatusBadgeClass(edu.status)}`}>
-                  {edu.status}
-                </span>
+                <StatusBadge status={edu.status} />
               </div>
             </div>
 

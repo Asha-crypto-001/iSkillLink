@@ -1,6 +1,7 @@
 import React from 'react';
 import { LearnerRequest } from '../../types';
-import { formatUGX, formatShortDate, getStatusBadgeClass } from '../../utils/formatters';
+import { formatUGX, formatShortDate } from '../../utils/formatters';
+import { StatusBadge } from '../../components/ui/Badge';
 
 interface AdminInterestsTabProps {
   demandData: any;
@@ -114,9 +115,7 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
                     </div>
                   </td>
                   <td className="p-3">
-                    <span className={`px-2 py-0.5 rounded border font-bold capitalize ${getStatusBadgeClass(r.status)}`}>
-                      {r.status}
-                    </span>
+                    <StatusBadge status={r.status} />
                   </td>
                   <td className="p-3 text-gray-500">{formatShortDate(r.created_at)}</td>
                 </tr>
@@ -129,7 +128,7 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
             <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-sm text-gray-900">{r.learner_name}</span>
-                <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(r.status)}`}>{r.status}</span>
+                <StatusBadge status={r.status} />
               </div>
               <div className="text-xs font-semibold text-emerald-950">{r.skill_name} • {r.location}</div>
               <div className="grid grid-cols-2 gap-2 text-xs">

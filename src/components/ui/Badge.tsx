@@ -55,3 +55,19 @@ export const Badge: React.FC<BadgeProps> = ({
 };
 
 export default Badge;
+
+// Phase 5 polish: single status taxonomy — maps any backend status to a single Badge variant (not color-only)
+export function statusToBadgeVariant(status: string): BadgeVariant {
+  const s = status?.toLowerCase() ?? '';
+  if (['active','approved','completed','paid','verified','success'].includes(s)) return 'success';
+  if (['in_progress','confirmed','payment_requested','matched','scheduled','info'].includes(s)) return 'info';
+  if (['pending','applied','under_review','verification','open','suggested','warning'].includes(s)) return 'warning';
+  if (['declined','failed','refunded','cancelled','rejected','suspended','error'].includes(s)) return 'error';
+  return 'neutral';
+}
+
+export function StatusBadge({ status, size = 'sm' }: { status: string; size?: BadgeSize }) {
+  const variant = statusToBadgeVariant(status);
+  // Dot ensures not color-only (P0 a11y)
+  return <Badge variant={variant} size={size} dot className="capitalize">{status.replace(/_/g, ' ')}</Badge>;
+}

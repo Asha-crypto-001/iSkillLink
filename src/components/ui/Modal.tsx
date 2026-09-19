@@ -64,15 +64,19 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, titleId, title, c
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink-900/60 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-ink-900/60 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`bg-white rounded-display ${maxWidth} w-full max-h-[90vh] flex flex-col shadow-level-3 border border-ink-200 overflow-hidden animate-fadeIn`}
+        className={`bg-white rounded-t-display sm:rounded-display ${maxWidth} w-full max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-level-3 border border-ink-200 border-b-0 sm:border-b overflow-hidden animate-slideUp sm:animate-fadeIn pb-safe sm:pb-0`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile drag handle — visual cue for bottom sheet */}
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1 shrink-0" aria-hidden="true">
+          <span className="w-10 h-1.5 rounded-full bg-ink-200" />
+        </div>
         {title && <h2 id={titleId} className="sr-only">{title}</h2>}
         {children}
       </div>

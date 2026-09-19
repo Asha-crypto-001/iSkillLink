@@ -66,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
               }}
               className="flex items-center gap-3 text-left group"
             >
-              <div className="w-11 h-11 bg-white rounded-card shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <div className="w-11 h-11 bg-white rounded-card shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0 group-hover:border-forest-200 transition">
                 <img
                   src="./logo.png"
                   alt="iSkillLink Logo"

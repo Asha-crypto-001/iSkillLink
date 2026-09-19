@@ -1,6 +1,7 @@
 import React from 'react';
 import { Payment } from '../../types';
-import { formatUGX, getStatusBadgeClass } from '../../utils/formatters';
+import { formatUGX } from '../../utils/formatters';
+import { StatusBadge } from '../../components/ui/Badge';
 
 interface AdminPaymentsTabProps {
   payments: Payment[];
@@ -42,9 +43,7 @@ export const AdminPaymentsTab: React.FC<AdminPaymentsTabProps> = ({
                 <td className="p-3 text-slate-600">{formatUGX(p.platform_fee_ugx)}</td>
                 <td className="p-3 uppercase font-semibold text-emerald-900">{p.method.replace('_', ' ')}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded border font-bold capitalize ${getStatusBadgeClass(p.status)}`}>
-                    {p.status.replace('_', ' ')}
-                  </span>
+                  <StatusBadge status={p.status} />
                 </td>
                 <td className="p-3">
                   {p.status === 'paid' ? (
@@ -68,7 +67,7 @@ export const AdminPaymentsTab: React.FC<AdminPaymentsTabProps> = ({
           <div key={p.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-mono font-bold text-xs text-gray-900">{p.payment_reference}</span>
-              <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(p.status)}`}>{p.status.replace('_',' ')}</span>
+              <StatusBadge status={p.status} />
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div><span className="text-gray-500">Total:</span> <span className="font-bold">{formatUGX(p.amount_ugx)}</span></div>

@@ -96,12 +96,12 @@ export const EducatorProfilePage: React.FC = () => {
       {/* Breadcrumb & Share */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
         <Breadcrumbs items={[{ label: 'Explore Skills', to: '/find-skill' }, { label: name }]} />
-        <div className="flex items-center gap-2">
-          <button onClick={handleShare} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={handleShare} className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 text-xs font-bold">
             <Share2 className="w-3.5 h-3.5" />
             <span>{copied ? 'Link Copied!' : 'Share Profile'}</span>
           </button>
-          <button onClick={whatsappShare} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-forest-700 hover:bg-forest-800 text-white text-xs font-bold">
+          <button onClick={whatsappShare} className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white text-xs font-bold">
             <MessageCircle className="w-3.5 h-3.5" />
             <span>WhatsApp</span>
           </button>
@@ -212,7 +212,7 @@ export const EducatorProfilePage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {educator.portfolios?.map(p => (
                 <div key={p.id} className="rounded-card border border-ink-200 overflow-hidden bg-white group">
-                  <img src={p.image_url} alt={p.title} className="w-full h-48 object-cover group-hover:scale-105 transition duration-300" />
+                  <img src={p.image_url} alt={p.title} className="w-full h-48 object-cover transition duration-300" />
                   <div className="p-4"><span className="text-[11px] font-semibold uppercase text-forest-800 bg-forest-50 px-2 py-0.5 rounded">{p.tag}</span><h5 className="font-bold text-ink-900 text-sm mt-1">{p.title}</h5><p className="text-xs text-ink-800 mt-1">{p.description}</p></div>
                 </div>
               ))}

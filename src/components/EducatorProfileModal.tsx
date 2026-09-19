@@ -266,7 +266,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                   <img
                     src={p.image_url}
                     alt={p.title}
-                    className="w-full aspect-[4/3] object-cover group-hover:scale-[1.02] transition duration-300"
+                    className="w-full aspect-[4/3] object-cover transition duration-300"
                   />
                   <div className="p-4">
                     <Badge variant="success" size="sm" className="mb-1">{p.tag}</Badge>
@@ -329,16 +329,16 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
         )}
       </div>
 
-      {/* Sticky Bottom Action */}
-      <div className="shrink-0 p-4 sm:px-8 bg-ink-50 border-t border-ink-200 flex items-center justify-between gap-4">
+      {/* Sticky Bottom Action — Phase 4 safe-area + 44px */}
+      <div className="shrink-0 p-4 sm:px-8 bg-ink-50 border-t border-ink-200 flex items-center justify-between gap-4 pb-safe">
         <div className="text-xs text-ink-600 hidden sm:block">
           Protected by iSkillLink Escrow • Satisfaction Guarantee
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+          <Button variant="outline" size="md" onClick={onClose}>Close</Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => {
               onClose();
               onRequestBooking(educator);

@@ -454,65 +454,58 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                       type="button"
                       key={t.id}
                       onClick={() => setEducatorType(t.id as any)}
-                      className={`p-3 rounded-card border text-left transition ${
+                      aria-pressed={educatorType === t.id}
+                      aria-label={t.label}
+                      className={`p-3 rounded-card border text-left transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 min-h-[44px] ${
                         educatorType === t.id
                           ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold ring-2 ring-forest-500/20'
-                          : 'border-ink-200 text-ink-700 hover:bg-ink-50'
+                          : 'border-ink-200 text-ink-700 hover:bg-ink-50 active:bg-ink-100'
                       }`}
                     >
                       <div className="font-bold text-xs">{t.label}</div>
-                      <div className="text-[10px] text-ink-500 mt-0.5">{t.desc}</div>
+                      <div className="text-[10px] text-ink-600 mt-0.5">{t.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-ink-700 mb-1">
-                    Professional Headline / Title <span className="text-rose-500">*</span>
-                  </label>
-                  <input
+                <Field label="Professional Headline / Title" htmlFor="be-title" required error={fieldErrors.title}>
+                  <Input
+                    id="be-title"
                     type="text"
                     value={title}
                     onChange={(e) => { setTitle(e.target.value); if(fieldErrors.title) setFieldErrors(prev=>({...prev, title:''})); }}
                     placeholder="e.g. Master Tailor & Pattern Construction Instructor"
-                    className={`w-full text-xs rounded-lg border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none ${fieldErrors.title ? 'border-rose-300 bg-rose-50' : 'border-ink-200'}`}
+                    error={!!fieldErrors.title}
                     required
                   />
-                  {fieldErrors.title && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.title}</span>}
-                </div>
+                </Field>
 
-                <div>
-                  <label className="block text-xs font-semibold text-ink-700 mb-1">
-                    Years of Active Experience <span className="text-rose-500">*</span>
-                  </label>
-                  <input
+                <Field label="Years of Active Experience" htmlFor="be-years" required>
+                  <Input
+                    id="be-years"
                     type="number"
                     min={1}
                     max={50}
-                    value={yearsExperience}
+                    value={String(yearsExperience)}
                     onChange={(e) => setYearsExperience(Number(e.target.value))}
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
                     required
                   />
-                </div>
+                </Field>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Professional Bio & Teaching Methodology <span className="text-rose-500">*</span>
-                </label>
-                <textarea
+              <Field label="Professional Bio & Teaching Methodology" htmlFor="be-bio" required error={fieldErrors.bio}>
+                <Textarea
+                  id="be-bio"
                   rows={4}
                   value={bio}
                   onChange={(e) => { setBio(e.target.value); if(fieldErrors.bio) setFieldErrors(prev=>({...prev, bio:''})); }}
                   placeholder="Describe your background, workshops you run, techniques you specialize in, and how you teach apprentices step-by-step..."
-                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none ${fieldErrors.bio ? 'border-rose-300 bg-rose-50' : 'border-ink-200'}`}
+                  error={!!fieldErrors.bio}
                   required
                 />
-                {fieldErrors.bio && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.bio}</span>}
-              </div>
+              </Field>
             </div>
           </div>
         )}
@@ -526,29 +519,23 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Primary Skill Taught <span className="text-rose-500">*</span>
-                </label>
-                <input
+              <Field label="Primary Skill Taught" htmlFor="be-primary-skill" required error={fieldErrors.primarySkill}>
+                <Input
+                  id="be-primary-skill"
                   type="text"
                   value={primarySkill}
                   onChange={(e) => { setPrimarySkill(e.target.value); if(fieldErrors.primarySkill) setFieldErrors(prev=>({...prev, primarySkill:''})); }}
                   placeholder="e.g. Garment Pattern Drafting & Cutting"
-                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none ${fieldErrors.primarySkill ? 'border-rose-300 bg-rose-50' : 'border-ink-200'}`}
+                  error={!!fieldErrors.primarySkill}
                   required
                 />
-                {fieldErrors.primarySkill && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.primarySkill}</span>}
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Skill Category
-                </label>
-                <select
+              <Field label="Skill Category" htmlFor="be-skill-category">
+                <Select
+                  id="be-skill-category"
                   value={skillCategory}
                   onChange={(e) => setSkillCategory(e.target.value)}
-                  className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
                 >
                   <option value="cat-fashion">Fashion & Tailoring</option>
                   <option value="cat-tech">Web Dev & Programming</option>
@@ -562,53 +549,43 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   <option value="cat-design">Graphic Design & UI/UX</option>
                   <option value="cat-business">Accounting & Business</option>
                   <option value="cat-beauty">Beauty & Hair</option>
-                </select>
-              </div>
+                </Select>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Your Hourly Rate (UGX) <span className="text-rose-500">*</span>
-                </label>
-                <input
+              <Field label="Your Hourly Rate (UGX)" htmlFor="be-hourly-rate" required error={fieldErrors.hourlyRateUGX} hint={!fieldErrors.hourlyRateUGX ? `${formatUGX(hourlyRateUGX)} / hr (You receive 90% via Mobile Money)` : undefined}>
+                <Input
+                  id="be-hourly-rate"
                   type="number"
                   step={5000}
                   min={15000}
                   max={100000}
-                  value={hourlyRateUGX}
+                  value={String(hourlyRateUGX)}
                   onChange={(e) => { setHourlyRateUGX(Number(e.target.value)); if(fieldErrors.hourlyRateUGX) setFieldErrors(prev=>({...prev, hourlyRateUGX:''})); }}
-                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 ${fieldErrors.hourlyRateUGX ? 'border-rose-300 bg-rose-50' : 'border-ink-200'}`}
+                  error={!!fieldErrors.hourlyRateUGX}
                   required
                 />
-                {fieldErrors.hourlyRateUGX ? <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.hourlyRateUGX}</span> : <span className="text-[11px] text-forest-800 font-semibold mt-0.5 block">{formatUGX(hourlyRateUGX)} / hr (You receive 90% via Mobile Money)</span>}
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Course Package Rate (Optional)
-                </label>
-                <input
+              <Field label="Course Package Rate (Optional)" htmlFor="be-package-rate" hint="e.g. 4-week complete mastery package">
+                <Input
+                  id="be-package-rate"
                   type="number"
                   step={10000}
-                  value={packageRateUGX}
+                  value={String(packageRateUGX)}
                   onChange={(e) => setPackageRateUGX(Number(e.target.value))}
-                  className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
                 />
-                <span className="text-[11px] text-ink-500 mt-0.5 block">
-                  e.g. 4-week complete mastery package
-                </span>
-              </div>
+              </Field>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  What will the apprentice learn and build?
-                </label>
-                <input
-                  type="text"
-                  value={skillDescription}
-                  onChange={(e) => setSkillDescription(e.target.value)}
-                  placeholder="e.g. Drafting manual patterns, taking body measurements, making blazers and trousers."
-                  className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
-                />
+                <Field label="What will the apprentice learn and build?" htmlFor="be-skill-desc">
+                  <Input
+                    id="be-skill-desc"
+                    type="text"
+                    value={skillDescription}
+                    onChange={(e) => setSkillDescription(e.target.value)}
+                    placeholder="e.g. Drafting manual patterns, taking body measurements, making blazers and trousers."
+                  />
+                </Field>
               </div>
             </div>
           </div>
@@ -637,10 +614,11 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                       type="button"
                       key={f.id}
                       onClick={() => { toggleFormat(f.id); if(fieldErrors.teachingFormats) setFieldErrors(prev=>({...prev, teachingFormats:''})); }}
-                      className={`p-3 rounded-card border text-left transition ${
+                      aria-pressed={teachingFormats.includes(f.id)}
+                      className={`p-3 rounded-card border text-left transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 min-h-[44px] ${
                         teachingFormats.includes(f.id)
                           ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold ring-2 ring-forest-500/20'
-                          : 'border-ink-200 text-ink-600 hover:bg-ink-50'
+                          : 'border-ink-200 text-ink-600 hover:bg-ink-50 active:bg-ink-100'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -654,47 +632,38 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 {fieldErrors.teachingFormats && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.teachingFormats}</span>}
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Service Area & Divisions Covered <span className="text-rose-500">*</span>
-                </label>
-                <input
+              <Field label="Service Area & Divisions Covered" htmlFor="be-service-area" required error={fieldErrors.serviceArea}>
+                <Input
+                  id="be-service-area"
                   type="text"
                   value={serviceArea}
                   onChange={(e) => { setServiceArea(e.target.value); if(fieldErrors.serviceArea) setFieldErrors(prev=>({...prev, serviceArea:''})); }}
                   placeholder="e.g. Kampala Central, Nakawa, Makindye, Wakiso"
-                  className={`w-full text-xs rounded-lg border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 ${fieldErrors.serviceArea ? 'border-rose-300 bg-rose-50' : 'border-ink-200'}`}
+                  error={!!fieldErrors.serviceArea}
                   required
                 />
-                {fieldErrors.serviceArea && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.serviceArea}</span>}
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Workshop Tools & Equipment Provided for Students <span className="text-rose-500">*</span>
-                </label>
-                <textarea
+              <Field label="Workshop Tools & Equipment Provided" htmlFor="be-equipment" required>
+                <Textarea
+                  id="be-equipment"
                   rows={2}
                   value={equipmentProvided}
                   onChange={(e) => setEquipmentProvided(e.target.value)}
                   placeholder="e.g. Juki industrial straight machines, cutting tables, tailoring shears, brown drafting paper and measuring tapes."
-                  className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
                   required
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  General Availability
-                </label>
-                <input
+              <Field label="General Availability" htmlFor="be-availability">
+                <Input
+                  id="be-availability"
                   type="text"
                   value={availabilitySummary}
                   onChange={(e) => setAvailabilitySummary(e.target.value)}
                   placeholder="e.g. Saturdays full day, weekday evenings"
-                  className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
                 />
-              </div>
+              </Field>
             </div>
           </div>
         )}
@@ -873,14 +842,14 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
           </form>
         )}
 
-        {/* Navigation buttons for Steps 1-4 */}
+        {/* Navigation buttons for Steps 1-4 — Phase 4: 44px thumb-reach */}
         {currentStep < 5 && (
-          <div className="pt-4 border-t border-ink-100 flex items-center justify-between">
+          <div className="pt-4 border-t border-ink-100 flex items-center justify-between gap-3 pb-safe">
             {currentStep > 1 ? (
               <button
                 type="button"
                 onClick={() => setCurrentStep(prev => prev - 1)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-ink-50 text-ink-700 hover:bg-gray-200 flex items-center gap-1"
+                className="px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-control bg-ink-50 text-ink-700 hover:bg-ink-100 border border-ink-200 flex items-center gap-1.5"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Previous Step</span>
@@ -890,7 +859,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
             <button
               type="button"
               onClick={handleNextStep}
-              className="px-6 py-2.5 text-xs font-bold rounded-card bg-forest-700 hover:bg-forest-800 text-white shadow-level-1 flex items-center gap-1.5"
+              className="px-6 py-2.5 min-h-[44px] text-xs font-bold rounded-card bg-forest-700 hover:bg-forest-800 text-white shadow-level-1 flex items-center gap-1.5"
             >
               <span>Continue to Step {currentStep + 1}</span>
               <ArrowRight className="w-3.5 h-3.5" />

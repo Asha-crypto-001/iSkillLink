@@ -64,10 +64,18 @@ const AppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
 
+  const toastTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToastMessage(null), 5000);
   };
+  useEffect(() => {
+    if (!toastMessage) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setToastMessage(null); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [toastMessage]);
 
   const setCurrentView = (view: string) => {
     const path = viewToPath[view] || '/';
@@ -152,17 +160,23 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ink-50 text-ink-900 font-sans flex flex-col justify-between selection:bg-forest-100 selection:text-forest-900">
+    <div className="min-h-screen bg-ink-50 text-ink-900 font-sans flex flex-col justify-between selection:bg-forest-100 selection:text-forest-900 overflow-x-clip max-w-[100vw]">
       <a href="#main-content" className="skip-link">Skip to main content</a>
+      {/* Single accessible toast region — Phase 5 polish: dismissible, pause on hover/focus, 44px target, no double announcement */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">{toastMessage}</div>
       {toastMessage && (
-        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 right-5 z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[13px] font-semibold flex items-center gap-2 animate-fadeIn">
-          <span className="w-2 h-2 rounded-full bg-forest-400" aria-hidden="true"></span>
-          <span>{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="ml-2 p-1 rounded hover:bg-ink-800 text-ink-300" aria-label="Dismiss notification">×</button>
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 inset-x-4 sm:inset-x-auto sm:right-5 sm:max-w-sm z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[13px] font-semibold flex items-center gap-3 animate-fadeIn">
+          <span className="w-2 h-2 rounded-full bg-forest-400 shrink-0" aria-hidden="true"></span>
+          <span className="flex-1 leading-snug">{toastMessage}</span>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="ml-1 p-2 min-h-[44px] min-w-[44px] rounded-control hover:bg-ink-800 text-ink-200 focus-visible:ring-2 focus-visible:ring-forest-400 flex items-center justify-center shrink-0"
+            aria-label="Dismiss notification"
+          >
+            <span aria-hidden="true" className="text-lg leading-none">×</span>
+          </button>
         </div>
       )}
-      {/* Live region for screen readers */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">{toastMessage}</div>
 
       <Navbar
         currentView={currentView}
@@ -171,7 +185,7 @@ const AppContent: React.FC = () => {
         onOpenAuth={() => navigate('/auth')}
       />
 
-      <main id="main-content" className="flex-1 focus:outline-none" tabIndex={-1}>
+      <main id="main-content" className="flex-1 focus:outline-none overflow-x-clip min-w-0" tabIndex={-1}>
         <Routes>
           <Route path="/" element={
             <HomePage

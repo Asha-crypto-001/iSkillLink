@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Booking, LearnerRequest, Payment, Review, Message, Educator } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { formatUGX, formatShortDate, getStatusBadgeClass } from '../utils/formatters';
+import { formatUGX, formatShortDate } from '../utils/formatters';
 import { SimulatePaymentModal } from '../components/SimulatePaymentModal';
 import { ReviewModal } from '../components/ReviewModal';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
@@ -14,6 +14,7 @@ import {
   Camera
 } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
+import { StatusBadge } from '../components/ui/Badge';
 
 interface LearnerDashboardProps {
   onOpenSkillRequest: () => void;
@@ -106,16 +107,34 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
     .filter(p => p.status === 'paid' || p.status === 'completed')
     .reduce((sum, p) => sum + p.amount_ugx, 0);
 
+  if (loading) {
+    return (
+      <div className="container-app py-6 space-y-6" aria-busy="true" aria-live="polite">
+        <div className="h-32 rounded-3xl bg-white border border-ink-200 shadow-level-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-ink-100 animate-pulse" aria-hidden="true" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 rounded-card bg-white border border-ink-200 shadow-level-1"><div className="h-full w-full bg-ink-100 animate-pulse" /></div>)}
+        </div>
+        <div className="p-8 rounded-card border border-ink-200 bg-white">
+          <div className="h-6 w-48 bg-ink-100 animate-pulse rounded mb-4" />
+          <div className="h-4 w-full bg-ink-100 animate-pulse rounded mb-2" />
+          <div className="h-4 w-5/6 bg-ink-100 animate-pulse rounded" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container-app py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <nav aria-label="Breadcrumb" className="text-xs">
             <ol className="flex items-center gap-1.5 text-ink-500">
-              <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-forest-700 font-medium">Home</a></li>
-              <li className="text-ink-400">›</li>
-              <li><a href="/dashboard/learner" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/learner');}} className="hover:text-forest-700 font-medium">Dashboard</a></li>
-              <li className="text-ink-400">›</li>
+              <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Home</a></li>
+              <li className="text-ink-400" aria-hidden="true">›</li>
+              <li><a href="/dashboard/learner" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/learner');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Dashboard</a></li>
+              <li className="text-ink-400" aria-hidden="true">›</li>
               <li className="text-ink-900 font-semibold capitalize">{activeTab}</li>
             </ol>
           </nav>
@@ -172,8 +191,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-card border border-ink-200 p-2 shadow-level-1 overflow-x-auto flex space-x-1">
+      {/* Navigation Tabs — Phase 4: snap scroll, 44px targets, no squeeze */}
+      <div className="bg-white rounded-card border border-ink-200 p-2 shadow-level-1 overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Learner dashboard sections">
         {[
           { id: 'overview', label: 'Overview', icon: BookOpen },
           { id: 'requests', label: `My Requests (${requests.length})`, icon: Clock },
@@ -183,17 +202,20 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           { id: 'profile', label: 'Profile Settings', icon: User }
         ].map(tab => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 rounded-card text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id
+              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-card text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                isActive
                   ? 'bg-forest-700 text-white shadow'
                   : 'text-ink-600 hover:text-ink-900 hover:bg-ink-50'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );
@@ -254,9 +276,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-ink-900 text-sm">{b.skill_name}</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(b.status)}`}>
-                          {b.status.replace('_', ' ')}
-                        </span>
+                        <StatusBadge status={b.status} />
                       </div>
                       <div className="text-xs text-ink-500 flex flex-wrap items-center gap-3 mt-1">
                         <span>Educator: <strong className="text-ink-800">{b.educator?.user?.name || 'Verified Educator'}</strong></span>
@@ -269,11 +289,11 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
                       {b.status === 'pending' && (
                         <button
                           onClick={() => setPaymentModalBooking(b)}
-                          className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs"
+                          className="px-4 py-2.5 min-h-[44px] rounded-control bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-soft focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:bg-amber-800 disabled:opacity-50"
                         >
                           Deposit to Escrow
                         </button>
@@ -281,7 +301,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       {b.status === 'confirmed' && (
                         <button
                           onClick={() => handleMarkSessionComplete(b.id)}
-                          className="px-3 py-1.5 rounded-lg bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs"
+                          className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-soft focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 active:bg-forest-900 disabled:opacity-50"
                         >
                           Mark Session Done
                         </button>
@@ -289,9 +309,9 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       {b.status === 'completed' && !b.review && (
                         <button
                           onClick={() => setReviewModalBooking(b)}
-                          className="px-3 py-1.5 rounded-lg bg-ink-950 hover:bg-ink-900 text-white font-bold text-xs flex items-center gap-1"
+                          className="px-4 py-2.5 min-h-[44px] rounded-control bg-ink-950 hover:bg-ink-900 text-white font-bold text-xs flex items-center gap-1 shadow-soft focus-visible:ring-2 focus-visible:ring-ink-800 focus-visible:ring-offset-2 active:bg-black disabled:opacity-50"
                         >
-                          <Star className="w-3.5 h-3.5 text-amber-400" />
+                          <Star className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
                           <span>Leave Review</span>
                         </button>
                       )}
@@ -346,9 +366,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(req.status)}`}>
-                          {req.status}
-                        </span>
+                        <StatusBadge status={req.status} />
                         <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-ink-50 text-ink-600">
                           {req.skill_level}
                         </span>
@@ -393,9 +411,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-ink-900 text-base">{b.skill_name}</h3>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(b.status)}`}>
-                        {b.status.replace('_', ' ')}
-                      </span>
+                      <StatusBadge status={b.status} />
                     </div>
                     <p className="text-xs text-ink-600 mt-1">
                       Mentor: <strong className="text-ink-900">{b.educator?.user?.name || 'Verified Educator'}</strong> {b.educator?.title ? `(${b.educator.title})` : ''}
@@ -432,11 +448,11 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-2 border-t border-ink-100">
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-3 border-t border-ink-100">
                   {b.status === 'pending' && (
                     <button
                       onClick={() => setPaymentModalBooking(b)}
-                      className="px-4 py-2 rounded-lg bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-level-1"
+                      className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-level-1"
                     >
                       <CreditCard className="w-3.5 h-3.5" />
                       <span>Deposit via Mobile Money</span>
@@ -446,7 +462,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   {b.status === 'confirmed' && (
                     <button
                       onClick={() => handleMarkSessionComplete(b.id)}
-                      className="px-4 py-2 rounded-lg bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-level-1"
+                      className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-level-1"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Mark Session Completed</span>
@@ -456,7 +472,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   {b.status === 'completed' && !b.review && (
                     <button
                       onClick={() => setReviewModalBooking(b)}
-                      className="px-4 py-2 rounded-lg bg-ink-950 hover:bg-ink-900 text-white font-bold text-xs flex items-center gap-1.5"
+                      className="px-4 py-2.5 min-h-[44px] rounded-control bg-ink-950 hover:bg-ink-900 text-white font-bold text-xs flex items-center gap-1.5"
                     >
                       <Star className="w-3.5 h-3.5 text-amber-400" />
                       <span>Write Review</span>
@@ -509,9 +525,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                         <td className="p-3 font-bold text-ink-900">{formatUGX(p.amount_ugx)}</td>
                         <td className="p-3 uppercase font-semibold text-forest-800">{p.method.replace('_', ' ')}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded border font-bold capitalize ${getStatusBadgeClass(p.status)}`}>
-                            {p.status.replace('_', ' ')}
-                          </span>
+                          <StatusBadge status={p.status} />
                         </td>
                         <td className="p-3 text-ink-500">{formatShortDate(p.created_at)}</td>
                       </tr>
@@ -525,7 +539,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   <div key={p.id} className="p-4 rounded-card border border-ink-200 bg-white shadow-level-1 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-bold text-xs text-ink-900">{p.payment_reference}</span>
-                      <span className={`px-2 py-0.5 rounded border font-bold capitalize text-[11px] ${getStatusBadgeClass(p.status)}`}>{p.status.replace('_', ' ')}</span>
+                      <StatusBadge status={p.status} />
                     </div>
                     <div className="text-xs text-ink-600">Booking <span className="font-semibold text-ink-900">#{p.booking_id}</span> • {formatShortDate(p.created_at)}</div>
                     <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-ink-100">
