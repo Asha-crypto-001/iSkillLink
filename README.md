@@ -75,6 +75,28 @@ GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 
 Register every production frontend origin in Google Cloud Console. The API must never accept profile fields such as email or name as proof of Google authentication. Public Google registration creates learner accounts only; an existing password account must be explicitly linked after the user signs in.
 
+### Production deployment
+
+The GitHub Pages site is a static frontend. Authentication requires the Express API to run separately. This repository includes [render.yaml](./render.yaml) for Render:
+
+1. Create a Render Blueprint from this repository and select `render.yaml`.
+2. Set the service's `CLIENT_ORIGIN` to `https://asha-crypto-001.github.io`.
+3. Set `GOOGLE_CLIENT_ID` to the same Google Web client ID used by the frontend.
+4. Keep the generated `JWT_SECRET` private and rotate it after any suspected compromise.
+5. Add these GitHub repository Actions secrets:
+   - `VITE_API_URL`: the Render API URL ending in `/api`, for example `https://iskilllink-api.onrender.com/api`
+   - `VITE_GOOGLE_CLIENT_ID`: the Google Web client ID
+6. In Google Cloud Console, add `https://asha-crypto-001.github.io` to the authorized JavaScript origins.
+7. Push to `main` to rebuild GitHub Pages with the API URL.
+
+Verify the API before testing the frontend:
+
+```bash
+curl https://your-render-service.onrender.com/api/health
+```
+
+It should return `{"status":"ok"}`.
+
 ---
 
 

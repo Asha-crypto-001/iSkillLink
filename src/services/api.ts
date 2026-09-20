@@ -16,6 +16,9 @@ import {
 } from './localData';
 
 const API_BASE = ((import.meta as any).env?.VITE_API_URL as string) || '/api';
+if (import.meta.env.PROD && API_BASE === '/api') {
+  console.error('[Auth] VITE_API_URL is not configured for the production frontend.');
+}
 let authToken: string | null = null;
 
 export function getAuthToken(): string | null {

@@ -92,6 +92,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
 // Brute-force Rate Limiters
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
