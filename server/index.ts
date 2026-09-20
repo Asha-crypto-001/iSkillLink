@@ -16,6 +16,7 @@ import {
   generateToken,
   sanitizeUser
 } from './utils/security.js';
+import { revokeToken } from './utils/security.js';
 import {
   authenticateToken,
   optionalToken,
@@ -163,6 +164,11 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     learnerProfile,
     educatorProfile,
     token
+  });
+
+  app.post('/api/auth/logout', authenticateToken, (req: Request, res: Response) => {
+    if (req.user?.jti) revokeToken(req.user.jti);
+    res.status(204).send();
   });
 });
 

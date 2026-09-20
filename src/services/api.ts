@@ -16,20 +16,21 @@ import {
 } from './localData';
 
 const API_BASE = ((import.meta as any).env?.VITE_API_URL as string) || '/api';
+let authToken: string | null = null;
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('iskilllink_token');
+  return authToken;
 }
 
 export function setAuthToken(token: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('iskilllink_token', token);
+  authToken = token;
 }
 
 export function clearAuthSession(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('iskilllink_token');
+  authToken = null;
   localStorage.removeItem('iskilllink_user_id');
 }
 
@@ -145,6 +146,17 @@ export const api = {
     return result;
   },
 
+  async logout() {
+    const res = await fetch(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    clearAuthSession();
+    if (!res.ok && res.status !== 401) {
+      throw await handleResponse<Error>(res);
+    }
+  },
+
   async register(data: any) {
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
@@ -162,6 +174,8 @@ export const api = {
         ? error
         : new Error('Registration service is unavailable. Please try again.');
     }
+
+    throw new Error('Registration service is unavailable. Please try again.');
 
     const users = getLocalStorageData<any[]>('users', initialLocalUsers);
     const existing = users.find(u => u.email.toLowerCase() === data.email.trim().toLowerCase());

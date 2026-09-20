@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { User, UserRole } from '../types.js';
 
 const SALT_ROUNDS = 10;
@@ -23,11 +24,22 @@ export const JWT_SECRET: string = process.env.JWT_SECRET || (() => {
 export const JWT_EXPIRY = '7d';
 
 export interface TokenPayload {
+  jti: string;
   id: string;
   email: string;
   role: UserRole;
   name: string;
   is_primary_admin?: boolean;
+}
+
+const revokedTokenIds = new Set<string>();
+
+export function revokeToken(tokenId: string): void {
+  revokedTokenIds.add(tokenId);
+}
+
+export function isTokenRevoked(tokenId: string): boolean {
+  return revokedTokenIds.has(tokenId);
 }
 
 /**
@@ -69,6 +81,7 @@ export function generateToken(user: { id: string; email: string; role: UserRole;
   const isPrimary = user.is_primary_admin === true ||
     (user.role === 'admin' && user.email.toLowerCase() === 'ashabahebwahassan665@gmail.com');
   const payload: TokenPayload = {
+    jti: crypto.randomUUID(),
     id: user.id,
     email: user.email,
     role: user.role,

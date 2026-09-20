@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET, TokenPayload } from '../utils/security.js';
+import { JWT_SECRET, TokenPayload, isTokenRevoked } from '../utils/security.js';
 import { UserRole } from '../types.js';
 
 // Extend Express Request to include authenticated user payload
@@ -26,6 +26,9 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    if (!decoded.jti || isTokenRevoked(decoded.jti)) {
+      return res.status(401).json({ error: 'This session has been revoked. Please sign in again.' });
+    }
     req.user = decoded;
     next();
   } catch (err: any) {
