@@ -124,114 +124,25 @@ async function handleResponse<T>(res: Response): Promise<T> {
 export const api = {
   // Auth & Session
   async login(email: string, password?: string) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      if (res.ok) {
-        const data = await handleResponse<any>(res);
-        if (data.token) setAuthToken(data.token);
-        return data;
-      }
-    } catch {
-      // Offline / fallback below
-    }
-
-    // Client-side fallback authentication
-    const users = getLocalStorageData<any[]>('users', initialLocalUsers);
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
-
-    if (!user) {
-      throw new Error('Account not found with this email address.');
-    }
-
-    if (password) {
-      const isMatch = user.password_hash?.startsWith('$2')
-        ? await bcrypt.compare(password, user.password_hash)
-        : user.password_hash === password;
-      if (!isMatch) {
-        throw new Error('Incorrect password. Please try again.');
-      }
-    }
-
-    const learners = getLocalStorageData<any[]>('learners', initialLocalLearners);
-    const educators = getLocalStorageData<any[]>('educators', initialLocalEducators);
-
-    const learnerProfile = learners.find(l => l.user_id === user.id) || null;
-    const educatorProfile = educators.find(e => e.user_id === user.id) || null;
-    const token = `local-token-${user.id}-${Date.now()}`;
-    setAuthToken(token);
-
-    const safeUser = { ...user };
-    delete safeUser.password_hash;
-
-    return { user: safeUser, learnerProfile, educatorProfile, token };
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await handleResponse<any>(res);
+    if (data.token) setAuthToken(data.token);
+    return data;
   },
 
-  async loginWithGoogle(data: { email: string; name: string; avatar_url?: string; role?: string }) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-        const result = await handleResponse<any>(res);
-        if (result.token) setAuthToken(result.token);
-        return result;
-      }
-    } catch {
-      // Offline fallback
-    }
-
-    const users = getLocalStorageData<any[]>('users', initialLocalUsers);
-    const normalizedEmail = data.email.trim().toLowerCase();
-    let user = users.find(u => u.email.toLowerCase() === normalizedEmail);
-
-    if (!user) {
-      user = {
-        id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        email: normalizedEmail,
-        password_hash: `$2b$10$googleoauth${Date.now()}`,
-        role: (data.role as any) || 'learner',
-        name: data.name,
-        phone: '+256 744 024 529',
-        avatar_url: data.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-        location: 'Mbarara City, Uganda',
-        created_at: new Date().toISOString()
-      };
-      users.push(user);
-      setLocalStorageData('users', users);
-
-      if (user.role === 'learner') {
-        const learners = getLocalStorageData<any[]>('learners', initialLocalLearners);
-        learners.push({
-          id: `lrn-${Date.now()}`,
-          user_id: user.id,
-          location: user.location,
-          bio: 'Practical skills student (Signed in with Google).',
-          learning_interests: [],
-          preferred_format: 'in-person',
-          created_at: new Date().toISOString()
-        });
-        setLocalStorageData('learners', learners);
-      }
-    }
-
-    const learners = getLocalStorageData<any[]>('learners', initialLocalLearners);
-    const educators = getLocalStorageData<any[]>('educators', initialLocalEducators);
-    const learnerProfile = learners.find(l => l.user_id === user!.id) || null;
-    const educatorProfile = educators.find(e => e.user_id === user!.id) || null;
-    const token = `local-token-${user.id}-${Date.now()}`;
-    setAuthToken(token);
-
-    const safeUser = { ...user };
-    delete safeUser.password_hash;
-
-    return { user: safeUser, learnerProfile, educatorProfile, token };
+  async loginWithGoogle(credential: string) {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    });
+    const result = await handleResponse<any>(res);
+    if (result.token) setAuthToken(result.token);
+    return result;
   },
 
   async register(data: any) {
@@ -246,8 +157,10 @@ export const api = {
         if (result.token) setAuthToken(result.token);
         return result;
       }
-    } catch {
-      // Offline fallback
+    } catch (error) {
+      throw error instanceof Error
+        ? error
+        : new Error('Registration service is unavailable. Please try again.');
     }
 
     const users = getLocalStorageData<any[]>('users', initialLocalUsers);
@@ -323,14 +236,10 @@ export const api = {
   },
 
   async getMe(userId?: string) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/me`, {
-        headers: getAuthHeaders()
-      });
-      if (res.ok) return await handleResponse<any>(res);
-    } catch {
-      // Offline fallback
-    }
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      headers: getAuthHeaders()
+    });
+    return await handleResponse<any>(res);
 
     if (!userId) return { user: null, learnerProfile: null, educatorProfile: null };
 

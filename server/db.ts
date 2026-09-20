@@ -165,6 +165,10 @@ class Database {
     return this.data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
 
+  public findUserByGoogleSub(googleSub: string) {
+    return this.data.users.find(u => u.google_sub === googleSub);
+  }
+
   public createUser(user: User) {
     const userToSave: User = {
       ...user,

@@ -64,6 +64,17 @@ For security, credentials are managed securely via environment variables:
    ```
 3. New students, educators, and mentors can register directly in the application using the **Create New Account** form on the Sign In page.
 
+### Google Sign-In configuration
+
+Google Sign-In uses Google Identity Services in the browser and verifies the returned ID token on the API server. Configure the same OAuth 2.0 Web client ID in both variables:
+
+```env
+VITE_GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
+```
+
+Register every production frontend origin in Google Cloud Console. The API must never accept profile fields such as email or name as proof of Google authentication. Public Google registration creates learner accounts only; an existing password account must be explicitly linked after the user signs in.
+
 ---
 
 

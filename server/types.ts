@@ -15,6 +15,7 @@ export type PaymentMethod = 'mtn_momo' | 'airtel_money' | 'bank_transfer' | 'cas
 export interface User {
   id: string;
   email: string;
+  google_sub?: string;
   password_hash: string;
   role: UserRole;
   name: string;

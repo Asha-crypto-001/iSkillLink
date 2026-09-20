@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Lock, Mail, User, Phone, CheckCircle2,
@@ -30,6 +30,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   const [avatarUrl, setAvatarUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [googleCustomEmail, setGoogleCustomEmail] = useState('');
   const [googleCustomName, setGoogleCustomName] = useState('');
@@ -62,16 +63,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const handleGoogleSignIn = async (gEmail: string, gName: string) => {
+  const handleGoogleSignIn = async (credential: string, _legacyName?: string) => {
     setIsLoading(true);
     setErrorMsg('');
-    setShowGoogleModal(false);
     try {
-      const loggedInUser = await loginWithGoogle({
-        email: gEmail,
-        name: gName,
-        role: role
-      });
+      const loggedInUser = await loginWithGoogle(credential);
       onSuccess(loggedInUser.role);
     } catch (err: any) {
       setErrorMsg(err.message || 'Google sign-in failed. Please try again.');
@@ -79,6 +75,45 @@ export const AuthPage: React.FC<AuthPageProps> = ({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId || !googleButtonRef.current) return;
+
+    const renderGoogleButton = () => {
+      if (!window.google?.accounts?.id || !googleButtonRef.current) return;
+      googleButtonRef.current.replaceChildren();
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: response => void handleGoogleSignIn(response.credential),
+        ux_mode: 'popup'
+      });
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        width: 360
+      });
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogleButton;
+    script.onerror = () => setErrorMsg('Google Sign-In could not be loaded. Please use email sign-in.');
+    document.head.appendChild(script);
+    return () => {
+      script.onload = null;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,14 +201,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </div>
         )}
 
-        {/* Official Google Sign-In Button */}
-        <button
+        {/* Google Identity Services renders Google's official button here. */}
+        <div ref={googleButtonRef} className="min-h-10 flex justify-center" aria-label="Continue with Google" />
+        {/* Legacy inline Google button removed. */}
+        {false && <button
           type="button"
-          onClick={() => setShowGoogleModal(true)}
           disabled={isLoading}
           className="w-full py-2.5 px-4 rounded-card border border-ink-200 bg-white hover:bg-ink-50 text-ink-800 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2.5 group cursor-pointer"
         >
-          {/* Multi-Color Google G SVG */}
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
@@ -193,7 +228,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             />
           </svg>
           <span>Continue with Google</span>
-        </button>
+        </button>}
 
         {/* Divider */}
         <div className="relative flex items-center justify-center">

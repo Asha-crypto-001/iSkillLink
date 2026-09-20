@@ -10,7 +10,7 @@ interface AuthContextType {
   notifications: Notification[];
   unreadNotificationCount: number;
   login: (email: string, password: string) => Promise<User>;
-  loginWithGoogle: (data: { email: string; name: string; avatar_url?: string; role?: string }) => Promise<User>;
+  loginWithGoogle: (credential: string) => Promise<User>;
   register: (data: any) => Promise<User>;
   updateAvatar: (avatarUrl: string) => Promise<User>;
   updateProfile: (updates: Partial<User>) => Promise<User>;
@@ -88,10 +88,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const loginWithGoogle = async (googleData: { email: string; name: string; avatar_url?: string; role?: string }): Promise<User> => {
+  const loginWithGoogle = async (credential: string): Promise<User> => {
     setIsLoading(true);
     try {
-      const data = await api.loginWithGoogle(googleData);
+      const data = await api.loginWithGoogle(credential);
       setUser(data.user);
       setLearnerProfile(data.learnerProfile);
       setEducatorProfile(data.educatorProfile);

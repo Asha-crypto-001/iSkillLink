@@ -27,11 +27,18 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { OAuth2Client } from 'google-auth-library';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const PORT: number = Number(process.env.PORT) || 3001;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+if (process.env.NODE_ENV === 'production' && !GOOGLE_CLIENT_ID) {
+  console.error('[FATAL] GOOGLE_CLIENT_ID is not set. Refusing to start production authentication without it.');
+  process.exit(1);
+}
 
 // Ensure upload directory exists (6.4 Binary Media Upload Pipeline)
 const UPLOAD_DIR = path.join(__dirname, '../public/uploads/avatars');
@@ -159,42 +166,65 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
   });
 });
 
-app.post('/api/auth/google', (req: Request, res: Response) => {
-  const { email, name, avatar_url, role } = req.body;
-  if (!email || !name) {
-    return res.status(400).json({ error: 'Email and name are required for Google authentication' });
+app.post('/api/auth/google', async (req: Request, res: Response) => {
+  const { credential } = req.body;
+  if (!GOOGLE_CLIENT_ID || !googleClient) {
+    return res.status(503).json({ error: 'Google authentication is not configured on the server.' });
+  }
+  if (typeof credential !== 'string' || credential.length < 20) {
+    return res.status(400).json({ error: 'A Google ID token is required.' });
   }
 
-  const trimmedEmail = String(email).trim().toLowerCase();
-  let user = db.findUserByEmail(trimmedEmail);
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID
+    });
+    payload = ticket.getPayload();
+  } catch (error) {
+    console.warn('[Auth] Google ID token verification failed:', error instanceof Error ? error.message : error);
+    return res.status(401).json({ error: 'Google authentication could not be verified.' });
+  }
 
+  if (!payload?.sub || !payload.email || payload.email_verified !== true ||
+      !payload.iss || !['accounts.google.com', 'https://accounts.google.com'].includes(payload.iss)) {
+    return res.status(401).json({ error: 'Google account verification is incomplete.' });
+  }
+
+  let user = db.findUserByGoogleSub(payload.sub);
   if (!user) {
+    const existingEmailUser = db.findUserByEmail(payload.email);
+    if (existingEmailUser) {
+      return res.status(409).json({
+        error: 'An account already exists with this email. Sign in with your password before linking Google.'
+      });
+    }
+
     const userId = `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     user = {
       id: userId,
-      email: trimmedEmail,
-      password_hash: hashPasswordSync(`google_oauth_${Date.now()}`),
-      role: (role as any) || 'learner',
-      name: String(name).trim(),
+      email: payload.email.toLowerCase(),
+      google_sub: payload.sub,
+      password_hash: hashPasswordSync(`google-disabled-password-${Date.now()}`),
+      role: 'learner',
+      name: payload.name || payload.email.split('@')[0],
       phone: '+256 744 024 529',
-      avatar_url: avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+      avatar_url: payload.picture || '',
       location: 'Mbarara City, Uganda',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
     db.createUser(user);
-
-    if (user.role === 'learner') {
-      db.createLearner({
-        id: `lrn-${Date.now()}`,
-        user_id: userId,
-        location: 'Mbarara, Uganda',
-        bio: 'Practical skills student (Signed in with Google).',
-        learning_interests: [],
-        preferred_format: 'in-person',
-        created_at: new Date().toISOString()
-      });
-    }
+    db.createLearner({
+      id: `lrn-${Date.now()}`,
+      user_id: userId,
+      location: 'Mbarara, Uganda',
+      bio: 'Practical skills student (Signed in with Google).',
+      learning_interests: [],
+      preferred_format: 'in-person',
+      created_at: new Date().toISOString()
+    });
   }
 
   let learnerProfile = null;
@@ -222,6 +252,10 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Email, password, full name, and role are required' });
   }
 
+  if (role !== 'learner' && role !== 'educator') {
+    return res.status(400).json({ error: 'Public registration is limited to learner or educator accounts.' });
+  }
+
   if (password.length < 8) {
     return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
   }
@@ -238,7 +272,7 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     id: userId,
     email: trimmedEmail,
     password_hash: hashedPassword,
-    role: role as 'learner' | 'educator' | 'admin',
+    role,
     name: String(name).trim(),
     phone: phone || '+256 744 024 529',
     avatar_url: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
