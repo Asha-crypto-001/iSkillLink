@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, MessageSquare, CheckCircle2, ChevronDown } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, CheckCircle2, ChevronDown } from 'lucide-react';
+import { api } from '../services/api';
+import { Field } from '../components/ui/Field';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Textarea } from '../components/ui/Textarea';
+import { Button } from '../components/ui/Button';
 
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -8,6 +14,8 @@ export const ContactPage: React.FC = () => {
   const [subject, setSubject] = useState('General Inquiry');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -31,13 +39,22 @@ export const ContactPage: React.FC = () => {
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError('');
+    try {
+      await api.createInquiry({ name, email, phone, subject, message });
+      setSubmitted(true);
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to send message. Please try again or contact via WhatsApp.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+    <div className="container-app py-12 space-y-12">
       {/* Header */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
         <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
@@ -96,90 +113,92 @@ export const ContactPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Contact Form */}
-        <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-          <h3 className="font-bold text-base text-gray-900">Send Us a Message</h3>
+        {/* Contact Form — now unified via Field/Input primitives (Phase 3) */}
+        <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-card border border-ink-200 shadow-level-1 space-y-4">
+          <h3 className="font-bold text-base text-ink-900 font-display">Send Us a Message</h3>
 
           {submitted ? (
-            <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-200 text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-              <h4 className="font-bold text-emerald-900 text-sm">Message Sent Successfully!</h4>
-              <p className="text-xs text-emerald-800">
+            <div className="p-6 bg-forest-50 rounded-card border border-forest-200 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-forest-600 mx-auto" />
+              <h4 className="font-bold text-forest-900 text-[13px]">Message Sent Successfully!</h4>
+              <p className="text-[13px] text-forest-800">
                 Thank you, {name}. Ashabahebwa Hassan and the iSkillLink team will respond to your message promptly.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Your Full Name *</label>
-                  <input
+                <Field label="Your Full Name" htmlFor="contact-name" required>
+                  <Input
+                    id="contact-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Your Full Name"
-                    className="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
                     required
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Email Address *</label>
-                  <input
+                <Field label="Email Address" htmlFor="contact-email" required>
+                  <Input
+                    id="contact-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="e.g. yourname@example.com"
-                    className="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
                     required
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Phone / WhatsApp</label>
-                  <input
+                <Field label="Phone / WhatsApp" htmlFor="contact-phone" hint="Optional — for faster reply via WhatsApp">
+                  <Input
+                    id="contact-phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+256 70X XXX XXX"
-                    className="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Inquiry Subject</label>
-                  <select
+                <Field label="Inquiry Subject" htmlFor="contact-subject">
+                  <Select
+                    id="contact-subject"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
                   >
                     <option value="General Inquiry">General Inquiry</option>
                     <option value="Custom Skill Request Assistance">Custom Skill Request Assistance</option>
                     <option value="Educator Verification Status">Educator Verification Status</option>
                     <option value="Mobile Money Escrow Support">Mobile Money Escrow Support</option>
                     <option value="Institutional Partnership">Institutional Partnership</option>
-                  </select>
-                </div>
+                  </Select>
+                </Field>
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Message Details *</label>
-                <textarea
+              <Field label="Message Details" htmlFor="contact-message" required>
+                <Textarea
+                  id="contact-message"
                   rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Tell us how we can help you..."
-                  className="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
                   required
                 />
-              </div>
+              </Field>
 
-              <button
+              {submitError && (
+                <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
+                  <span>{submitError}</span>
+                </div>
+              )}
+              <Button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition"
+                variant="primary"
+                size="md"
+                isLoading={isSubmitting}
               >
                 Send Message to iSkillLink
-              </button>
+              </Button>
             </form>
           )}
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   AdminMetrics, Educator, LearnerRequest, Booking,
@@ -32,7 +33,18 @@ type AdminTab =
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<AdminTab>('metrics');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const getActiveTab = (): AdminTab => {
+    const seg = location.pathname.split('/')[3] as AdminTab;
+    if (['metrics','users','interests','verification','matchmaker','educators','payments','audit'].includes(seg)) return seg;
+    return 'metrics';
+  };
+  const activeTab = getActiveTab();
+  const setActiveTab = (tab: AdminTab) => {
+    if (tab === 'metrics') navigate('/dashboard/admin');
+    else navigate(`/dashboard/admin/${tab}`);
+  };
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [demandData, setDemandData] = useState<any>(null);
@@ -192,7 +204,16 @@ export const AdminDashboard: React.FC = () => {
   const isLeadAdmin = user?.email === 'ashabahebwahassan665@gmail.com' || user?.role === 'admin';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <nav aria-label="Breadcrumb" className="text-xs">
+        <ol className="flex items-center gap-1.5 text-gray-500">
+          <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-emerald-700 font-medium">Home</a></li>
+          <li className="text-gray-400">›</li>
+          <li><a href="/dashboard/admin" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/admin');}} className="hover:text-emerald-700 font-medium">Operations</a></li>
+          <li className="text-gray-400">›</li>
+          <li className="text-gray-900 font-semibold capitalize">{activeTab}</li>
+        </ol>
+      </nav>
       {/* Operations Header */}
       <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-start sm:items-center gap-4">
@@ -289,8 +310,8 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm overflow-x-auto flex space-x-1">
+      {/* Navigation Tabs — Phase 4: 44px, snap, no squeeze */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Admin operations sections">
         {[
           { id: 'metrics', label: 'Platform Metrics', icon: ShieldCheck },
           { id: 'users', label: `User Directory & Contacts (${allUsers.length})`, icon: Users },
@@ -302,17 +323,20 @@ export const AdminDashboard: React.FC = () => {
           { id: 'audit', label: `Audit Trail (${auditLogs.length})`, icon: FileText }
         ].map(tab => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setActiveTab(tab.id as AdminTab)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id
+              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                isActive
                   ? 'bg-slate-900 text-white shadow'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );

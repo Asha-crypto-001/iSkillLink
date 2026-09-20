@@ -1,6 +1,7 @@
 import React from 'react';
 import { AdminMetrics, LearnerRequest, AdminAction } from '../../types';
-import { formatUGX, formatShortDate, getStatusBadgeClass } from '../../utils/formatters';
+import { formatUGX, formatShortDate } from '../../utils/formatters';
+import { StatusBadge } from '../../components/ui/Badge';
 
 interface AdminMetricsTabProps {
   metrics: AdminMetrics | null;
@@ -68,9 +69,7 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
                   <div className="font-bold text-gray-900">{r.skill_name}</div>
                   <div className="text-gray-500 text-[11px]">{r.learner_name} • {r.location} • Budget: {formatUGX(r.budget_ugx)}</div>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border capitalize ${getStatusBadgeClass(r.status)}`}>
-                  {r.status}
-                </span>
+                <StatusBadge status={r.status} />
               </div>
             ))}
           </div>

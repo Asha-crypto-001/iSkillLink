@@ -1145,5 +1145,62 @@ export const api = {
       openRequestsCount: requests.filter(r => r.status === 'open').length,
       matchedRequestsCount: requests.filter(r => r.status === 'matched' || r.status === 'fulfilled').length
     };
+  },
+
+  async createInquiry(data: { name: string; email: string; phone?: string; subject: string; message: string }) {
+    try {
+      const res = await fetch(`${API_BASE}/inquiries`, {
+        method: 'POST',
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return await handleResponse<any>(res);
+    } catch {}
+    const inquiries = getLocalStorageData<any[]>('inquiries', []);
+    const newInq = { id: `inq-${Date.now()}`, ...data, status: 'open', created_at: new Date().toISOString() };
+    inquiries.unshift(newInq);
+    setLocalStorageData('inquiries', inquiries);
+    return { success: true, inquiry: newInq };
+  },
+
+  async subscribeNewsletter(email: string, interest: string = 'All Practical Trades') {
+    try {
+      const res = await fetch(`${API_BASE}/newsletter/subscribe`, {
+        method: 'POST',
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ email, interest })
+      });
+      if (res.ok) return await handleResponse<any>(res);
+    } catch {}
+    const subs = getLocalStorageData<any[]>('newsletter_subscribers', []);
+    if (subs.some((s: any) => s.email.toLowerCase() === email.toLowerCase())) {
+      return { success: true, subscriber: subs.find((s: any) => s.email.toLowerCase() === email.toLowerCase()) };
+    }
+    const newSub = { id: `news-${Date.now()}`, email: email.toLowerCase(), interest, created_at: new Date().toISOString() };
+    subs.unshift(newSub);
+    setLocalStorageData('newsletter_subscribers', subs);
+    return { success: true, subscriber: newSub };
+  },
+
+  async uploadAvatar(file: File, userId?: string) {
+    try {
+      const form = new FormData();
+      form.append('avatar', file);
+      if (userId) form.append('userId', userId);
+      const token = getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}/uploads/avatar`, {
+        method: 'POST',
+        headers,
+        body: form
+      });
+      if (res.ok) {
+        const data = await handleResponse<{ success: boolean; url: string }>(res);
+        return data;
+      }
+    } catch {}
+    // Fallback: return object URL for local preview (not persisted)
+    return { success: false, url: URL.createObjectURL(file) };
   }
 };

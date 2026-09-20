@@ -31,3 +31,7 @@ Thumbs.db
 *.zip
 *.tar.gz
 uploads/
+public/uploads/
+*.db
+*.sqlite
+*.sqlite3

@@ -264,3 +264,21 @@ export interface AdminAction {
   details: string;
   created_at: string;
 }
+
+export interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  status: 'open' | 'replied' | 'archived';
+  created_at: string;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  interest: string;
+  created_at: string;
+}

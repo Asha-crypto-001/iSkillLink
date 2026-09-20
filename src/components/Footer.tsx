@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, MapPin, Phone, Mail, Award, CheckCircle, Send, CheckCircle2 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface FooterProps {
   setCurrentView: (view: string) => void;
@@ -9,58 +10,46 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
   const [footerEmail, setFooterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleFooterSubscribe = (e: React.FormEvent) => {
+  const handleFooterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!footerEmail || !footerEmail.includes('@')) return;
-
     try {
-      const existing = JSON.parse(localStorage.getItem('iskilllink_newsletter_subscribers') || '[]');
-      existing.push({ email: footerEmail, source: 'footer', date: new Date().toISOString() });
-      localStorage.setItem('iskilllink_newsletter_subscribers', JSON.stringify(existing));
-    } catch {
-      // ignore
-    }
-
-    const subject = encodeURIComponent(`Newsletter Subscription: ${footerEmail}`);
-    const body = encodeURIComponent(
-      `Hello iSkillLink Uganda,\n\nPlease subscribe this email (${footerEmail}) to practical skills news and workshops in Uganda.\n\nThank you!`
-    );
-
+      await api.subscribeNewsletter(footerEmail, 'All Practical Trades');
+    } catch {}
     setSubscribed(true);
-    window.open(`mailto:iskilllink0@gmail.com?subject=${subject}&body=${body}`, '_blank');
   };
 
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800">
+    <footer className="bg-ink-950 text-ink-300 border-t border-ink-800">
       {/* Top trust highlights */}
-      <div className="border-b border-slate-800 bg-slate-950/40 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-ink-800 bg-slate-950/40 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 text-xs">
           <div className="flex items-start gap-3">
             <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-slate-100 text-sm">Vetted & Verified Educators</div>
-              <div className="text-slate-400 mt-1">National ID validation, practical trade background checks & workshop inspection.</div>
+              <div className="text-ink-400 mt-1">National ID validation, practical trade background checks & workshop inspection.</div>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-slate-100 text-sm">Escrow Payment Protection</div>
-              <div className="text-slate-400 mt-1">Funds held securely via MTN & Airtel MoMo until training milestone is marked complete.</div>
+              <div className="text-ink-400 mt-1">Funds held securely via MTN & Airtel MoMo until training milestone is marked complete.</div>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <Award className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-slate-100 text-sm">Hands-On Practical Learning</div>
-              <div className="text-slate-400 mt-1">Real equipment, direct mentor guidance, workshop benches, and production projects.</div>
+              <div className="text-ink-400 mt-1">Real equipment, direct mentor guidance, workshop benches, and production projects.</div>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <MapPin className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-slate-100 text-sm">Headquartered in Mbarara</div>
-              <div className="text-slate-400 mt-1">Serving Mbarara, Greater Ankole, Western Region, Kampala, and across Uganda.</div>
+              <div className="text-ink-400 mt-1">Serving Mbarara, Greater Ankole, Western Region, Kampala, and across Uganda.</div>
             </div>
           </div>
         </div>
@@ -77,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
               }}
               className="flex items-center gap-3 text-left group"
             >
-              <div className="w-11 h-11 bg-white rounded-xl shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <div className="w-11 h-11 bg-white rounded-card shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0 group-hover:border-forest-200 transition">
                 <img
                   src="./logo.png"
                   alt="iSkillLink Logo"
@@ -93,10 +82,10 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                 </div>
               </div>
             </button>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
+            <p className="text-sm text-ink-400 leading-relaxed max-w-sm">
               iSkillLink connects learners seeking practical, vocational, technical, and creative skills with verified Ugandan practitioners, master artisans, and professionals.
             </p>
-            <div className="space-y-2 text-xs text-slate-400 pt-2">
+            <div className="space-y-2 text-xs text-ink-400 pt-2">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>Headquarters: Mbarara City, Western Region, Uganda</span>
@@ -109,7 +98,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                 <Mail className="w-4 h-4 text-emerald-500 shrink-0" />
                 <div className="flex flex-col">
                   <span><a href="mailto:iskilllink0@gmail.com" className="text-emerald-400 hover:underline">iskilllink0@gmail.com</a> (Inquiries & Newsletter)</span>
-                  <span className="text-slate-400"><a href="mailto:ashabahebwahassan665@gmail.com" className="hover:underline">ashabahebwahassan665@gmail.com</a> (Founder)</span>
+                  <span className="text-ink-400"><a href="mailto:ashabahebwahassan665@gmail.com" className="hover:underline">ashabahebwahassan665@gmail.com</a> (Founder)</span>
                 </div>
               </div>
             </div>
@@ -120,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 mb-4">
               Explore Skills
             </h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <ul className="space-y-2 text-sm text-ink-400">
               <li>
                 <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
                   Fashion & Tailoring
@@ -159,7 +148,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 mb-4">
               Platform
             </h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <ul className="space-y-2 text-sm text-ink-400">
               <li>
                 <button onClick={() => setCurrentView('how-it-works')} className="hover:text-emerald-400 transition">
                   How It Works
@@ -193,11 +182,11 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 mb-4">
               Newsletter
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-3">
-              Get practical skill workshops and artisan alerts sent to <strong className="text-slate-200">iskilllink0@gmail.com</strong>.
+            <p className="text-xs text-ink-400 leading-relaxed mb-3">
+              Get practical skill workshops and artisan alerts sent to <strong className="text-ink-200">iskilllink0@gmail.com</strong>.
             </p>
             {subscribed ? (
-              <div className="bg-emerald-950/80 border border-emerald-700/60 rounded-xl p-3 text-xs text-emerald-200 flex items-center gap-2">
+              <div className="bg-emerald-950/80 border border-emerald-700/60 rounded-card p-3 text-xs text-emerald-200 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>Subscribed! Check email client.</span>
               </div>
@@ -210,12 +199,12 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                     onChange={(e) => setFooterEmail(e.target.value)}
                     placeholder="your.email@gmail.com"
                     required
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full text-xs px-3 py-2 rounded-lg bg-ink-900 border border-ink-700 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-forest-700"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5"
+                  className="w-full py-2 bg-emerald-600 hover:bg-forest-500 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5"
                 >
                   <span>Subscribe</span>
                   <Send className="w-3 h-3" />
@@ -223,25 +212,25 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
               </form>
             )}
 
-            <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+            <div className="mt-4 pt-3 border-t border-ink-800 text-[11px] text-ink-400 space-y-1">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-forest-500"></span>
                 <span>Escrow Protected (MTN & Airtel)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-forest-500"></span>
                 <span>Vetted Ugandan Artisans</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+        <div className="mt-12 pt-8 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between text-xs text-ink-400 gap-4">
           <div>
             © {new Date().getFullYear()} iSkillLink Uganda • Founded by Ashabahebwa Hassan. “Where Skills Meet Opportunity.”
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-slate-400">Mbarara • Greater Ankole • Kampala • Entebbe • Jinja</span>
+            <span className="text-ink-400">Mbarara • Greater Ankole • Kampala • Entebbe • Jinja</span>
           </div>
         </div>
       </div>

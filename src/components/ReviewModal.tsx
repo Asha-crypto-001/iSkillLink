@@ -3,8 +3,10 @@ import { Booking } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import {
-  X, Star, CheckCircle2, AlertCircle, MessageSquare
+  X, Star, CheckCircle2, AlertCircle
 } from 'lucide-react';
+import { Modal } from './ui/Modal';
+import { Button } from './ui/Button';
 
 interface ReviewModalProps {
   booking: Booking | null;
@@ -56,33 +58,32 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+    <Modal isOpen={!!booking} onClose={onClose} titleId="review-modal-title" title="Leave Verified Review" maxWidth="max-w-lg">
+        <div className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
           <div>
-            <h3 className="font-bold text-sm text-white">Leave Verified Review</h3>
-            <p className="text-xs text-slate-300">For {booking.educator?.user?.name || 'Educator'} • {booking.skill_name}</p>
+            <h3 id="review-modal-title" className="font-bold text-sm text-white font-display">Leave Verified Review</h3>
+            <p className="text-xs text-ink-300">For {booking.educator?.user?.name || 'Educator'} • {booking.skill_name}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+            className="p-2 rounded-control bg-ink-800 hover:bg-ink-700 text-ink-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Close review"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-800 text-[13px] flex items-center gap-2" role="alert">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* Overall Star Rating */}
-          <div className="text-center py-2 space-y-1">
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+          <div className="text-center py-2 space-y-2">
+            <label className="block text-xs font-bold text-ink-700 uppercase tracking-wider">
               Overall Experience
             </label>
             <div className="flex items-center justify-center gap-1.5">
@@ -91,29 +92,29 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                   type="button"
                   key={star}
                   onClick={() => setRating(star)}
-                  className="p-1 hover:scale-110 transition"
+                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-ink-50 rounded-control transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                  aria-label={`Rate ${star} stars`}
                 >
                   <Star
                     className={`w-7 h-7 ${
-                      star <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'
+                      star <= rating ? 'fill-amber-400 text-amber-400' : 'text-ink-200'
                     }`}
                   />
                 </button>
               ))}
             </div>
-            <div className="text-xs font-bold text-emerald-800">
+            <div className="text-[13px] font-bold text-forest-800">
               {rating === 5 ? 'Exceptional Mentor & Master' : rating === 4 ? 'Very Good Experience' : 'Standard'}
             </div>
           </div>
 
-          {/* Sub Criteria */}
-          <div className="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs">
+          <div className="grid grid-cols-3 gap-2 bg-ink-50 p-3 rounded-card border border-ink-200 text-xs">
             <div>
-              <span className="text-[11px] font-semibold text-gray-600 block mb-1">Practical Skill</span>
+              <span className="text-[11px] font-bold text-ink-600 block mb-1">Practical Skill</span>
               <select
                 value={skillRating}
                 onChange={(e) => setSkillRating(Number(e.target.value))}
-                className="w-full p-1.5 rounded border border-gray-300 text-xs bg-white text-gray-900"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Master</option>
                 <option value={4}>4★ High</option>
@@ -121,11 +122,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </select>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-gray-600 block mb-1">Punctuality</span>
+              <span className="text-[11px] font-bold text-ink-600 block mb-1">Punctuality</span>
               <select
                 value={punctualityRating}
                 onChange={(e) => setPunctualityRating(Number(e.target.value))}
-                className="w-full p-1.5 rounded border border-gray-300 text-xs bg-white text-gray-900"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ On Time</option>
                 <option value={4}>4★ Minor delay</option>
@@ -133,11 +134,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </select>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-gray-600 block mb-1">Teaching Clarity</span>
+              <span className="text-[11px] font-bold text-ink-600 block mb-1">Teaching Clarity</span>
               <select
                 value={communicationRating}
                 onChange={(e) => setCommunicationRating(Number(e.target.value))}
-                className="w-full p-1.5 rounded border border-gray-300 text-xs bg-white text-gray-900"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Clear</option>
                 <option value={4}>4★ Good</option>
@@ -146,46 +147,31 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
             </div>
           </div>
 
-          {/* Written feedback */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Your Review / Feedback for Future Learners <span className="text-rose-500">*</span>
+            <label className="block text-[13px] font-bold text-ink-800 mb-1" htmlFor="review-comment">
+              Your Review for Future Learners <span className="text-rose-500">*</span>
             </label>
             <textarea
+              id="review-comment"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Describe what practical skills you practiced, how well the educator explained the steps, and what you created..."
-              className="w-full text-xs rounded-lg border-gray-300 border p-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+              placeholder="Describe what practical skills you practiced, how well the educator explained steps, and what you created..."
+              className="w-full text-[13px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
               required
             />
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
-            >
+          </div>
+          <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3 pb-safe">
+            <Button variant="outline" size="md" type="button" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <span>Submitting...</span>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Publish Verified Review</span>
-                </>
-              )}
-            </button>
+            </Button>
+            <Button variant="primary" size="md" type="submit" isLoading={isSubmitting} leftIcon={<CheckCircle2 className="w-4 h-4" />}>
+              Publish Verified Review
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };

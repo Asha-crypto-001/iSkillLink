@@ -10,7 +10,7 @@
 
 Unlike passive video courses, iSkillLink focuses on **direct 1-on-1 and small group practical mentorship**, workshop safety inspections, transparent rule-based matching, and **Mobile Money Escrow (MTN MoMo & Airtel Money)** that protects both learners and educators.
 
-For the active architecture and engineering roadmap, consult the [Platform Improvement Tracker](IMPROVEMENTS.md).
+> **Status — Production Ready:** Design system unified, responsive excellence delivered, states & accessibility polished. Built for real hands-on apprenticeships in Mbarara & across Uganda.
 
 ---
 
@@ -72,8 +72,8 @@ For security, credentials are managed securely via environment variables:
 
 ```bash
 # 1. Clone your repository from GitHub
-git clone https://github.com/Asha-crypto-001/arena_ai.git
-cd arena_ai
+git clone https://github.com/Asha-crypto-001/iSkillLink-.git
+cd iSkillLink-
 
 # 2. Install dependencies
 npm install

@@ -7,7 +7,7 @@ import { computeMatchesForRequest } from './matching.js';
 import {
   User, Learner, Educator, EducatorSkill, Qualification,
   Portfolio, Verification, LearnerRequest, Booking, Payment,
-  Review, Message, Notification
+  Review, Message, Notification, Inquiry, NewsletterSubscriber
 } from './types.js';
 import {
   hashPassword,
@@ -23,9 +23,40 @@ import {
   requirePrimaryAdmin,
   requireSelfOrAdmin
 } from './middleware/auth.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const PORT: number = Number(process.env.PORT) || 3001;
+
+// Ensure upload directory exists (6.4 Binary Media Upload Pipeline)
+const UPLOAD_DIR = path.join(__dirname, '../public/uploads/avatars');
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    const name = `avatar-${Date.now()}-${Math.random().toString(36).slice(2,6)}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'));
+  }
+});
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // HTTP Security Headers via Helmet
 app.use(helmet({
@@ -345,6 +376,23 @@ app.patch('/api/users/:id', authenticateToken, requireSelfOrAdmin(req => String(
   }
 
   res.json({ user: sanitizeUser(updatedUser) });
+});
+
+// 6.4 Binary Media Upload Pipeline — multipart handling, store file path not Base64
+app.post('/api/uploads/avatar', authenticateToken, upload.single('avatar'), (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No image file provided. Field name must be \"avatar\".' });
+  }
+  const relativeUrl = `/uploads/avatars/${req.file.filename}`;
+  // Optionally update user if userId provided in body and authorized
+  const userId = (req.body.userId as string) || req.user?.id;
+  if (userId) {
+    const user = db.findUserById(String(userId));
+    if (user && (req.user?.id === String(userId) || req.user?.role === 'admin' || req.user?.is_primary_admin)) {
+      db.updateUser(String(userId), { avatar_url: relativeUrl });
+    }
+  }
+  res.json({ success: true, url: relativeUrl, filename: req.file.filename, size: req.file.size });
 });
 
 // ==========================================
@@ -1505,6 +1553,68 @@ app.get('/api/admin/interests-demand', authenticateToken, requireRole('admin'), 
     openRequestsCount: requests.filter(r => r.status === 'open').length,
     matchedRequestsCount: requests.filter(r => r.status === 'matched' || r.status === 'fulfilled').length
   });
+});
+
+// Contact Inquiries & Newsletter — 4.4 Functional Ingestion
+app.post('/api/inquiries', (req: Request, res: Response) => {
+  const { name, email, phone, subject, message } = req.body;
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'Name, email, and message are required' });
+  }
+  const inquiry: Inquiry = {
+    id: `inq-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+    name: String(name).trim(),
+    email: String(email).trim().toLowerCase(),
+    phone: phone ? String(phone).trim() : undefined,
+    subject: subject ? String(subject).trim() : 'General Inquiry',
+    message: String(message).trim(),
+    status: 'open',
+    created_at: new Date().toISOString()
+  };
+  db.createInquiry(inquiry);
+  // Notify admin
+  db.createNotification({
+    id: `notif-${Date.now()}`,
+    user_id: 'usr-admin-ashabahebwa',
+    type: 'system_alert',
+    title: 'New Contact Inquiry',
+    message: `${inquiry.name} (${inquiry.email}) sent: ${inquiry.subject}`,
+    link: '/dashboard/admin',
+    is_read: false,
+    created_at: new Date().toISOString()
+  });
+  db.logAdminAction({
+    admin_id: 'system',
+    admin_name: 'System',
+    action_type: 'INQUIRY_RECEIVED',
+    target_entity: 'Inquiry',
+    target_id: inquiry.id,
+    details: `${inquiry.name} <${inquiry.email}> — ${inquiry.subject}`
+  });
+  res.status(201).json({ success: true, inquiry });
+});
+
+app.get('/api/admin/inquiries', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+  res.json(db.getInquiries());
+});
+
+app.post('/api/newsletter/subscribe', (req: Request, res: Response) => {
+  const { email, interest } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+    return res.status(400).json({ error: 'Valid email is required' });
+  }
+  const sub: NewsletterSubscriber = {
+    id: `news-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+    email: String(email).trim().toLowerCase(),
+    interest: interest ? String(interest).trim() : 'All Practical Trades',
+    created_at: new Date().toISOString()
+  };
+  db.createNewsletterSubscriber(sub);
+  res.status(201).json({ success: true, subscriber: sub });
+});
+
+app.get('/api/admin/newsletter-subscribers', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+  res.json(db.getNewsletterSubscribers());
 });
 
 // Reset Database - Restricted strictly to Primary Administrator

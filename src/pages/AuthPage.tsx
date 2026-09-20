@@ -5,6 +5,9 @@ import {
   AlertCircle, ArrowRight, GraduationCap, BookOpen, MapPin,
   Camera, Upload, X
 } from 'lucide-react';
+import { Field } from '../components/ui/Field';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 
 interface AuthPageProps {
   onSuccess: (role: string) => void;
@@ -114,32 +117,32 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     <div className="max-w-md mx-auto px-4 py-12 space-y-6">
       {/* Brand Header */}
       <div className="text-center space-y-3">
-        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-stone-200/90 p-2.5 mx-auto flex items-center justify-center">
+        <div className="w-16 h-16 bg-white rounded-card shadow-level-1 border border-ink-200/90 p-2.5 mx-auto flex items-center justify-center">
           <img
             src="./logo.png"
             alt="iSkillLink Logo"
-            className="w-full h-full object-contain rounded-xl"
+            className="w-full h-full object-contain rounded-card"
           />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-ink-900 tracking-tight">
             {mode === 'login' ? 'Sign In to iSkillLink' : 'Create an Account'}
           </h1>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-ink-500 mt-0.5">
             Where Skills Meet Opportunity • Mbarara, Uganda
           </p>
         </div>
       </div>
 
       {/* Main Auth Card */}
-      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+      <div className="bg-white p-6 sm:p-8 rounded-card border border-ink-200 shadow-level-1 space-y-5">
         {/* Mode Toggle */}
-        <div className="flex p-1 bg-gray-100 rounded-xl text-xs font-bold">
+        <div className="flex p-1 bg-ink-50 rounded-card text-xs font-bold">
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); }}
             className={`flex-1 py-2 rounded-lg transition ${
-              mode === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+              mode === 'login' ? 'bg-white text-ink-900 shadow-level-1' : 'text-ink-500 hover:text-ink-900'
             }`}
           >
             Sign In
@@ -148,7 +151,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             type="button"
             onClick={() => { setMode('register'); setErrorMsg(''); }}
             className={`flex-1 py-2 rounded-lg transition ${
-              mode === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+              mode === 'register' ? 'bg-white text-ink-900 shadow-level-1' : 'text-ink-500 hover:text-ink-900'
             }`}
           >
             Create New Account
@@ -167,7 +170,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           type="button"
           onClick={() => setShowGoogleModal(true)}
           disabled={isLoading}
-          className="w-full py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2.5 group cursor-pointer"
+          className="w-full py-2.5 px-4 rounded-card border border-ink-200 bg-white hover:bg-ink-50 text-ink-800 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2.5 group cursor-pointer"
         >
           {/* Multi-Color Google G SVG */}
           <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -193,11 +196,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
         {/* Divider */}
         <div className="relative flex items-center justify-center">
-          <div className="border-t border-stone-200 w-full" />
+          <div className="border-t border-ink-200 w-full" />
           <span className="bg-white px-2.5 text-[10px] font-bold uppercase tracking-wider text-stone-400 shrink-0">
             Or with email
           </span>
-          <div className="border-t border-stone-200 w-full" />
+          <div className="border-t border-ink-200 w-full" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -205,31 +208,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             <>
               {/* Role Picker */}
               <div>
-                <label className="block font-semibold text-gray-700 mb-1.5">Account Role:</label>
+                <label className="block font-semibold text-ink-700 mb-1.5">Account Role:</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setRole('learner')}
-                    className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition ${
+                    className={`p-3 rounded-card border flex flex-col items-center gap-1 transition ${
                       role === 'learner'
-                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold'
+                        : 'border-ink-200 text-ink-600 hover:bg-ink-50'
                     }`}
                   >
-                    <BookOpen className="w-4 h-4 text-emerald-700" />
+                    <BookOpen className="w-4 h-4 text-forest-700" />
                     <span>Student / Learner</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setRole('educator')}
-                    className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition ${
+                    className={`p-3 rounded-card border flex flex-col items-center gap-1 transition ${
                       role === 'educator'
-                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold'
+                        : 'border-ink-200 text-ink-600 hover:bg-ink-50'
                     }`}
                   >
-                    <GraduationCap className="w-4 h-4 text-emerald-700" />
+                    <GraduationCap className="w-4 h-4 text-forest-700" />
                     <span>Educator / Artisan</span>
                   </button>
                 </div>
@@ -237,7 +240,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
               {/* Profile Photo (Optional) */}
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">Profile Photo (Optional)</label>
+                <label className="block font-semibold text-ink-700 mb-1">Profile Photo (Optional)</label>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -246,26 +249,26 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   className="hidden"
                 />
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 border border-gray-300 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-card overflow-hidden bg-ink-50 border border-ink-200 flex items-center justify-center shrink-0">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-6 h-6 text-gray-400" />
+                      <User className="w-6 h-6 text-ink-400" />
                     )}
                   </div>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-semibold text-[11px] flex items-center gap-1.5"
+                    className="px-3 py-2 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 text-ink-700 font-semibold text-[11px] flex items-center gap-1.5"
                   >
-                    <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                    <Camera className="w-3.5 h-3.5 text-forest-700" />
                     <span>{avatarUrl ? 'Change Photo' : 'Upload Photo'}</span>
                   </button>
                   {avatarUrl && (
                     <button
                       type="button"
                       onClick={() => setAvatarUrl('')}
-                      className="text-gray-400 hover:text-rose-600 text-[11px]"
+                      className="text-ink-400 hover:text-rose-600 text-[11px]"
                     >
                       Remove
                     </button>
@@ -273,100 +276,81 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Full Name</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Your Full Name"
-                    className="w-full p-2.5 pl-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
-                    required
-                  />
-                  <User className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" />
-                </div>
-              </div>
+              <Field label="Full Name" htmlFor="auth-name" required>
+                <Input
+                  id="auth-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Your Full Name"
+                  leftIcon={<User className="w-4 h-4" />}
+                  required
+                />
+              </Field>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Mobile Phone Number</label>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+256 70X XXX XXX"
-                    className="w-full p-2.5 pl-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
-                    required
-                  />
-                  <Phone className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" />
-                </div>
-              </div>
+              <Field label="Mobile Phone Number" htmlFor="auth-phone" required>
+                <Input
+                  id="auth-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+256 70X XXX XXX"
+                  leftIcon={<Phone className="w-4 h-4" />}
+                  required
+                />
+              </Field>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Location / Division</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g. Mbarara City, Kakoba, Kampala..."
-                    className="w-full p-2.5 pl-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
-                    required
-                  />
-                  <MapPin className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" />
-                </div>
-              </div>
+              <Field label="Location / Division" htmlFor="auth-location" required>
+                <Input
+                  id="auth-location"
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Mbarara City, Kakoba, Kampala..."
+                  leftIcon={<MapPin className="w-4 h-4" />}
+                  required
+                />
+              </Field>
             </>
           )}
 
-          <div>
-            <label className="block font-semibold text-gray-700 mb-1">Email Address</label>
-            <div className="relative">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full p-2.5 pl-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
-                required
-              />
-              <Mail className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" />
-            </div>
-          </div>
+          <Field label="Email Address" htmlFor="auth-email" required>
+            <Input
+              id="auth-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              leftIcon={<Mail className="w-4 h-4" />}
+              required
+            />
+          </Field>
 
-          <div>
-            <label className="block font-semibold text-gray-700 mb-1">Password</label>
-            <div className="relative">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full p-2.5 pl-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
-                required
-              />
-              <Lock className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" />
-            </div>
-          </div>
+          <Field label="Password" htmlFor="auth-password" required>
+            <Input
+              id="auth-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              leftIcon={<Lock className="w-4 h-4" />}
+              required
+            />
+          </Field>
 
-          <button
+          <Button
             type="submit"
-            disabled={isLoading}
-            className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+            variant="primary"
+            size="md"
+            isLoading={isLoading}
+            rightIcon={<ArrowRight className="w-4 h-4" />}
+            className="w-full"
           >
-            {isLoading ? (
-              <span>Processing...</span>
-            ) : (
-              <>
-                <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+            {mode === 'login' ? 'Sign In' : 'Create Account'}
+          </Button>
         </form>
 
-        <div className="pt-3 border-t border-gray-100 text-center text-xs text-gray-500">
+        <div className="pt-3 border-t border-ink-100 text-center text-xs text-ink-500">
           Protected by iSkillLink Security • Headquartered in Mbarara City
         </div>
       </div>
@@ -374,7 +358,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
       {/* Google Sign-In Selector Modal */}
       {showGoogleModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200 space-y-4">
+          <div className="bg-white rounded-card max-w-sm w-full p-6 shadow-level-3 border border-ink-200 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -383,52 +367,52 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
-                <h3 className="font-bold text-stone-900 text-sm">Sign in with Google</h3>
+                <h3 className="font-bold text-ink-900 text-sm">Sign in with Google</h3>
               </div>
               <button
                 onClick={() => setShowGoogleModal(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
+                className="text-stone-400 hover:text-ink-600 p-1"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-ink-600">
               Choose your Google account to continue to <strong>iSkillLink Uganda</strong>:
             </p>
 
             <div className="space-y-2">
               <button
                 onClick={() => handleGoogleSignIn('ashabahebwahassan665@gmail.com', 'Ashabahebwa Hassan')}
-                className="w-full p-3 rounded-xl border border-stone-200 hover:bg-stone-50 text-left flex items-center gap-3 transition"
+                className="w-full p-3 rounded-card border border-ink-200 hover:bg-ink-50 text-left flex items-center gap-3 transition"
               >
                 <img
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
                   alt="Ashabahebwa Hassan"
-                  className="w-9 h-9 rounded-full object-cover border border-stone-300"
+                  className="w-9 h-9 rounded-full object-cover border border-ink-200"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-stone-900 truncate">Ashabahebwa Hassan (Admin)</div>
-                  <div className="text-[11px] text-stone-500 truncate">ashabahebwahassan665@gmail.com</div>
+                  <div className="text-xs font-bold text-ink-900 truncate">Ashabahebwa Hassan (Admin)</div>
+                  <div className="text-[11px] text-ink-500 truncate">ashabahebwahassan665@gmail.com</div>
                 </div>
               </button>
 
               <button
                 onClick={() => handleGoogleSignIn('iskilllink0@gmail.com', 'iSkillLink Official')}
-                className="w-full p-3 rounded-xl border border-stone-200 hover:bg-stone-50 text-left flex items-center gap-3 transition"
+                className="w-full p-3 rounded-card border border-ink-200 hover:bg-ink-50 text-left flex items-center gap-3 transition"
               >
-                <div className="w-9 h-9 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-9 h-9 rounded-full bg-forest-700 text-white flex items-center justify-center font-bold text-xs">
                   iS
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-stone-900 truncate">iSkillLink Inquiries</div>
-                  <div className="text-[11px] text-stone-500 truncate">iskilllink0@gmail.com</div>
+                  <div className="text-xs font-bold text-ink-900 truncate">iSkillLink Inquiries</div>
+                  <div className="text-[11px] text-ink-500 truncate">iskilllink0@gmail.com</div>
                 </div>
               </button>
             </div>
 
             <div className="pt-2 border-t border-stone-100">
-              <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+              <label className="block text-[11px] font-semibold text-ink-700 mb-1">
                 Or enter another Google account:
               </label>
               <div className="space-y-2">
@@ -437,20 +421,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   placeholder="Your Name (e.g. Brian Tumusiime)"
                   value={googleCustomName}
                   onChange={(e) => setGoogleCustomName(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-emerald-600 bg-stone-50"
+                  className="w-full text-xs p-2 rounded-lg border border-ink-200 focus:outline-none focus:ring-1 focus:ring-forest-700 bg-ink-50"
                 />
                 <input
                   type="email"
                   placeholder="name@gmail.com"
                   value={googleCustomEmail}
                   onChange={(e) => setGoogleCustomEmail(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-emerald-600 bg-stone-50"
+                  className="w-full text-xs p-2 rounded-lg border border-ink-200 focus:outline-none focus:ring-1 focus:ring-forest-700 bg-ink-50"
                 />
                 <button
                   type="button"
                   disabled={!googleCustomEmail || !googleCustomName}
                   onClick={() => handleGoogleSignIn(googleCustomEmail, googleCustomName)}
-                  className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 text-white text-xs font-bold rounded-lg transition"
+                  className="w-full py-2 bg-forest-700 hover:bg-forest-800 disabled:opacity-40 text-white text-xs font-bold rounded-lg transition"
                 >
                   Continue as {googleCustomName || 'New User'}
                 </button>
