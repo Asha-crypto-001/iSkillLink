@@ -175,10 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <img src={logoUrl} alt="" className="w-full h-full object-contain rounded-lg" aria-hidden="true" />
                 </span>
                 <span className="leading-none">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[18px] lg:text-[20px] font-bold tracking-tight text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif", letterSpacing: '-0.02em' }}>iSkillLink</span>
-                    <span className="inline-flex h-[17px] w-[23px] shrink-0 translate-y-px items-center justify-center rounded-[5px] bg-ink-900 px-0 text-[9px] font-bold leading-none tracking-normal text-white">UG</span>
-                  </span>
+                  <span className="block text-[18px] lg:text-[20px] font-bold tracking-tight text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif", letterSpacing: '-0.02em' }}>iSkillLink</span>
                   <span className="block text-[11px] font-medium tracking-tight text-ink-500 -mt-0.5" style={{ fontFamily: "'Google Sans', sans-serif" }}>Where Skills Meet Opportunity</span>
                 </span>
               </button>
