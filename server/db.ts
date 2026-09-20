@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,6 +16,7 @@ import {
   initialReviews, initialMessages, initialNotifications, initialAdminActions
 } from './seedData.js';
 import { hashPasswordSync } from './utils/security.js';
+import { Pool } from 'pg';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,10 +48,35 @@ export interface DatabaseState {
 
 class Database {
   private data: DatabaseState;
+  private postgresPool: Pool | null = process.env.DATABASE_URL
+    ? new Pool({ connectionString: process.env.DATABASE_URL, max: 5, ssl: { rejectUnauthorized: false } })
+    : null;
 
   constructor() {
     this.data = this.loadDatabase();
     this.ensurePasswordsHashed();
+  }
+
+  public async initialize() {
+    if (!this.postgresPool) return;
+
+    await this.postgresPool.query(`
+      CREATE TABLE IF NOT EXISTS app_state (
+        id integer PRIMARY KEY CHECK (id = 1),
+        state jsonb NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    const result = await this.postgresPool.query<{ state: DatabaseState }>(
+      'SELECT state FROM app_state WHERE id = 1'
+    );
+    if (result.rows[0]?.state) {
+      this.data = result.rows[0].state;
+      this.ensurePasswordsHashed();
+      return;
+    }
+
+    await this.persistToPostgres();
   }
 
   /**
@@ -91,16 +118,33 @@ class Database {
   }
 
   private saveData(dataToSave?: DatabaseState) {
+    if (this.postgresPool) {
+      void this.persistToPostgres(dataToSave).catch(error => {
+        console.error('Failed to persist PostgreSQL application state:', error);
+      });
+      return;
+    }
     try {
       const data = dataToSave || this.data;
       const dir = path.dirname(DB_FILE);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
+
       fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (err) {
       console.error('Failed to persist database file:', err);
     }
+  }
+
+  private async persistToPostgres(dataToSave?: DatabaseState) {
+    if (!this.postgresPool) return;
+    await this.postgresPool.query(
+      `INSERT INTO app_state (id, state, updated_at)
+       VALUES (1, $1::jsonb, now())
+       ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state, updated_at = now()`,
+      [JSON.stringify(dataToSave || this.data)]
+    );
   }
 
   public resetToDefault() {
@@ -526,3 +570,4 @@ class Database {
 }
 
 export const db = new Database();
+await db.initialize();

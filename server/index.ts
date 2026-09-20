@@ -34,6 +34,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const PORT: number = Number(process.env.PORT) || 3001;
+if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+  console.error('[FATAL] DATABASE_URL is not set. Refusing to start production without PostgreSQL.');
+  process.exit(1);
+}
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 if (process.env.NODE_ENV === 'production' && !GOOGLE_CLIENT_ID) {
@@ -1667,6 +1671,10 @@ app.post('/api/system/reset', authenticateToken, requirePrimaryAdmin, (req: Requ
   res.json({ success: true, message: 'Database reset to default data' });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`[iSkillLink API Server] Running on http://0.0.0.0:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[iSkillLink API Server] Running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+export default app;
