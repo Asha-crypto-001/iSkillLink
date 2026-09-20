@@ -77,24 +77,27 @@ Register every production frontend origin in Google Cloud Console. The API must 
 
 ### Production deployment
 
-The GitHub Pages site is a static frontend. Authentication requires the Express API to run separately. The API now supports Vercel Functions with Supabase PostgreSQL:
+The GitHub Pages site is a static frontend. Authentication foundation is provided by Supabase Auth, PostgreSQL, and the `auth` Edge Function:
 
-1. Create a Supabase project and copy its PostgreSQL connection string into the Vercel `DATABASE_URL` environment variable.
-2. Import this repository into Vercel. The included [vercel.json](./vercel.json) exposes the Express API under `/api`.
-3. Set `CLIENT_ORIGIN` to `https://asha-crypto-001.github.io`.
-4. Set `GOOGLE_CLIENT_ID` to the same Google Web client ID used by the frontend.
-5. Set a long random `JWT_SECRET` and keep it private.
+1. Create a Supabase project.
+2. Run [supabase/migrations/20260920190000_auth_foundation.sql](./supabase/migrations/20260920190000_auth_foundation.sql) in the Supabase SQL Editor.
+3. Deploy [supabase/functions/auth/index.ts](./supabase/functions/auth/index.ts) as the `auth` Edge Function.
+4. Configure the function secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `CLIENT_ORIGIN`.
+5. Enable Google as a Supabase Auth provider and configure its Google client ID and secret.
 6. Add these GitHub repository Actions secrets:
-   - `VITE_API_URL`: the Vercel API URL ending in `/api`, for example `https://iskilllink.vercel.app/api`
-   - `VITE_GOOGLE_CLIENT_ID`: the Google Web client ID
-7. Replace `VITE_API_URL` with the deployed Vercel API URL ending in `/api`.
-8. In Google Cloud Console, add `https://asha-crypto-001.github.io` to the authorized JavaScript origins.
-9. Push to `main` to rebuild GitHub Pages with the API URL.
+   - `VITE_SUPABASE_URL`: the Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: the Supabase anon/public key
+   - `VITE_SUPABASE_AUTH_URL`: `https://your-project.supabase.co/functions/v1/auth`
+   - `VITE_GOOGLE_CLIENT_ID`: the Google Web client ID used by GIS
+7. In Google Cloud Console and Supabase Auth, add `https://asha-crypto-001.github.io` to the allowed origins/redirect URLs.
+8. Push to `main` to rebuild GitHub Pages with Supabase authentication.
 
 Verify the API before testing the frontend:
 
 ```bash
-curl https://your-vercel-project.vercel.app/api/health
+curl -i -X POST https://your-project.supabase.co/functions/v1/auth \
+  -H "Content-Type: application/json" \
+  -d '{"action":"login","email":"user@example.com","password":"password"}'
 ```
 
 It should return `{"status":"ok"}`.

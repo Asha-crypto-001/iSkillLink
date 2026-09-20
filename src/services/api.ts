@@ -14,12 +14,31 @@ import {
   initialLocalPayments,
   initialLocalAuditLogs
 } from './localData';
+import { supabase, supabaseAuthUrl } from './supabase';
 
 const API_BASE = ((import.meta as any).env?.VITE_API_URL as string) || '/api';
 if (import.meta.env.PROD && API_BASE === '/api') {
   console.error('[Auth] VITE_API_URL is not configured for the production frontend.');
 }
 let authToken: string | null = null;
+
+async function supabaseAuthRequest(action: string, payload: Record<string, unknown> = {}) {
+  if (!supabaseAuthUrl) throw new Error('Supabase authentication URL is not configured.');
+  const response = await fetch(supabaseAuthUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  return await handleResponse<any>(response);
+}
+
+async function adoptSupabaseSession(data: any) {
+  if (supabase && data.session) {
+    await supabase.auth.setSession(data.session);
+  }
+  if (data.token) setAuthToken(data.token);
+  return data;
+}
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -128,6 +147,9 @@ async function handleResponse<T>(res: Response): Promise<T> {
 export const api = {
   // Auth & Session
   async login(email: string, password?: string) {
+    if (supabase && supabaseAuthUrl) {
+      return adoptSupabaseSession(await supabaseAuthRequest('login', { email, password }));
+    }
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -139,6 +161,9 @@ export const api = {
   },
 
   async loginWithGoogle(credential: string) {
+    if (supabase && supabaseAuthUrl) {
+      return adoptSupabaseSession(await supabaseAuthRequest('google', { credential }));
+    }
     const res = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -150,6 +175,11 @@ export const api = {
   },
 
   async logout() {
+    if (supabase) {
+      await supabase.auth.signOut();
+      clearAuthSession();
+      return;
+    }
     const res = await fetch(`${API_BASE}/auth/logout`, {
       method: 'POST',
       headers: getAuthHeaders()
@@ -161,6 +191,9 @@ export const api = {
   },
 
   async register(data: any) {
+    if (supabase && supabaseAuthUrl) {
+      return adoptSupabaseSession(await supabaseAuthRequest('register', data));
+    }
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
@@ -253,6 +286,11 @@ export const api = {
   },
 
   async getMe(userId?: string) {
+    if (supabase && supabaseAuthUrl) {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return { user: null, learnerProfile: null, educatorProfile: null };
+      return await supabaseAuthRequest('me');
+    }
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: getAuthHeaders()
     });

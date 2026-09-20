@@ -33,8 +33,10 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_AUTH_URL: ${{ secrets.VITE_SUPABASE_AUTH_URL }}
         run: npm run build
 
       - name: Preserve SPA routes
