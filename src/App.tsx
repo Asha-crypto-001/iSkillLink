@@ -59,6 +59,8 @@ const AppContent: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const currentView = getViewFromPath(location.pathname);
+  const isDashboardRoute = location.pathname.startsWith('/dashboard/');
+  const isAuthRoute = location.pathname === '/auth';
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -178,12 +180,14 @@ const AppContent: React.FC = () => {
         </div>
       )}
 
-      <Navbar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-        onOpenAuth={() => navigate('/auth')}
-      />
+      {!isDashboardRoute && !isAuthRoute && (
+        <Navbar
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          onOpenSkillRequest={() => setShowSkillRequestModal(true)}
+          onOpenAuth={() => navigate('/auth')}
+        />
+      )}
 
       <main id="main-content" className="flex-1 focus:outline-none overflow-x-clip min-w-0" tabIndex={-1}>
         <Routes>
@@ -282,7 +286,7 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      <Footer setCurrentView={setCurrentView} />
+      {!isDashboardRoute && !isAuthRoute && <Footer setCurrentView={setCurrentView} />}
     </div>
   );
 };
