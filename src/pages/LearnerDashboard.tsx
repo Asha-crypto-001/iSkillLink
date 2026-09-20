@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { StatusBadge } from '../components/ui/Badge';
+import { DashboardHeader, DashboardShell, SectionHeader, StatRow } from '../components/dashboard';
 
 interface LearnerDashboardProps {
   onOpenSkillRequest: () => void;
@@ -109,6 +110,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
   if (loading) {
     return (
+      <DashboardShell role="learner">
       <div className="container-app py-6 space-y-6" aria-busy="true" aria-live="polite">
         <div className="h-32 rounded-3xl bg-white border border-ink-200 shadow-level-1 relative overflow-hidden">
           <div className="absolute inset-0 bg-ink-100 animate-pulse" aria-hidden="true" />
@@ -122,149 +124,48 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           <div className="h-4 w-5/6 bg-ink-100 animate-pulse rounded" />
         </div>
       </div>
+      </DashboardShell>
     );
   }
 
   return (
-    <div className="container-app py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <nav aria-label="Breadcrumb" className="text-xs">
-            <ol className="flex items-center gap-1.5 text-ink-500">
-              <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Home</a></li>
-              <li className="text-ink-400" aria-hidden="true">›</li>
-              <li><a href="/dashboard/learner" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/learner');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Dashboard</a></li>
-              <li className="text-ink-400" aria-hidden="true">›</li>
-              <li className="text-ink-900 font-semibold capitalize">{activeTab}</li>
-            </ol>
-          </nav>
-        </div>
-      </div>
-      {/* Top Banner with Persona Profile */}
-      <div className="bg-ink-950 text-white p-6 sm:p-8 rounded-3xl border border-ink-800 shadow-level-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <img
-              src={user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-              alt={user?.name}
-              className="w-16 h-16 rounded-card object-cover border-2 border-emerald-500 shadow"
-            />
-            <button
-              onClick={() => setShowPhotoModal(true)}
-              className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-emerald-600 text-white shadow hover:bg-forest-500 transition"
-              title="Change Profile Photo"
-            >
-              <Camera className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">
-                Learner Portal
-              </span>
-              <span className="text-xs text-ink-400">{user?.location || 'Mbarara City, Uganda'}</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">
-              Welcome back, {user?.name}
-            </h1>
-            <p className="text-xs text-ink-300 mt-0.5 max-w-md">
-              {learnerProfile?.bio || 'Track your practical apprenticeships, manage verified bookings, and communicate with educators.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button
-            onClick={() => setShowPhotoModal(true)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-card bg-ink-900 hover:bg-slate-700 text-white font-semibold text-xs transition border border-ink-700 flex items-center justify-center gap-2"
-          >
-            <Camera className="w-4 h-4 text-emerald-400" />
-            <span>Update Photo</span>
-          </button>
-          <button
-            onClick={onOpenSkillRequest}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-card bg-emerald-600 hover:bg-forest-500 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Request New Skill</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation Tabs — Phase 4: snap scroll, 44px targets, no squeeze */}
-      <div className="bg-white rounded-card border border-ink-200 p-2 shadow-level-1 overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Learner dashboard sections">
-        {[
-          { id: 'overview', label: 'Overview', icon: BookOpen },
-          { id: 'requests', label: `My Requests (${requests.length})`, icon: Clock },
-          { id: 'bookings', label: `Bookings (${bookings.length})`, icon: Calendar },
-          { id: 'payments', label: `Payments & Escrow (${payments.length})`, icon: CreditCard },
-          { id: 'messages', label: `Messages`, icon: MessageSquare },
-          { id: 'profile', label: 'Profile Settings', icon: User }
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-card text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
-                isActive
-                  ? 'bg-forest-700 text-white shadow'
-                  : 'text-ink-600 hover:text-ink-900 hover:bg-ink-50'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <DashboardShell role="learner" navItems={[
+      { label: 'Overview', href: '/dashboard/learner', icon: BookOpen, end: true },
+      { label: 'My requests', href: '/dashboard/learner/requests', icon: Clock },
+      { label: 'Bookings', href: '/dashboard/learner/bookings', icon: Calendar },
+      { label: 'Payments', href: '/dashboard/learner/payments', icon: CreditCard },
+      { label: 'Messages', href: '/dashboard/learner/messages', icon: MessageSquare },
+      { label: 'Reviews', href: '/dashboard/learner/reviews', icon: Star },
+      { label: 'Profile', href: '/dashboard/learner/profile', icon: User }
+    ]}>
+    <div className="container-app space-y-6">
+      <DashboardHeader
+        eyebrow="Learner portal"
+        title={`Welcome back, ${user?.name || 'Learner'}`}
+        description={learnerProfile?.bio || 'Track your practical apprenticeships, manage verified bookings, and communicate with educators.'}
+        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/learner' }, { label: activeTab }]}
+        actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button><button onClick={onOpenSkillRequest} className="rounded-card bg-forest-700 px-4 py-2 text-xs font-bold text-white"><PlusCircle className="mr-2 inline h-4 w-4" />Request New Skill</button></>}
+      />
 
       {/* TAB CONTENT: OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Quick Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Active Bookings</div>
-              <div className="text-2xl font-bold text-ink-900">{activeBookingsCount}</div>
-              <div className="text-[11px] text-forest-700 font-medium">Scheduled & in progress</div>
-            </div>
-
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Completed Sessions</div>
-              <div className="text-2xl font-bold text-ink-900">{completedSessionsCount}</div>
-              <div className="text-[11px] text-forest-700 font-medium">Verified practical milestones</div>
-            </div>
-
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Active Skill Requests</div>
-              <div className="text-2xl font-bold text-ink-900">{requests.length}</div>
-              <div className="text-[11px] text-blue-700 font-medium">In matching pool</div>
-            </div>
-
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Total Escrow Volume</div>
-              <div className="text-xl font-bold text-ink-900">{formatUGX(totalInvestedUGX)}</div>
-              <div className="text-[11px] text-forest-700 font-medium">Protected by iSkillLink Escrow</div>
-            </div>
-          </div>
+          <StatRow stats={[
+            { label: 'Active Bookings', value: activeBookingsCount, detail: 'Scheduled & in progress', trend: 'up', icon: Calendar },
+            { label: 'Completed Sessions', value: completedSessionsCount, detail: 'Verified practical milestones', icon: CheckCircle2 },
+            { label: 'Active Skill Requests', value: requests.length, detail: 'In matching pool', icon: Clock, accent: 'ink' },
+            { label: 'Total Escrow Volume', value: formatUGX(totalInvestedUGX), detail: 'Protected by iSkillLink Escrow', icon: CreditCard }
+          ]} />
 
           {/* Upcoming Sessions Section */}
           <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-ink-900 uppercase tracking-wider">
-                Upcoming & Active Sessions
-              </h3>
-              <button
+            <SectionHeader title="Upcoming & Active Sessions" action={<button
                 onClick={() => setActiveTab('bookings')}
                 className="text-xs font-bold text-forest-700 hover:text-forest-800"
               >
                 View all bookings
-              </button>
-            </div>
+              </button>} />
 
             {bookings.length > 0 ? (
               <div className="space-y-3">
@@ -742,5 +643,6 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
         onClose={() => setShowPhotoModal(false)}
       />
     </div>
+    </DashboardShell>
   );
 };

@@ -8,6 +8,7 @@ import { StatusBadge } from '../components/ui/Badge';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { DashboardHeader, DashboardShell, SectionHeader, StatRow } from '../components/dashboard';
 import {
   GraduationCap, Calendar, Clock, DollarSign, Star,
   MessageSquare, Settings, ShieldCheck, CheckCircle2,
@@ -116,6 +117,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
   if (loading) {
     return (
+      <DashboardShell role="educator">
       <div className="container-app py-6 space-y-6" aria-busy="true" aria-live="polite">
         <div className="h-32 rounded-3xl bg-white border border-ink-200 shadow-level-1 relative overflow-hidden">
           <Skeleton className="w-full h-full" />
@@ -129,150 +131,46 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           <Skeleton className="h-4 w-5/6" />
         </div>
       </div>
+      </DashboardShell>
     );
   }
 
   return (
-    <div className="container-app py-6 space-y-6">
-      <nav aria-label="Breadcrumb" className="text-xs">
-        <ol className="flex items-center gap-1.5 text-ink-500">
-          <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Home</a></li>
-          <li className="text-ink-400" aria-hidden="true">›</li>
-          <li><a href="/dashboard/educator" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/educator');}} className="hover:text-forest-700 focus-visible:ring-2 focus-visible:ring-forest-700 rounded">Dashboard</a></li>
-          <li className="text-ink-400" aria-hidden="true">›</li>
-          <li className="text-ink-900 font-semibold capitalize">{activeTab}</li>
-        </ol>
-      </nav>
-      {/* Top Banner */}
-      <div className="bg-ink-950 text-white p-6 sm:p-8 rounded-3xl border border-ink-800 shadow-level-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <img
-              src={user?.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'}
-              alt={user?.name}
-              className="w-16 h-16 rounded-card object-cover border-2 border-emerald-500 shadow"
-            />
-            <button
-              onClick={() => setShowPhotoModal(true)}
-              className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-emerald-600 text-white shadow hover:bg-forest-500 transition"
-              title="Change Profile Photo"
-            >
-              <Camera className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Verified Educator Portal
-              </span>
-              <span className="text-xs text-ink-400">{educator?.location}</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">
-              {user?.name} ({educator?.title})
-            </h1>
-            <div className="flex items-center gap-3 text-xs text-ink-300 mt-1">
-              <span>{educator?.years_experience} Yrs Craft</span>
-              <span>•</span>
-              <span className="flex items-center gap-1 text-amber-300 font-bold">
-                <Star className="w-3.5 h-3.5 fill-amber-400" />
-                {educator?.rating || 4.9} ({educator?.total_reviews || 0} reviews)
-              </span>
-              <span>•</span>
-              <span className="text-emerald-400 font-bold">Rate: {formatUGX(educator?.hourly_rate_ugx || 35000)}/hr</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowPhotoModal(true)}
-            className="px-3.5 py-2 bg-ink-900 hover:bg-slate-700 text-white border border-ink-700 rounded-card text-xs font-semibold flex items-center gap-1.5 transition"
-          >
-            <Camera className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Update Photo</span>
-          </button>
-          <span className="px-3 py-1.5 rounded-card text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-            Status: {educator?.status?.toUpperCase()}
-          </span>
-        </div>
-      </div>
-
-      {/* Navigation Tabs — Phase 4: snap, 44px, thumb-reach */}
-      <div className="bg-white rounded-card border border-ink-200 p-2 shadow-level-1 overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Educator dashboard sections">
-        {[
-          { id: 'overview', label: 'Overview', icon: GraduationCap },
-          { id: 'bookings', label: `Bookings (${bookings.length})`, icon: Calendar },
-          { id: 'leads', label: `Student Leads (${openRequests.length})`, icon: Clock },
-          { id: 'earnings', label: `Earnings & Payouts`, icon: DollarSign },
-          { id: 'reviews', label: `Student Reviews (${reviews.length})`, icon: Star },
-          { id: 'profile', label: 'Workshop & Rates', icon: Settings }
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-card text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
-                isActive
-                  ? 'bg-forest-700 text-white shadow'
-                  : 'text-ink-600 hover:text-ink-900 hover:bg-ink-50'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <DashboardShell role="educator" navItems={[
+      { label: 'Overview', href: '/dashboard/educator', icon: GraduationCap, end: true },
+      { label: 'Bookings', href: '/dashboard/educator/bookings', icon: Calendar },
+      { label: 'Leads', href: '/dashboard/educator/leads', icon: Clock },
+      { label: 'Earnings', href: '/dashboard/educator/earnings', icon: DollarSign },
+      { label: 'Reviews', href: '/dashboard/educator/reviews', icon: Star },
+      { label: 'Profile', href: '/dashboard/educator/profile', icon: Settings }
+    ]}>
+    <div className="container-app space-y-6">
+      <DashboardHeader
+        eyebrow="Verified educator portal"
+        title={`${user?.name || 'Educator'}${educator?.title ? ` (${educator.title})` : ''}`}
+        description={`${educator?.years_experience || 0} years craft experience • ${educator?.rating || 4.9}★ from ${educator?.total_reviews || 0} reviews • ${formatUGX(educator?.hourly_rate_ugx || 35000)}/hr`}
+        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: activeTab }]}
+        actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button><span className="rounded-card bg-forest-50 px-3 py-2 text-xs font-bold text-forest-700">Status: {educator?.status?.toUpperCase()}</span></>}
+      />
 
       {/* OVERVIEW TAB */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Total Students Mentored</div>
-              <div className="text-2xl font-bold text-ink-900">{educator?.total_students || 31}</div>
-              <div className="text-[11px] text-forest-700 font-medium">Hands-on apprentices</div>
-            </div>
-
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Active Bookings</div>
-              <div className="text-2xl font-bold text-ink-900">
-                {bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length}
-              </div>
-              <div className="text-[11px] text-blue-700 font-medium">Upcoming training sessions</div>
-            </div>
-
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Net Payouts (UGX)</div>
-              <div className="text-xl font-bold text-ink-900">{formatUGX(totalNetPayout)}</div>
-              <div className="text-[11px] text-forest-700 font-medium">Direct Mobile Money disbursal</div>
-            </div>
-
-            <div className="p-5 rounded-card bg-white border border-ink-200 shadow-level-1 space-y-1">
-              <div className="text-xs text-ink-500 font-semibold">Average Rating</div>
-              <div className="text-2xl font-bold text-ink-900">{educator?.rating || 4.9}★</div>
-              <div className="text-[11px] text-amber-700 font-medium">From {reviews.length} reviews</div>
-            </div>
-          </div>
+          <StatRow stats={[
+            { label: 'Total Students Mentored', value: educator?.total_students || 31, detail: 'Hands-on apprentices', icon: User },
+            { label: 'Active Bookings', value: bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length, detail: 'Upcoming training sessions', icon: Calendar },
+            { label: 'Net Payouts (UGX)', value: formatUGX(totalNetPayout), detail: 'Direct Mobile Money disbursal', icon: DollarSign },
+            { label: 'Average Rating', value: `${educator?.rating || 4.9}★`, detail: `From ${reviews.length} reviews`, icon: Star, accent: 'amber' }
+          ]} />
 
           {/* Pending Bookings to Accept */}
           <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-ink-900 uppercase tracking-wider">
-                Pending Learner Requests
-              </h3>
-              <button
+            <SectionHeader title="Pending Learner Requests" action={<button
                 onClick={() => setActiveTab('bookings')}
                 className="text-xs font-bold text-forest-700 hover:text-forest-800"
               >
                 View all bookings
-              </button>
-            </div>
+              </button>} />
 
             <div className="space-y-3">
               {bookings.filter(b => b.status === 'pending').length > 0 ? (
@@ -638,5 +536,6 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         onClose={() => setShowPhotoModal(false)}
       />
     </div>
+    </DashboardShell>
   );
 };

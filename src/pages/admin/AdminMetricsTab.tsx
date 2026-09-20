@@ -2,6 +2,8 @@ import React from 'react';
 import { AdminMetrics, LearnerRequest, AdminAction } from '../../types';
 import { formatUGX, formatShortDate } from '../../utils/formatters';
 import { StatusBadge } from '../../components/ui/Badge';
+import { SectionHeader, StatRow } from '../../components/dashboard';
+import { CreditCard, ShieldCheck, Users, Clock } from 'lucide-react';
 
 interface AdminMetricsTabProps {
   metrics: AdminMetrics | null;
@@ -20,32 +22,12 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      {/* Metrics Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-          <div className="text-xs text-gray-500 font-semibold">Registered Platform Users</div>
-          <div className="text-2xl font-black text-gray-900">{totalUsersCount}</div>
-          <div className="text-[11px] text-emerald-700 font-medium">Learners, Artisans & Admins</div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-          <div className="text-xs text-gray-500 font-semibold">Active Verified Educators</div>
-          <div className="text-2xl font-black text-gray-900">{metrics?.activeEducators || 0}</div>
-          <div className="text-[11px] text-emerald-700 font-medium">All ID & workshop vetted</div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-          <div className="text-xs text-gray-500 font-semibold">Pending Verification Queue</div>
-          <div className="text-2xl font-black text-amber-600">{metrics?.pendingApplications || 0}</div>
-          <div className="text-[11px] text-amber-700 font-medium">Awaiting admin review</div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-          <div className="text-xs text-gray-500 font-semibold">Total Escrow Volume</div>
-          <div className="text-xl font-black text-gray-900">{formatUGX(metrics?.totalVolumeUgx || 0)}</div>
-          <div className="text-[11px] text-emerald-700 font-medium">MTN & Airtel protected</div>
-        </div>
-      </div>
+      <StatRow stats={[
+        { label: 'Registered platform users', value: totalUsersCount, detail: 'Learners, educators & admins', icon: Users },
+        { label: 'Active educators', value: metrics?.activeEducators || 0, detail: 'Verified and available', icon: ShieldCheck },
+        { label: 'Pending verification', value: metrics?.pendingApplications || 0, detail: 'Requires admin review', icon: Clock, accent: 'amber' },
+        { label: 'Escrow volume', value: formatUGX(metrics?.totalVolumeUgx || 0), detail: 'Protected learner payments', icon: CreditCard }
+      ]} />
 
       {/* Quick Operations Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

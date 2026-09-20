@@ -20,6 +20,7 @@ import { AdminMatchmakerTab } from './admin/AdminMatchmakerTab';
 import { AdminEducatorsTab } from './admin/AdminEducatorsTab';
 import { AdminPaymentsTab } from './admin/AdminPaymentsTab';
 import { AdminAuditTab } from './admin/AdminAuditTab';
+import { DashboardHeader, DashboardShell } from '../components/dashboard';
 
 type AdminTab =
   | 'metrics'
@@ -204,51 +205,24 @@ export const AdminDashboard: React.FC = () => {
   const isLeadAdmin = user?.email === 'ashabahebwahassan665@gmail.com' || user?.role === 'admin';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <nav aria-label="Breadcrumb" className="text-xs">
-        <ol className="flex items-center gap-1.5 text-gray-500">
-          <li><a href="/" onClick={(e)=>{e.preventDefault(); navigate('/');}} className="hover:text-emerald-700 font-medium">Home</a></li>
-          <li className="text-gray-400">›</li>
-          <li><a href="/dashboard/admin" onClick={(e)=>{e.preventDefault(); navigate('/dashboard/admin');}} className="hover:text-emerald-700 font-medium">Operations</a></li>
-          <li className="text-gray-400">›</li>
-          <li className="text-gray-900 font-semibold capitalize">{activeTab}</li>
-        </ol>
-      </nav>
-      {/* Operations Header */}
-      <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="flex items-start sm:items-center gap-4">
-          <div className="w-12 h-12 bg-white rounded-2xl shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0">
-            <img
-              src="./logo.png"
-              alt="iSkillLink Logo"
-              className="w-full h-full object-contain rounded-xl"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Platform Operations & Trust Center
-              </span>
-              <span className="text-xs text-slate-400">Mbarara HQ, Western Uganda</span>
-            </div>
-            <h1 className="text-2xl font-black text-white tracking-tight mt-1">
-              iSkillLink Operations Dashboard
-            </h1>
-            <p className="text-xs text-slate-300 mt-0.5">
-              Admin oversight: Verification queues, user directory & contacts, demand intelligence, secondary admin delegation, and escrow ledger.
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={loadAdminData}
-          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition shrink-0"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh Data</span>
-        </button>
-      </div>
+    <DashboardShell role="admin" navItems={[
+      { label: 'Overview', href: '/dashboard/admin', icon: ShieldCheck, end: true },
+      { label: 'Users', href: '/dashboard/admin/users', icon: Users },
+      { label: 'Interests', href: '/dashboard/admin/interests', icon: TrendingUp },
+      { label: 'Verification', href: '/dashboard/admin/verification', icon: CheckCircle2 },
+      { label: 'Matchmaker', href: '/dashboard/admin/matchmaker', icon: Sparkles },
+      { label: 'Educators', href: '/dashboard/admin/educators', icon: GraduationCap },
+      { label: 'Payments', href: '/dashboard/admin/payments', icon: CreditCard },
+      { label: 'Audit trail', href: '/dashboard/admin/audit', icon: FileText }
+    ]}>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <DashboardHeader
+        eyebrow="Platform operations & trust center"
+        title="iSkillLink Operations Dashboard"
+        description="Admin oversight for verification queues, user directory, demand intelligence, delegation, and escrow."
+        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Operations', href: '/dashboard/admin' }, { label: activeTab }]}
+        actions={<button onClick={loadAdminData} className="rounded-card bg-forest-700 px-4 py-2 text-xs font-semibold text-white"><RefreshCw className="mr-2 inline h-4 w-4" />Refresh Data</button>}
+      />
 
       {/* Admin Profile & Lead Badge */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
@@ -309,39 +283,6 @@ export const AdminDashboard: React.FC = () => {
           <span>{assignActionMsg}</span>
         </div>
       )}
-
-      {/* Navigation Tabs — Phase 4: 44px, snap, no squeeze */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm overflow-x-auto flex space-x-1 no-scrollbar snap-x-mandatory" role="tablist" aria-label="Admin operations sections">
-        {[
-          { id: 'metrics', label: 'Platform Metrics', icon: ShieldCheck },
-          { id: 'users', label: `User Directory & Contacts (${allUsers.length})`, icon: Users },
-          { id: 'interests', label: `Demands & User Interests`, icon: TrendingUp },
-          { id: 'verification', label: `Verification Queue (${verificationQueue.length})`, icon: CheckCircle2 },
-          { id: 'matchmaker', label: `Rule-Based Matchmaker`, icon: Sparkles },
-          { id: 'educators', label: `Educators Directory (${allEducators.length})`, icon: GraduationCap },
-          { id: 'payments', label: `Escrow Ledger (${payments.length})`, icon: CreditCard },
-          { id: 'audit', label: `Audit Trail (${auditLogs.length})`, icon: FileText }
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(tab.id as AdminTab)}
-              className={`snap-start-item px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shrink-0 ${
-                isActive
-                  ? 'bg-slate-900 text-white shadow'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* Tab Panels */}
       {activeTab === 'metrics' && (
@@ -416,6 +357,7 @@ export const AdminDashboard: React.FC = () => {
         onClose={() => setShowPhotoModal(false)}
       />
     </div>
+    </DashboardShell>
   );
 };
 
