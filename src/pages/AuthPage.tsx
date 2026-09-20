@@ -81,6 +81,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     setIsLoading(true);
     setErrorMsg('');
 
+    if (mode === 'register' && password.length < 8) {
+      setErrorMsg('Password must be at least 8 characters long.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (mode === 'login') {
         const loggedInUser = await login(email, password);

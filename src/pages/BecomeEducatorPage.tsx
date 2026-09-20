@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TeachingFormat, EducatorStatus } from '../types';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { formatUGX } from '../utils/formatters';
 import {
   ShieldCheck, CheckCircle2, ArrowRight, ArrowLeft, Upload,
@@ -17,17 +18,19 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
   onApplicationSubmitted,
   setCurrentView
 }) => {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Step 1: Personal & Contact Details
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+256 ');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState(user?.phone || '+256 ');
   const [whatsapp, setWhatsapp] = useState('');
-  const [location, setLocation] = useState('Mbarara City');
+  const [location, setLocation] = useState(user?.location || 'Mbarara City');
   const [nationalIdNumber, setNationalIdNumber] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
 
@@ -108,6 +111,10 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
         setErrorMsg('Please complete all required contact information.');
         return;
       }
+      if (!user && (!password || password.length < 8)) {
+        setErrorMsg('Please set an account password of at least 8 characters.');
+        return;
+      }
     } else if (currentStep === 2) {
       if (!title || !bio) {
         setErrorMsg('Please provide your professional title and craft background bio.');
@@ -141,6 +148,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
       await api.submitEducatorOnboarding({
         name,
         email,
+        password: password || undefined,
         phone,
         location,
         educator_type: educatorType,
@@ -398,6 +406,27 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 />
                 <span className="text-[10px] text-gray-400 mt-0.5 block">Used strictly for identity verification.</span>
               </div>
+
+              {!user && (
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Account Login Password <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimum 8 characters"
+                      minLength={8}
+                      className="w-full text-xs rounded-lg border-gray-300 border p-2.5 pl-8 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                      required
+                    />
+                    <Lock className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-3" />
+                  </div>
+                  <span className="text-[10px] text-gray-400 mt-0.5 block">Used to sign in to your Educator Dashboard and manage practical sessions.</span>
+                </div>
+              )}
 
               <div className="sm:col-span-2 pt-2 border-t border-gray-100">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">

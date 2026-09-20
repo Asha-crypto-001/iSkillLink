@@ -26,23 +26,28 @@
 
 - [x] **1.1 Cryptographic Password Hashing**
   - Replace plaintext password comparisons with industry-standard hashing (`bcryptjs` or `argon2`) on user registration and onboarding.
-  - Automatically hash existing seed data passwords on database initialization.
+  - Automatically hash existing seed data passwords on database initialization (`ensurePasswordsHashed()`).
+  - Eliminate plaintext fallback bypasses in `comparePassword()`.
+  - Enforce minimum 8-character password constraint across backend registration and onboarding endpoints as well as frontend validation (`AuthPage`, `BecomeEducatorPage`).
   - Ensure raw passwords and password hashes are stripped from all API responses via sanitization helpers.
 
 - [x] **1.2 Stateless Session & JWT Infrastructure**
-  - Implement signed JSON Web Tokens (JWT) issued upon successful authentication.
-  - Attach tokens to authenticated requests via `Authorization: Bearer <token>` headers or secure HTTP-only cookies.
-  - Validate token signatures and extract claims in an Express authentication middleware.
+  - Implement signed JSON Web Tokens (JWT) issued upon successful authentication with 7-day expiration.
+  - Attach tokens to authenticated requests via `Authorization: Bearer <token>` headers.
+  - Validate token signatures and extract claims in an Express authentication middleware (`authenticateToken`, `optionalToken`).
+  - Guard `JWT_SECRET` with production startup validation preventing token forgery from committed fallback strings.
 
 - [x] **1.3 Role-Based Access Control (RBAC) Enforcement**
-  - Implement route guard middleware (`requireRole('admin')`, `requireEducator()`, etc.).
+  - Implement route guard middleware (`requireRole('admin')`, `requirePrimaryAdmin()`, `requireSelfOrAdmin()`).
   - Protect verification step mutations, escrow payout releases, and secondary admin assignments so only verified lead or secondary admins can trigger them.
-  - Validate that learners and educators can only read and mutate their own bookings, profiles, and payouts.
+  - Lock down `GET /api/bookings` and `GET /api/payments` with authentication and role-scoping (learners see own, educators see own, admins see all).
+  - Authorize escrow deposit initiation (`POST /api/payments/simulate-payment`) to booking owner learners or admins.
+  - Mask sensitive learner contact info (phone, email) on public/educator request listings (`GET /api/learner-requests`).
 
 - [x] **1.4 Server Security Middleware**
-  - Integrate `helmet` to set robust HTTP response headers (Content Security Policy, X-Frame-Options, HSTS).
+  - Integrate `helmet` to set robust HTTP response headers.
   - Add `express-rate-limit` on `/api/auth/*` and payment endpoints to guard against brute-force attacks.
-  - Configure strict CORS origin whitelisting matching production hostnames.
+  - Configure strict CORS origin whitelisting with explicit rejection of unauthorized origins.
 
 ---
 

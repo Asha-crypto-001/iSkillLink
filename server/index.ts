@@ -40,10 +40,12 @@ const allowedOrigins = process.env.CLIENT_ORIGIN
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, Postman, mobile apps)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // Permissive in development, logged
+      console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
+      callback(new Error(`CORS policy: Origin '${origin}' is not allowed. Authorized origins: ${allowedOrigins.join(', ')}`));
     }
   },
   credentials: true
@@ -189,8 +191,8 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Email, password, full name, and role are required' });
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
   }
 
   const trimmedEmail = String(email).trim().toLowerCase();
@@ -471,7 +473,7 @@ app.get('/api/educators/:id', (req: Request, res: Response) => {
 });
 
 // Educator Multi-step Application / Onboarding
-app.post('/api/educators/onboard', (req: Request, res: Response) => {
+app.post('/api/educators/onboard', async (req: Request, res: Response) => {
   const {
     name, email, phone, location, educator_type, title, bio,
     years_experience, service_area, teaching_formats, languages,
@@ -485,10 +487,16 @@ app.post('/api/educators/onboard', (req: Request, res: Response) => {
 
   let user = db.findUserByEmail(String(email).trim());
   if (!user) {
+    // Require a password for new educator accounts
+    if (!password || String(password).length < 8) {
+      return res.status(400).json({ error: 'A secure password of at least 8 characters is required for new educator accounts.' });
+    }
+
+    const hashedPassword = await hashPassword(String(password));
     user = {
       id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       email: String(email).trim(),
-      password_hash: password || 'edu123',
+      password_hash: hashedPassword,
       role: 'educator',
       name: String(name).trim(),
       phone: phone || '+256 744 024 529',
@@ -643,7 +651,24 @@ app.get('/api/learner-requests', optionalToken, (req: Request, res: Response) =>
     requests = requests.filter(r => r.status === status);
   }
 
-  res.json(requests);
+  // Privacy protection: Redact learner contact details unless requester is admin or the request owner
+  const isAdmin = req.user?.role === 'admin' || req.user?.role === 'secondary_admin';
+  const currentUserId = req.user?.id;
+  const currentLearnerProfile = currentUserId ? db.getLearners().find(l => l.user_id === currentUserId) : null;
+
+  const sanitized = requests.map(r => {
+    const isOwner = currentLearnerProfile && r.learner_id === currentLearnerProfile.id;
+    if (isAdmin || isOwner) {
+      return r;
+    }
+    return {
+      ...r,
+      contact_phone: r.contact_phone ? `${r.contact_phone.slice(0, 6)}••••••` : undefined,
+      learner_email: r.learner_email ? `${r.learner_email.slice(0, 3)}••••@•••` : undefined
+    };
+  });
+
+  res.json(sanitized);
 });
 
 app.post('/api/learner-requests', authenticateToken, requireRole('learner', 'admin'), (req: Request, res: Response) => {
@@ -793,12 +818,27 @@ app.post('/api/learner-requests/:id/assign-match', authenticateToken, requireRol
 // BOOKINGS & SESSIONS
 // ==========================================
 
-app.get('/api/bookings', optionalToken, (req: Request, res: Response) => {
+app.get('/api/bookings', authenticateToken, (req: Request, res: Response) => {
   const learner_id = typeof req.query.learner_id === 'string' ? req.query.learner_id : undefined;
   const educator_id = typeof req.query.educator_id === 'string' ? req.query.educator_id : undefined;
   const status = typeof req.query.status === 'string' ? req.query.status : undefined;
 
   let bookings = db.getBookings();
+
+  // Role-scoped booking security: non-admins can only see their own bookings
+  const isAdmin = req.user!.role === 'admin' || req.user!.role === 'secondary_admin';
+  if (!isAdmin) {
+    const currentUserId = req.user!.id;
+    // Find the learner/educator profile linked to this user
+    const learnerProfile = db.getLearners().find(l => l.user_id === currentUserId);
+    const educatorProfile = db.getEducators().find(e => e.user_id === currentUserId);
+
+    bookings = bookings.filter(b => {
+      const isLearnerOwner = learnerProfile && b.learner_id === learnerProfile.id;
+      const isEducatorOwner = educatorProfile && b.educator_id === educatorProfile.id;
+      return isLearnerOwner || isEducatorOwner;
+    });
+  }
 
   if (learner_id) {
     bookings = bookings.filter(b => b.learner_id === learner_id);
@@ -944,12 +984,26 @@ app.patch('/api/bookings/:id/progress', authenticateToken, requireRole('educator
 // PAYMENTS & ESCROW
 // ==========================================
 
-app.get('/api/payments', optionalToken, (req: Request, res: Response) => {
+app.get('/api/payments', authenticateToken, (req: Request, res: Response) => {
   const learner_id = typeof req.query.learner_id === 'string' ? req.query.learner_id : undefined;
   const educator_id = typeof req.query.educator_id === 'string' ? req.query.educator_id : undefined;
   const status = typeof req.query.status === 'string' ? req.query.status : undefined;
 
   let payments = db.getPayments();
+
+  // Role-scoped payment security: non-admins can only see payments where they are the learner or educator
+  const isAdmin = req.user!.role === 'admin' || req.user!.role === 'secondary_admin';
+  if (!isAdmin) {
+    const currentUserId = req.user!.id;
+    const learnerProfile = db.getLearners().find(l => l.user_id === currentUserId);
+    const educatorProfile = db.getEducators().find(e => e.user_id === currentUserId);
+
+    payments = payments.filter(p => {
+      const isLearnerOwner = learnerProfile && p.learner_id === learnerProfile.id;
+      const isEducatorOwner = educatorProfile && p.educator_id === educatorProfile.id;
+      return isLearnerOwner || isEducatorOwner;
+    });
+  }
 
   if (learner_id) {
     payments = payments.filter(p => p.learner_id === learner_id);
@@ -965,12 +1019,22 @@ app.get('/api/payments', optionalToken, (req: Request, res: Response) => {
 });
 
 // Simulate Ugandan Mobile Money (MTN / Airtel) Escrow Payment
-app.post('/api/payments/simulate-payment', (req: Request, res: Response) => {
+app.post('/api/payments/simulate-payment', authenticateToken, (req: Request, res: Response) => {
   const { booking_id, method, phone_number } = req.body;
   const payment = db.getPayments().find(p => p.booking_id === booking_id);
 
   if (!payment) {
     return res.status(404).json({ error: 'Payment record not found for this booking' });
+  }
+
+  // Authorization: Only the learner who owns this booking or an admin can deposit escrow funds
+  const isAdmin = req.user!.role === 'admin' || req.user!.role === 'secondary_admin';
+  if (!isAdmin) {
+    const currentUserId = req.user!.id;
+    const learnerProfile = db.getLearners().find(l => l.user_id === currentUserId);
+    if (!learnerProfile || payment.learner_id !== learnerProfile.id) {
+      return res.status(403).json({ error: 'Access denied. You can only deposit escrow funds for your own bookings.' });
+    }
   }
 
   const referenceCode = `${(method || 'MTN').toUpperCase()}-UG-${Date.now().toString().slice(-6)}`;
