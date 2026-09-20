@@ -32,6 +32,8 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Build frontend
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
         run: npm run build
 
       - name: Preserve SPA routes
