@@ -8,6 +8,7 @@ import {
 import { Field } from '../components/ui/Field';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import logoUrl from '../assets/logo.png';
 
 interface AuthPageProps {
   onSuccess: (role: string) => void;
@@ -119,7 +120,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
       <div className="text-center space-y-3">
         <div className="w-16 h-16 bg-white rounded-card shadow-level-1 border border-ink-200/90 p-2.5 mx-auto flex items-center justify-center">
           <img
-            src="./logo.png"
+            src={logoUrl}
             alt="iSkillLink Logo"
             className="w-full h-full object-contain rounded-card"
           />

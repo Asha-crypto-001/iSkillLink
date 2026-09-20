@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, MapPin, Phone, Mail, Award, CheckCircle, Send, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
+import logoUrl from '../assets/logo.png';
 
 interface FooterProps {
   setCurrentView: (view: string) => void;
@@ -68,7 +69,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             >
               <div className="w-11 h-11 bg-white rounded-card shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0 group-hover:border-forest-200 transition">
                 <img
-                  src="./logo.png"
+                  src={logoUrl}
                   alt="iSkillLink Logo"
                   className="w-full h-full object-contain rounded-lg"
                 />

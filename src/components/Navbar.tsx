@@ -7,6 +7,7 @@ import {
   Settings, PlusCircle, Phone, Mail, Camera, Sparkles
 } from 'lucide-react';
 import { ProfilePhotoUploadModal } from './ProfilePhotoUploadModal';
+import logoUrl from '../assets/logo.png';
 
 interface NavbarProps {
   currentView: string;
@@ -171,12 +172,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="iSkillLink home"
               >
                 <span className="relative flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 bg-white rounded-xl shadow-soft border border-ink-200 p-1 group-hover:border-forest-200 group-hover:shadow-level-1 transition">
-                  <img src="./logo.png" alt="" className="w-full h-full object-contain rounded-lg" aria-hidden="true" />
+                  <img src={logoUrl} alt="" className="w-full h-full object-contain rounded-lg" aria-hidden="true" />
                 </span>
                 <span className="leading-none">
                   <span className="flex items-baseline gap-1.5">
                     <span className="text-[18px] lg:text-[20px] font-bold tracking-tight text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif", letterSpacing: '-0.02em' }}>iSkillLink</span>
-                    <span className="text-[8px] font-bold uppercase tracking-[0.18em] bg-ink-900 text-white px-1.5 py-0.5 rounded-md">UG</span>
+                    <span className="inline-flex h-4 min-w-[22px] items-center justify-center rounded-md bg-ink-900 px-1 text-[9px] font-bold leading-none tracking-[0.08em] text-white">UG</span>
                   </span>
                   <span className="block text-[11px] font-medium tracking-tight text-ink-500 -mt-0.5" style={{ fontFamily: "'Google Sans', sans-serif" }}>Where Skills Meet Opportunity</span>
                 </span>

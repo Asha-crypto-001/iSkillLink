@@ -4,6 +4,7 @@ import { LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { DashboardNavItem, DashboardRole } from './dashboardTypes';
 import { cn } from '../../utils/cn';
+import logoUrl from '../../assets/logo.png';
 
 interface DashboardSidebarProps {
   items: DashboardNavItem[];
@@ -45,7 +46,9 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ items, role,
     >
       <div className="flex h-20 items-center justify-between border-b border-ink-200 px-6">
         <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2 rounded-control focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Go to home">
-          <span className="grid h-9 w-9 place-items-center rounded-control bg-forest-700 text-sm font-extrabold text-white">iS</span>
+          <span className="grid h-9 w-9 place-items-center rounded-control border border-ink-200 bg-white p-1 shadow-soft">
+            <img src={logoUrl} alt="" className="h-full w-full object-contain" aria-hidden="true" />
+          </span>
           <span className="font-display text-lg font-bold tracking-tight text-ink-950">iSkillLink</span>
         </button>
         <button type="button" onClick={onClose} className="rounded-control p-2 text-ink-500 hover:bg-ink-100 lg:hidden" aria-label="Close navigation">
