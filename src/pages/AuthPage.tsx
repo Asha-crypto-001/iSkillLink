@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Lock, Mail, User, Phone, CheckCircle2,
   AlertCircle, ArrowRight, GraduationCap, BookOpen, MapPin,
-  Camera, Upload, X
+  Camera, Upload
 } from 'lucide-react';
 import { Field } from '../components/ui/Field';
 import { Input } from '../components/ui/Input';
@@ -19,7 +19,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   onSuccess,
   defaultMode = 'login'
 }) => {
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
   const [role, setRole] = useState<'learner' | 'educator'>('learner');
   const [name, setName] = useState('');
@@ -30,10 +30,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   const [avatarUrl, setAvatarUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const googleButtonRef = useRef<HTMLDivElement | null>(null);
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [googleCustomEmail, setGoogleCustomEmail] = useState('');
-  const [googleCustomName, setGoogleCustomName] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,58 +58,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     };
     reader.readAsDataURL(file);
   };
-
-  const handleGoogleSignIn = async (credential: string, _legacyName?: string) => {
-    setIsLoading(true);
-    setErrorMsg('');
-    try {
-      const loggedInUser = await loginWithGoogle(credential);
-      onSuccess(loggedInUser.role);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Google sign-in failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId || !googleButtonRef.current) return;
-
-    const renderGoogleButton = () => {
-      if (!window.google?.accounts?.id || !googleButtonRef.current) return;
-      googleButtonRef.current.replaceChildren();
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: response => void handleGoogleSignIn(response.credential),
-        ux_mode: 'popup'
-      });
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'continue_with',
-        shape: 'rectangular',
-        width: 360
-      });
-    };
-
-    if (window.google?.accounts?.id) {
-      renderGoogleButton();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = renderGoogleButton;
-    script.onerror = () => setErrorMsg('Google Sign-In could not be loaded. Please use email sign-in.');
-    document.head.appendChild(script);
-    return () => {
-      script.onload = null;
-    };
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,40 +145,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </div>
         )}
 
-        {/* Google Identity Services renders Google's official button here. */}
-        <div ref={googleButtonRef} className="min-h-10 flex justify-center" aria-label="Continue with Google" />
-        {/* Legacy inline Google button removed. */}
-        {false && <button
-          type="button"
-          disabled={isLoading}
-          className="w-full py-2.5 px-4 rounded-card border border-ink-200 bg-white hover:bg-ink-50 text-ink-800 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2.5 group cursor-pointer"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-            />
-          </svg>
-          <span>Continue with Google</span>
-        </button>}
+        <div className="text-center text-xs font-semibold text-ink-600">
+          Sign in securely with your email and password.
+        </div>
 
         {/* Divider */}
         <div className="relative flex items-center justify-center">
           <div className="border-t border-ink-200 w-full" />
           <span className="bg-white px-2.5 text-[10px] font-bold uppercase tracking-wider text-stone-400 shrink-0">
-            Or with email
+            Email and password
           </span>
           <div className="border-t border-ink-200 w-full" />
         </div>
@@ -390,95 +309,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           Protected by iSkillLink Security • Headquartered in Mbarara City
         </div>
       </div>
-
-      {/* Google Sign-In Selector Modal */}
-      {showGoogleModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-card max-w-sm w-full p-6 shadow-level-3 border border-ink-200 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                <h3 className="font-bold text-ink-900 text-sm">Sign in with Google</h3>
-              </div>
-              <button
-                onClick={() => setShowGoogleModal(false)}
-                className="text-stone-400 hover:text-ink-600 p-1"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-ink-600">
-              Choose your Google account to continue to <strong>iSkillLink Uganda</strong>:
-            </p>
-
-            <div className="space-y-2">
-              <button
-                onClick={() => handleGoogleSignIn('ashabahebwahassan665@gmail.com', 'Ashabahebwa Hassan')}
-                className="w-full p-3 rounded-card border border-ink-200 hover:bg-ink-50 text-left flex items-center gap-3 transition"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                  alt="Ashabahebwa Hassan"
-                  className="w-9 h-9 rounded-full object-cover border border-ink-200"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-ink-900 truncate">Ashabahebwa Hassan (Admin)</div>
-                  <div className="text-[11px] text-ink-500 truncate">ashabahebwahassan665@gmail.com</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleGoogleSignIn('iskilllink0@gmail.com', 'iSkillLink Official')}
-                className="w-full p-3 rounded-card border border-ink-200 hover:bg-ink-50 text-left flex items-center gap-3 transition"
-              >
-                <div className="w-9 h-9 rounded-full bg-forest-700 text-white flex items-center justify-center font-bold text-xs">
-                  iS
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-ink-900 truncate">iSkillLink Inquiries</div>
-                  <div className="text-[11px] text-ink-500 truncate">iskilllink0@gmail.com</div>
-                </div>
-              </button>
-            </div>
-
-            <div className="pt-2 border-t border-stone-100">
-              <label className="block text-[11px] font-semibold text-ink-700 mb-1">
-                Or enter another Google account:
-              </label>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  placeholder="Your Name (e.g. Brian Tumusiime)"
-                  value={googleCustomName}
-                  onChange={(e) => setGoogleCustomName(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-ink-200 focus:outline-none focus:ring-1 focus:ring-forest-700 bg-ink-50"
-                />
-                <input
-                  type="email"
-                  placeholder="name@gmail.com"
-                  value={googleCustomEmail}
-                  onChange={(e) => setGoogleCustomEmail(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-ink-200 focus:outline-none focus:ring-1 focus:ring-forest-700 bg-ink-50"
-                />
-                <button
-                  type="button"
-                  disabled={!googleCustomEmail || !googleCustomName}
-                  onClick={() => handleGoogleSignIn(googleCustomEmail, googleCustomName)}
-                  className="w-full py-2 bg-forest-700 hover:bg-forest-800 disabled:opacity-40 text-white text-xs font-bold rounded-lg transition"
-                >
-                  Continue as {googleCustomName || 'New User'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
