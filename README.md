@@ -75,22 +75,20 @@ GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 
 Register every production frontend origin in Google Cloud Console. The API must never accept profile fields such as email or name as proof of Google authentication. Public Google registration creates learner accounts only; an existing password account must be explicitly linked after the user signs in.
 
-### Production deployment
+### Production deployment with Netlify and Supabase
 
-The GitHub Pages site is a static frontend. Authentication foundation is provided by Supabase Auth, PostgreSQL, and the `auth` Edge Function:
+Netlify hosts the static frontend. Supabase provides the existing email/password accounts, Google authentication, PostgreSQL, and the `auth` Edge Function:
 
-1. Create a Supabase project.
-2. Run [supabase/migrations/20260920190000_auth_foundation.sql](./supabase/migrations/20260920190000_auth_foundation.sql) in the Supabase SQL Editor.
-3. Deploy [supabase/functions/auth/index.ts](./supabase/functions/auth/index.ts) as the `auth` Edge Function.
-4. Configure the function secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `CLIENT_ORIGIN`.
-5. Enable Google as a Supabase Auth provider and configure its Google client ID and secret.
-6. Add these GitHub repository Actions secrets:
-   - `VITE_SUPABASE_URL`: the Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY`: the Supabase anon/public key
-   - `VITE_SUPABASE_AUTH_URL`: `https://your-project.supabase.co/functions/v1/auth`
-   - `VITE_GOOGLE_CLIENT_ID`: the Google Web client ID used by GIS
-7. In Google Cloud Console and Supabase Auth, add `https://asha-crypto-001.github.io` to the allowed origins/redirect URLs.
-8. Push to `main` to rebuild GitHub Pages with Supabase authentication.
+1. In Netlify, import this repository. Netlify will use [netlify.toml](./netlify.toml) automatically.
+2. Set these Netlify environment variables:
+   - `VITE_SUPABASE_URL`: the existing Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: the existing Supabase anon/public key
+   - `VITE_GOOGLE_CLIENT_ID`: the Google Web client ID, if Google login is enabled
+3. The frontend uses the existing Supabase Auth email/password users directly. Do not run the included profile migration unless your project does not already have an equivalent profile table.
+4. The included Edge Function is optional and is not required for the current direct Supabase Auth login path.
+5. In Supabase Auth URL Configuration, add the Netlify site URL to the allowed redirect URLs.
+6. In Google Cloud Console, add the exact Netlify site URL to authorized JavaScript origins.
+7. Netlify will redeploy automatically after changes to `main`.
 
 Verify the API before testing the frontend:
 
@@ -100,7 +98,7 @@ curl -i -X POST https://your-project.supabase.co/functions/v1/auth \
   -d '{"action":"login","email":"user@example.com","password":"password"}'
 ```
 
-It should return `{"status":"ok"}`.
+The response should be a JSON authentication result or a clear validation error, not a static Netlify page.
 
 ---
 

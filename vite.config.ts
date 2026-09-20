@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/iSkillLink/',
+  base: process.env.NETLIFY ? '/' : '/iSkillLink/',
   build: {
     assetsInlineLimit: 0,
   },

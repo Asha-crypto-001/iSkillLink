@@ -14,7 +14,7 @@ import {
   initialLocalPayments,
   initialLocalAuditLogs
 } from './localData';
-import { supabase, supabaseAuthUrl } from './supabase';
+import { supabase } from './supabase';
 
 const API_BASE = ((import.meta as any).env?.VITE_API_URL as string) || '/api';
 if (import.meta.env.PROD && API_BASE === '/api') {
@@ -22,22 +22,19 @@ if (import.meta.env.PROD && API_BASE === '/api') {
 }
 let authToken: string | null = null;
 
-async function supabaseAuthRequest(action: string, payload: Record<string, unknown> = {}) {
-  if (!supabaseAuthUrl) throw new Error('Supabase authentication URL is not configured.');
-  const response = await fetch(supabaseAuthUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...payload }),
-  });
-  return await handleResponse<any>(response);
-}
-
-async function adoptSupabaseSession(data: any) {
-  if (supabase && data.session) {
-    await supabase.auth.setSession(data.session);
-  }
-  if (data.token) setAuthToken(data.token);
-  return data;
+function mapSupabaseUser(user: any) {
+  const metadata = user.user_metadata || {};
+  return {
+    id: user.id,
+    email: user.email || '',
+    name: metadata.name || metadata.full_name || user.email?.split('@')[0] || 'User',
+    role: metadata.role || 'learner',
+    phone: metadata.phone || '',
+    location: metadata.location || 'Mbarara City, Uganda',
+    avatar_url: metadata.avatar_url || metadata.picture || '',
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  };
 }
 
 export function getAuthToken(): string | null {
@@ -147,8 +144,16 @@ async function handleResponse<T>(res: Response): Promise<T> {
 export const api = {
   // Auth & Session
   async login(email: string, password?: string) {
-    if (supabase && supabaseAuthUrl) {
-      return adoptSupabaseSession(await supabaseAuthRequest('login', { email, password }));
+    if (supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: password || '',
+      });
+      if (error || !data.session || !data.user) {
+        throw new Error(error?.message || 'Invalid email or password.');
+      }
+      setAuthToken(data.session.access_token);
+      return { user: mapSupabaseUser(data.user), learnerProfile: null, educatorProfile: null, token: data.session.access_token };
     }
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -161,8 +166,16 @@ export const api = {
   },
 
   async loginWithGoogle(credential: string) {
-    if (supabase && supabaseAuthUrl) {
-      return adoptSupabaseSession(await supabaseAuthRequest('google', { credential }));
+    if (supabase) {
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credential,
+      });
+      if (error || !data.session || !data.user) {
+        throw new Error(error?.message || 'Google authentication could not be verified.');
+      }
+      setAuthToken(data.session.access_token);
+      return { user: mapSupabaseUser(data.user), learnerProfile: null, educatorProfile: null, token: data.session.access_token };
     }
     const res = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
@@ -191,8 +204,29 @@ export const api = {
   },
 
   async register(data: any) {
-    if (supabase && supabaseAuthUrl) {
-      return adoptSupabaseSession(await supabaseAuthRequest('register', data));
+    if (supabase) {
+      if (!['learner', 'educator'].includes(data.role)) {
+        throw new Error('Public registration is limited to learner or educator accounts.');
+      }
+      const { data: result, error } = await supabase.auth.signUp({
+        email: String(data.email).trim().toLowerCase(),
+        password: String(data.password),
+        options: {
+          data: {
+            name: String(data.name).trim(),
+            role: data.role,
+            phone: data.phone || '',
+            location: data.location || 'Mbarara City, Uganda',
+            avatar_url: data.avatar_url || '',
+          },
+        },
+      });
+      if (error || !result.user) throw new Error(error?.message || 'Registration failed.');
+      if (!result.session) {
+        throw new Error('Registration succeeded. Check your email to confirm your account before signing in.');
+      }
+      setAuthToken(result.session.access_token);
+      return { user: mapSupabaseUser(result.user), learnerProfile: null, educatorProfile: null, token: result.session.access_token };
     }
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
@@ -286,10 +320,12 @@ export const api = {
   },
 
   async getMe(userId?: string) {
-    if (supabase && supabaseAuthUrl) {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) return { user: null, learnerProfile: null, educatorProfile: null };
-      return await supabaseAuthRequest('me');
+    if (supabase) {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) return { user: null, learnerProfile: null, educatorProfile: null };
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) setAuthToken(sessionData.session.access_token);
+      return { user: mapSupabaseUser(data.user), learnerProfile: null, educatorProfile: null };
     }
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: getAuthHeaders()
