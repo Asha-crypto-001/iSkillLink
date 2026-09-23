@@ -34,7 +34,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const location = useLocation();
 
@@ -53,22 +52,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               : '';
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
     let ticking = false;
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(() => {
-        const currentScrollY = window.scrollY;
-        setIsScrolled(currentScrollY > 8);
-        if (currentScrollY <= 16) {
-          setIsCollapsed(false);
-        } else if (currentScrollY > lastScrollY + 6) {
-          setIsCollapsed(true);
-        } else if (currentScrollY < lastScrollY - 6) {
-          setIsCollapsed(false);
-        }
-        lastScrollY = currentScrollY;
+        setIsScrolled(window.scrollY > 8);
         ticking = false;
       });
     };
@@ -127,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <>
       <header className={`sticky top-0 z-40 transition-shadow duration-200 ${isScrolled ? 'shadow-level-2' : 'shadow-none'}`}>
         {/* Utility ribbon — modern minimal */}
-        <div className={`overflow-hidden bg-ink-950 text-ink-200 text-xs border-b border-ink-900 transition-[max-height,opacity] duration-200 ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-8 opacity-100'}`}>
+        <div className="overflow-hidden bg-ink-950 text-ink-200 text-xs border-b border-ink-900">
           <div className="container-app h-8 flex items-center justify-between gap-3 !py-0">
             <div className="flex items-center gap-2.5 overflow-hidden whitespace-nowrap">
               <span className="inline-flex items-center gap-1.5 text-forest-300 font-bold uppercase text-[10px] tracking-widest">
@@ -164,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Main bar — glass premium */}
         <div className="bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 border-b border-ink-200/70">
           <div className="container-app">
-            <div className={`flex items-center justify-between gap-4 transition-[height] duration-200 ${isCollapsed ? 'h-[56px]' : 'h-[64px] lg:h-[68px]'}`}>
+            <div className="flex items-center justify-between gap-4 h-[64px] lg:h-[68px]">
               {/* Brand — Google Sans, premium lockup */}
               <button
                 onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
