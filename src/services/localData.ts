@@ -38,11 +38,10 @@ export const initialLocalSkills: Skill[] = [
   { id: 'skill-agri-2', category_id: 'cat-agriculture', name: 'Dairy Farming & Quality Milk Value Addition', slug: 'dairy-farming-value-addition', description: 'Pasture management, breed selection, silage production, hygienic milk handling.', level_options: ['beginner', 'intermediate'], typical_duration_hours: 20, popular: true },
 ];
 
-export const initialLocalUsers: Array<User & { password_hash: string }> = [
+export const initialLocalUsers: User[] = [
   {
     id: 'usr-admin-ashabahebwa',
     email: 'ashabahebwahassan665@gmail.com',
-    password_hash: '$2b$10$NErcEsd5s0.RVb6cJ8kEXecftFIs9q/scddJaJUupEeDzD/YbMOxm',
     role: 'admin',
     name: 'Ashabahebwa Hassan',
     phone: '+256 744 024 529',

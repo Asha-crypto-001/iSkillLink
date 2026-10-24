@@ -32,8 +32,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const loadCurrentUser = async () => {
     try {
       setIsLoading(true);
-      const storedUserId = localStorage.getItem('iskilllink_user_id');
-      const data = await api.getMe(storedUserId || undefined);
+      const data = await api.getMe();
       if (data && data.user) {
         setUser(data.user);
         setLearnerProfile(data.learnerProfile);
