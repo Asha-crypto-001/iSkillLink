@@ -107,19 +107,19 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
 
           <div className="bg-forest-800 p-8 rounded-3xl text-white text-center space-y-4">
             <h3 className="text-xl font-bold">Ready to master a practical skill?</h3>
-            <p className="text-xs text-emerald-100 max-w-md mx-auto">
+            <p className="text-xs text-forest-100 max-w-md mx-auto">
               Find verified educators in your area or submit a custom request today.
             </p>
             <div className="flex justify-center gap-3 pt-2">
               <button
                 onClick={() => setCurrentView('find-skill')}
-                className="px-6 py-2.5 rounded-card bg-white text-emerald-950 font-bold text-xs shadow"
+                className="px-6 py-2.5 rounded-card bg-white text-forest-950 font-bold text-xs shadow"
               >
                 Find a Skill
               </button>
               <button
                 onClick={onOpenSkillRequest}
-                className="px-6 py-2.5 rounded-card bg-emerald-900 text-white font-bold text-xs border border-emerald-700"
+                className="px-6 py-2.5 rounded-card bg-forest-900 text-white font-bold text-xs border border-forest-700"
               >
                 Request Custom Skill
               </button>
@@ -133,7 +133,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
-              <div className="w-10 h-10 rounded-card bg-slate-100 text-ink-800 flex items-center justify-center font-bold text-base">
+              <div className="w-10 h-10 rounded-card bg-ink-100 text-ink-800 flex items-center justify-center font-bold text-base">
                 1
               </div>
               <h3 className="font-bold text-ink-900 text-base">Multi-Step Verification Application</h3>
@@ -143,7 +143,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
             </div>
 
             <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
-              <div className="w-10 h-10 rounded-card bg-slate-100 text-ink-800 flex items-center justify-center font-bold text-base">
+              <div className="w-10 h-10 rounded-card bg-ink-100 text-ink-800 flex items-center justify-center font-bold text-base">
                 2
               </div>
               <h3 className="font-bold text-ink-900 text-base">Define Your Rates & Schedule</h3>
@@ -153,7 +153,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
             </div>
 
             <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
-              <div className="w-10 h-10 rounded-card bg-slate-100 text-ink-800 flex items-center justify-center font-bold text-base">
+              <div className="w-10 h-10 rounded-card bg-ink-100 text-ink-800 flex items-center justify-center font-bold text-base">
                 3
               </div>
               <h3 className="font-bold text-ink-900 text-base">Accept Learner Bookings</h3>
@@ -163,7 +163,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
             </div>
 
             <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
-              <div className="w-10 h-10 rounded-card bg-slate-100 text-ink-800 flex items-center justify-center font-bold text-base">
+              <div className="w-10 h-10 rounded-card bg-ink-100 text-ink-800 flex items-center justify-center font-bold text-base">
                 4
               </div>
               <h3 className="font-bold text-ink-900 text-base">Guaranteed 90% Net Payouts</h3>
@@ -181,7 +181,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
             <div className="pt-2">
               <button
                 onClick={() => setCurrentView('become-educator')}
-                className="px-6 py-2.5 rounded-card bg-emerald-600 hover:bg-forest-500 text-white font-bold text-xs shadow"
+                className="px-6 py-2.5 rounded-card bg-forest-600 hover:bg-forest-500 text-white font-bold text-xs shadow"
               >
                 Start Educator Application
               </button>
@@ -222,7 +222,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 <CheckCircle2 className="w-5 h-5 text-forest-700" />
                 <h4 className="font-bold text-ink-900">Dispute Mediation</h4>
                 <p className="text-ink-600 leading-relaxed">
-                  In case of scheduling conflicts or dissatisfaction, our Mbarara operations team led by Ashabahebwa Hassan mediates refund or rescheduling.
+                  In case of scheduling conflicts or dissatisfaction, our team in Mbarara arranges a refund or a new date.
                 </p>
               </div>
             </div>

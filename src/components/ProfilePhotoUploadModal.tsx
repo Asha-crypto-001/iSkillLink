@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import {
   Camera, Upload, X, Check, Image as ImageIcon,
-  Sparkles, RefreshCw, AlertCircle
+  Sparkles, RefreshCw
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
+import { Alert } from './ui/Alert';
 
 interface ProfilePhotoUploadModalProps {
   isOpen: boolean;
@@ -151,10 +152,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Messages — Phase 5: explicit roles, dismissible */}
           {errorMsg && (
-            <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-800 text-[13px] flex items-center gap-2" role="alert" aria-live="assertive">
-              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span>{errorMsg}</span>
-            </div>
+            <Alert>{errorMsg}</Alert>
           )}
 
           {successMsg && (
@@ -167,7 +165,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           {/* Current / Preview Image Display */}
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="relative group">
-              <div className="w-28 h-28 rounded-full ring-4 ring-emerald-500/20 overflow-hidden shadow-inner bg-gray-100">
+              <div className="w-28 h-28 rounded-full ring-4 ring-forest-500/20 overflow-hidden shadow-inner bg-ink-100">
                 <img
                   src={selectedImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                   alt="Avatar Preview"
@@ -177,22 +175,22 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 p-2 rounded-full bg-emerald-700 text-white shadow-md hover:bg-emerald-800 transition"
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-forest-700 text-white shadow-md hover:bg-forest-800 transition"
                 title="Choose file"
               >
                 <Camera className="w-3.5 h-3.5" />
               </button>
             </div>
-            <p className="text-[11px] text-gray-500">Photo preview as displayed across iSkillLink</p>
+            <p className="text-[11px] text-ink-500">Photo preview as displayed across iSkillLink</p>
           </div>
 
           {/* Method Tabs */}
-          <div className="flex p-1 bg-gray-100 rounded-xl text-xs font-semibold">
+          <div className="flex p-1 bg-ink-100 rounded-xl text-xs font-semibold">
             <button
               type="button"
               onClick={() => setTab('upload')}
               className={`flex-1 py-1.5 rounded-lg transition ${
-                tab === 'upload' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                tab === 'upload' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800'
               }`}
             >
               Upload Device File
@@ -201,7 +199,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
               type="button"
               onClick={() => setTab('url')}
               className={`flex-1 py-1.5 rounded-lg transition ${
-                tab === 'url' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                tab === 'url' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800'
               }`}
             >
               Image URL
@@ -210,7 +208,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
               type="button"
               onClick={() => setTab('presets')}
               className={`flex-1 py-1.5 rounded-lg transition ${
-                tab === 'presets' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                tab === 'presets' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800'
               }`}
             >
               Presets
@@ -229,14 +227,14 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
               />
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 hover:border-emerald-600 rounded-xl p-5 text-center cursor-pointer transition hover:bg-emerald-50/30 flex flex-col items-center justify-center gap-2"
+                className="border-2 border-dashed border-ink-300 hover:border-forest-600 rounded-xl p-5 text-center cursor-pointer transition hover:bg-forest-50/30 flex flex-col items-center justify-center gap-2"
               >
-                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-forest-50 text-forest-700 flex items-center justify-center">
                   <Upload className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-800">Click to choose image from phone or PC</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">Supports PNG, JPG, or WebP (automatically cropped)</p>
+                  <p className="text-xs font-bold text-ink-800">Click to choose image from phone or PC</p>
+                  <p className="text-[10px] text-ink-500 mt-0.5">Supports PNG, JPG, or WebP (automatically cropped)</p>
                 </div>
               </div>
             </div>
@@ -246,7 +244,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           {tab === 'url' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                <label className="block text-[11px] font-semibold text-ink-700 mb-1">
                   Direct Image Web Link
                 </label>
                 <div className="flex gap-2">
@@ -255,12 +253,12 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     placeholder="https://example.com/my-photo.jpg"
-                    className="flex-1 p-2 rounded-lg border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                    className="flex-1 p-2 rounded-lg border border-ink-300 text-xs focus:ring-2 focus:ring-forest-600 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={handleApplyUrl}
-                    className="px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-gray-800"
+                    className="px-3 py-2 bg-ink-900 text-white text-xs font-bold rounded-lg hover:bg-ink-800"
                   >
                     Load
                   </button>
@@ -272,7 +270,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           {/* Tab 3: Presets */}
           {tab === 'presets' && (
             <div className="space-y-2">
-              <p className="text-[11px] text-gray-500 font-medium">Select a verified professional portrait:</p>
+              <p className="text-[11px] text-ink-500 font-medium">Select a verified professional portrait:</p>
               <div className="grid grid-cols-4 gap-2">
                 {PRESET_AVATARS.map((p) => (
                   <button
@@ -280,12 +278,12 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
                     type="button"
                     onClick={() => setSelectedImage(p.url)}
                     className={`relative rounded-xl overflow-hidden aspect-square border-2 transition ${
-                      selectedImage === p.url ? 'border-emerald-600 ring-2 ring-emerald-500/30' : 'border-transparent hover:opacity-80'
+                      selectedImage === p.url ? 'border-forest-600 ring-2 ring-forest-500/30' : 'border-transparent hover:opacity-80'
                     }`}
                   >
                     <img src={p.url} alt={p.label} className="w-full h-full object-cover" />
                     {selectedImage === p.url && (
-                      <div className="absolute inset-0 bg-emerald-600/30 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-forest-600/30 flex items-center justify-center">
                         <Check className="w-4 h-4 text-white drop-shadow-md" />
                       </div>
                     )}

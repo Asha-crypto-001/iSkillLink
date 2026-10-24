@@ -9,13 +9,13 @@ import { ReviewModal } from '../components/ReviewModal';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import {
   BookOpen, Calendar, Clock, CreditCard, MessageSquare,
-  Award, Star, User, Settings, CheckCircle2, AlertCircle,
-  PlusCircle, ArrowRight, ShieldCheck, ExternalLink, Send,
+  Award, Star, User, Settings, CheckCircle2, PlusCircle, ArrowRight, ShieldCheck, ExternalLink, Send,
   Camera
 } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
 import { DashboardHeader, DashboardShell, SectionHeader, StatRow } from '../components/dashboard';
+import { Alert } from '../components/ui/Alert';
 
 interface LearnerDashboardProps {
   onOpenSkillRequest: () => void;
@@ -166,10 +166,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
       />
 
       {actionError && (
-        <div role="alert" className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{actionError}</span>
-        </div>
+        <Alert onDismiss={() => setActionError('')}>{actionError}</Alert>
       )}
 
       {/* TAB CONTENT: OVERVIEW */}
@@ -360,7 +357,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-ink-50 overflow-hidden">
                     <div
-                      className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                      className="h-full bg-forest-600 rounded-full transition-all duration-300"
                       style={{ width: `${b.milestone_progress}%` }}
                     ></div>
                   </div>
@@ -441,7 +438,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       <th className="p-3">Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 text-ink-700">
+                  <tbody className="divide-y divide-ink-100 text-ink-700">
                     {payments.map(p => (
                       <tr key={p.id} className="hover:bg-ink-50/50">
                         <td className="p-3 font-mono font-semibold text-ink-900">{p.payment_reference}</td>
@@ -568,7 +565,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       onClick={() => setSelectedRecipientId(userId)}
                       className={`w-full p-3 rounded-card text-left text-xs transition border flex items-center justify-between ${
                         selectedRecipientId === userId
-                          ? 'bg-forest-50 border-emerald-300 text-emerald-950 font-bold'
+                          ? 'bg-forest-50 border-forest-300 text-forest-950 font-bold'
                           : 'border-ink-200 text-ink-700 hover:bg-ink-50'
                       }`}
                     >
@@ -576,7 +573,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                         <div className="font-bold text-ink-900">{b.educator.user.name}</div>
                         <div className="text-[11px] text-ink-500">{b.educator.title}</div>
                       </div>
-                      {selectedRecipientId === userId && <span className="w-2 h-2 rounded-full bg-emerald-600"></span>}
+                      {selectedRecipientId === userId && <span className="w-2 h-2 rounded-full bg-forest-600"></span>}
                     </button>
                   );
                 })
@@ -671,7 +668,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
               <img
                 src={user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                 alt={user?.name}
-                className="w-20 h-20 rounded-card object-cover border-2 border-emerald-500 shadow-level-1"
+                className="w-20 h-20 rounded-card object-cover border-2 border-forest-500 shadow-level-1"
               />
               <button
                 onClick={() => setShowPhotoModal(true)}

@@ -4,8 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatUGX } from '../utils/formatters';
 import {
-  X, Calendar, ShieldCheck, CheckCircle2,
-  AlertCircle
+  X, Calendar, ShieldCheck, CheckCircle2
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Field } from './ui/Field';
@@ -14,6 +13,7 @@ import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
 import { SignInPrompt } from './SignInPrompt';
+import { Alert } from './ui/Alert';
 
 interface BookingModalProps {
   educator: Educator | null;
@@ -138,10 +138,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
-            </div>
+            <Alert>{errorMsg}</Alert>
           )}
 
           <Field label="Select Skill Focus / Module" htmlFor="booking-skill">

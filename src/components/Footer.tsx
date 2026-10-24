@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldCheck, MapPin, Phone, Mail, Award, CheckCircle, Send, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { MapPin, Phone, Mail, Send, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
 import logoUrl from '../assets/logo.png';
 
@@ -7,232 +8,131 @@ interface FooterProps {
   setCurrentView: (view: string) => void;
 }
 
+// Each link filters the catalogue to that trade (ids from the seeded categories).
+const TRADE_LINKS = [
+  { label: 'Fashion & tailoring', categoryId: 'cat-fashion' },
+  { label: 'Solar & electrical', categoryId: 'cat-electrical' },
+  { label: 'Cooking & baking', categoryId: 'cat-culinary' },
+  { label: 'Phone repair', categoryId: 'cat-repair' },
+  { label: 'Agriculture', categoryId: 'cat-agriculture' },
+  { label: 'Web development', categoryId: 'cat-tech' }
+];
+
 export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
   const [footerEmail, setFooterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
 
   const handleFooterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!footerEmail || !footerEmail.includes('@')) return;
+    setSubscribeError('');
     try {
       await api.subscribeNewsletter(footerEmail, 'All Practical Trades');
-    } catch {}
-    setSubscribed(true);
+      setSubscribed(true);
+    } catch (err: any) {
+      setSubscribeError(err.message || 'Could not subscribe. Please try again.');
+    }
   };
+
+  const linkClass = 'hover:text-white transition rounded-control';
 
   return (
     <footer className="bg-ink-950 text-ink-300 border-t border-ink-800">
-      {/* Top trust highlights */}
-      <div className="border-b border-ink-800 bg-slate-950/40 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 text-xs">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-slate-100 text-sm">Vetted & Verified Educators</div>
-              <div className="text-ink-400 mt-1">National ID validation, practical trade background checks & workshop inspection.</div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-slate-100 text-sm">Escrow Payment Protection</div>
-              <div className="text-ink-400 mt-1">Funds held securely via MTN & Airtel MoMo until training milestone is marked complete.</div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Award className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-slate-100 text-sm">Hands-On Practical Learning</div>
-              <div className="text-ink-400 mt-1">Real equipment, direct mentor guidance, workshop benches, and production projects.</div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <MapPin className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-slate-100 text-sm">Headquartered in Mbarara</div>
-              <div className="text-ink-400 mt-1">Serving Mbarara, Greater Ankole, Western Region, Kampala, and across Uganda.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-          {/* Col 1: Brand Info */}
-          <div className="md:col-span-2 space-y-4">
+      <div className="container-app py-12">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10">
+          {/* Brand + contact */}
+          <div className="col-span-2 md:col-span-5 space-y-4">
             <button
-              onClick={() => {
-                setCurrentView('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex items-center gap-3 text-left group"
+              onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className="flex items-center gap-3 text-left rounded-control"
+              aria-label="iSkillLink home"
             >
-              <div className="w-11 h-11 bg-white rounded-card shadow-md border border-white/20 p-1.5 flex items-center justify-center shrink-0 group-hover:border-forest-200 transition">
-                <img
-                  src={logoUrl}
-                  alt="iSkillLink Logo"
-                  className="w-full h-full object-contain rounded-lg"
-                />
-              </div>
-              <div>
-                <div className="text-xl font-bold text-white tracking-tight">
-                  iSkillLink
-                </div>
-                <div className="text-[11px] text-emerald-400 font-semibold">
-                  Founder: Ashabahebwa Hassan
-                </div>
-              </div>
+              <span className="w-10 h-10 bg-white rounded-control p-1.5 flex items-center justify-center shrink-0">
+                <img src={logoUrl} alt="" className="w-full h-full object-contain" aria-hidden="true" />
+              </span>
+              <span className="text-lg font-bold text-white tracking-[-0.01em]">iSkillLink</span>
             </button>
             <p className="text-sm text-ink-400 leading-relaxed max-w-sm">
-              iSkillLink connects learners seeking practical, vocational, technical, and creative skills with verified Ugandan practitioners, master artisans, and professionals.
+              Hands-on lessons from people who do the work — tailors, electricians, bakers and technicians in Mbarara and across Uganda.
             </p>
-            <div className="space-y-2 text-xs text-ink-400 pt-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Headquarters: Mbarara City, Western Region, Uganda</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>WhatsApp: +256 744 024 529 / +256 772 233 621</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-500 shrink-0" />
-                <div className="flex flex-col">
-                  <span><a href="mailto:iskilllink0@gmail.com" className="text-emerald-400 hover:underline">iskilllink0@gmail.com</a> (Inquiries & Newsletter)</span>
-                  <span className="text-ink-400"><a href="mailto:ashabahebwahassan665@gmail.com" className="hover:underline">ashabahebwahassan665@gmail.com</a> (Founder)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Col 2: Marketplace */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 mb-4">
-              Explore Skills
-            </h3>
             <ul className="space-y-2 text-sm text-ink-400">
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Fashion & Tailoring
-                </button>
+              <li className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-forest-400 shrink-0" aria-hidden="true" />
+                Mbarara City, Uganda
               </li>
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Web Dev & Programming
-                </button>
+              <li className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-forest-400 shrink-0" aria-hidden="true" />
+                <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className={linkClass}>WhatsApp +256 744 024 529</a>
               </li>
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Electronics & Phone Repair
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Solar & Electrical Wiring
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Commercial Baking & Pastry
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Dairy Farming & Agribusiness
-                </button>
+              <li className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-forest-400 shrink-0" aria-hidden="true" />
+                <a href="mailto:iskilllink0@gmail.com" className={linkClass}>iskilllink0@gmail.com</a>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Platform */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 mb-4">
-              Platform
-            </h3>
+          {/* Trades */}
+          <nav className="md:col-span-2" aria-labelledby="footer-trades">
+            <h3 id="footer-trades" className="text-sm font-semibold text-white mb-3">Learn a trade</h3>
             <ul className="space-y-2 text-sm text-ink-400">
-              <li>
-                <button onClick={() => setCurrentView('how-it-works')} className="hover:text-emerald-400 transition">
-                  How It Works
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('become-educator')} className="hover:text-emerald-400 transition">
-                  Teach on iSkillLink
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('about')} className="hover:text-emerald-400 transition">
-                  About iSkillLink
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('contact')} className="hover:text-emerald-400 transition">
-                  Help & Contact Us
-                </button>
-              </li>
-              <li>
-                <button onClick={() => setCurrentView('find-skill')} className="hover:text-emerald-400 transition">
-                  Verified Educators Directory
-                </button>
-              </li>
+              {TRADE_LINKS.map(link => (
+                <li key={link.categoryId}>
+                  <Link to={`/find-skill?category=${link.categoryId}`} className={linkClass}>{link.label}</Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Col 4: Newsletter & Trust */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 mb-4">
-              Newsletter
-            </h3>
-            <p className="text-xs text-ink-400 leading-relaxed mb-3">
-              Get practical skill workshops and artisan alerts sent to <strong className="text-ink-200">iskilllink0@gmail.com</strong>.
+          {/* Platform */}
+          <nav className="md:col-span-2" aria-labelledby="footer-platform">
+            <h3 id="footer-platform" className="text-sm font-semibold text-white mb-3">iSkillLink</h3>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li><button onClick={() => setCurrentView('how-it-works')} className={linkClass}>How it works</button></li>
+              <li><button onClick={() => setCurrentView('become-educator')} className={linkClass}>Teach on iSkillLink</button></li>
+              <li><button onClick={() => setCurrentView('about')} className={linkClass}>About us</button></li>
+              <li><button onClick={() => setCurrentView('contact')} className={linkClass}>Help & contact</button></li>
+            </ul>
+          </nav>
+
+          {/* Newsletter — the site's only signup form */}
+          <div className="col-span-2 md:col-span-3">
+            <h3 className="text-sm font-semibold text-white mb-1">New educators near you</h3>
+            <p className="text-sm text-ink-400 leading-relaxed mb-3">
+              An email when someone new starts teaching a trade. No spam.
             </p>
             {subscribed ? (
-              <div className="bg-emerald-950/80 border border-emerald-700/60 rounded-card p-3 text-xs text-emerald-200 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Subscribed! Check email client.</span>
-              </div>
+              <p className="flex items-center gap-2 text-sm text-forest-300" role="status">
+                <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                You’re subscribed. Thank you!
+              </p>
             ) : (
-              <form onSubmit={handleFooterSubscribe} className="space-y-2">
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={footerEmail}
-                    onChange={(e) => setFooterEmail(e.target.value)}
-                    placeholder="your.email@gmail.com"
-                    required
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-ink-900 border border-ink-700 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-forest-700"
-                  />
-                </div>
+              <form onSubmit={handleFooterSubscribe} className="flex gap-2">
+                <label htmlFor="footer-email" className="sr-only">Email address</label>
+                <input
+                  id="footer-email"
+                  type="email"
+                  value={footerEmail}
+                  onChange={(e) => setFooterEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="flex-1 min-w-0 text-sm px-3 min-h-[44px] rounded-control bg-ink-900 border border-ink-700 text-white placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-forest-500"
+                />
                 <button
                   type="submit"
-                  className="w-full py-2 bg-emerald-600 hover:bg-forest-500 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5"
+                  aria-label="Subscribe"
+                  className="px-4 min-h-[44px] bg-forest-700 hover:bg-forest-600 text-white text-sm font-semibold rounded-control transition flex items-center gap-1.5 shrink-0"
                 >
-                  <span>Subscribe</span>
-                  <Send className="w-3 h-3" />
+                  <Send className="w-4 h-4" aria-hidden="true" />
                 </button>
               </form>
             )}
-
-            <div className="mt-4 pt-3 border-t border-ink-800 text-[11px] text-ink-400 space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-forest-500"></span>
-                <span>Escrow Protected (MTN & Airtel)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-forest-500"></span>
-                <span>Vetted Ugandan Artisans</span>
-              </div>
-            </div>
+            {subscribeError && <p className="mt-2 text-xs text-rose-300" role="alert">{subscribeError}</p>}
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between text-xs text-ink-400 gap-4">
-          <div>
-            © {new Date().getFullYear()} iSkillLink Uganda • Founded by Ashabahebwa Hassan. “Where Skills Meet Opportunity.”
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-ink-400">Mbarara • Greater Ankole • Kampala • Entebbe • Jinja</span>
-          </div>
+        <div className="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-ink-400">
+          <p>© {new Date().getFullYear()} iSkillLink Uganda</p>
+          <p>Made in Mbarara</p>
         </div>
       </div>
     </footer>

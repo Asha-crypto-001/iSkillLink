@@ -14,8 +14,9 @@ import {
   GraduationCap, Calendar, Clock, DollarSign, Star,
   MessageSquare, Settings, ShieldCheck, CheckCircle2,
   XCircle, ArrowRight, UserCheck, Wrench, FileText, Send, Sparkles,
-  Camera, User, AlertCircle
+  Camera, User
 } from 'lucide-react';
+import { Alert } from '../components/ui/Alert';
 
 interface EducatorDashboardProps {
   onViewProfileModal?: (educator: Educator) => void;
@@ -201,10 +202,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       />
 
       {actionError && (
-        <div role="alert" className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{actionError}</span>
-        </div>
+        <Alert onDismiss={() => setActionError('')}>{actionError}</Alert>
       )}
 
       {/* OVERVIEW TAB */}
@@ -360,7 +358,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                         onClick={() => handleUpdateProgress(b.id, pct)}
                         className={`px-3 py-1 rounded text-xs font-bold transition border ${
                           b.milestone_progress === pct
-                            ? 'bg-forest-700 text-white border-emerald-700'
+                            ? 'bg-forest-700 text-white border-forest-700'
                             : 'bg-white text-ink-700 border-ink-200 hover:bg-ink-50'
                         }`}
                       >
@@ -490,7 +488,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <th className="p-3">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-ink-700">
+              <tbody className="divide-y divide-ink-100 text-ink-700">
                 {payments.map(p => (
                   <tr key={p.id} className="hover:bg-ink-50/50">
                     <td className="p-3 font-mono font-semibold text-ink-900">{p.payment_reference}</td>
@@ -558,7 +556,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
                 {r.educator_reply ? (
                   <div className="ml-4 pl-3 border-l-2 border-forest-600 bg-forest-50/40 p-2.5 rounded-r-lg text-xs">
-                    <span className="font-semibold text-emerald-950 block text-[11px]">Your Published Reply:</span>
+                    <span className="font-semibold text-forest-950 block text-[11px]">Your Published Reply:</span>
                     <p className="text-ink-700 mt-0.5">{r.educator_reply}</p>
                   </div>
                 ) : (
@@ -606,7 +604,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
               <img
                 src={user?.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'}
                 alt={user?.name}
-                className="w-20 h-20 rounded-card object-cover border-2 border-emerald-500 shadow-level-1"
+                className="w-20 h-20 rounded-card object-cover border-2 border-forest-500 shadow-level-1"
               />
               <button
                 onClick={() => setShowPhotoModal(true)}

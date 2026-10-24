@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatUGX } from '../utils/formatters';
 import {
-  X, CheckCircle2, ArrowRight, AlertCircle, ShieldCheck
+  X, CheckCircle2, ArrowRight, ShieldCheck
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Field } from './ui/Field';
@@ -14,6 +14,7 @@ import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { SignInPrompt } from './SignInPrompt';
+import { Alert } from './ui/Alert';
 
 interface SkillRequestModalProps {
   onClose: () => void;
@@ -127,10 +128,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {errorMsg && (
-              <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
+              <Alert>{errorMsg}</Alert>
             )}
 
             <div className="text-[13px] text-ink-600 bg-ink-50 p-3 rounded-card border border-ink-200">

@@ -3,13 +3,14 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Lock, Mail, User, Phone, CheckCircle2,
-  AlertCircle, ArrowLeft, ArrowRight, GraduationCap, BookOpen, MapPin,
+  ArrowLeft, ArrowRight, GraduationCap, BookOpen, MapPin,
   Camera, Upload
 } from 'lucide-react';
 import { Field } from '../components/ui/Field';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import logoUrl from '../assets/logo.png';
+import { Alert } from '../components/ui/Alert';
 
 interface AuthPageProps {
   onSuccess: (role: string) => void;
@@ -150,10 +151,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
+          <Alert>{errorMsg}</Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -168,7 +166,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     onClick={() => setRole('learner')}
                     className={`p-3 rounded-card border flex flex-col items-center gap-1 transition ${
                       role === 'learner'
-                        ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold'
+                        ? 'bg-forest-50 border-forest-600 text-forest-950 font-bold'
                         : 'border-ink-200 text-ink-600 hover:bg-ink-50'
                     }`}
                   >
@@ -181,7 +179,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     onClick={() => setRole('educator')}
                     className={`p-3 rounded-card border flex flex-col items-center gap-1 transition ${
                       role === 'educator'
-                        ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold'
+                        ? 'bg-forest-50 border-forest-600 text-forest-950 font-bold'
                         : 'border-ink-200 text-ink-600 hover:bg-ink-50'
                     }`}
                   >

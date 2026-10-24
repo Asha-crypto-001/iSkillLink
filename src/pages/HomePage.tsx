@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Category, Educator, Review, Skill } from '../types';
 import { api } from '../services/api';
 import { EducatorCard } from '../components/EducatorCard';
-import { NewsletterSection } from '../components/NewsletterSection';
+import { Alert } from '../components/ui/Alert';
 import { formatUGX } from '../utils/formatters';
 import { EducatorCardSkeleton, CategorySkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -83,6 +83,10 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   // Real numbers only: trades are the distinct categories that active educators teach.
   const tradeCount = new Set(activeEducators.flatMap(e => (e.skills || []).map(s => s.category_id))).size;
+  const showcaseEducators = [
+    ...featuredEducators,
+    ...activeEducators.filter(e => !featuredEducators.some(f => f.id === e.id))
+  ].slice(0, 3);
   const educatorById = new Map(activeEducators.map(e => [e.id, e]));
   const recentReviews = [...reviews]
     .filter(r => r.comment?.trim())
@@ -243,14 +247,11 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="container-app pt-12">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-forest-700">
-              <Sparkles className="w-3.5 h-3.5" /> Explore by trade & discipline
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight mt-1 font-display">
-              Skill Categories
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-[-0.01em] font-display">
+              Trades you can learn
             </h2>
             <p className="text-sm text-ink-600 mt-1 max-w-xl">
-              From industrial tailoring to solar installation — learn where work happens, not in slides.
+              Learn where the work happens — trades with educators ready to teach are listed first.
             </p>
           </div>
           <button
@@ -272,11 +273,12 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </>
         ) : loadError ? (
-          <div className="p-4 rounded-card border border-rose-200 bg-rose-50 text-rose-800 text-sm flex items-center gap-2" role="alert">
-            <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" aria-hidden="true" />
-            <span>{loadError}</span>
-            <button onClick={() => window.location.reload()} className="ml-auto px-3 py-1.5 min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Retry</button>
-          </div>
+          <Alert>
+            <span className="flex flex-wrap items-center justify-between gap-2">
+              {loadError}
+              <button onClick={() => window.location.reload()} className="px-3 min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Try again</button>
+            </span>
+          </Alert>
         ) : (
           <>
             {/* Mobile snap */}
@@ -327,61 +329,56 @@ export const HomePage: React.FC<HomePageProps> = ({
         )}
       </section>
 
-      {/* ===== HOW IT WORKS — timeline ===== */}
-      <section className="mt-12 bg-ink-950 border-y border-ink-900 py-12 lg:py-16">
+      {/* ===== HOW IT WORKS — four numbered steps, plain language ===== */}
+      <section className="mt-14 bg-white border-y border-ink-200 py-12 lg:py-16" aria-labelledby="how-heading">
         <div className="container-app">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-white/10 border border-white/10 text-forest-200 text-xs font-bold tracking-wider uppercase">
-              <Clock className="w-3.5 h-3.5" /> Transparent workflow
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h2 id="how-heading" className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-[-0.01em] font-display">How it works</h2>
+              <p className="text-sm text-ink-600 mt-1">Four steps — and your money is protected the whole way.</p>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-display">How iSkillLink Works</h2>
-            <p className="text-sm text-ink-300">We verify masters, match precisely, protect money, and ensure real bench learning.</p>
-
-            <div className="inline-flex p-1 bg-white/10 backdrop-blur-md rounded-card border border-white/10 text-xs font-bold mt-2">
-              <button onClick={() => setHowTab('learners')} className={`px-5 py-2 rounded-lg transition ${howTab === 'learners' ? 'bg-white text-ink-900 shadow' : 'text-ink-300 hover:text-white'}`}>For Learners</button>
-              <button onClick={() => setHowTab('educators')} className={`px-5 py-2 rounded-lg transition ${howTab === 'educators' ? 'bg-white text-ink-900 shadow' : 'text-ink-300 hover:text-white'}`}>For Educators</button>
+            <div className="inline-flex p-1 bg-ink-100 rounded-control text-sm font-semibold self-start sm:self-auto" role="tablist" aria-label="Show steps for">
+              {([['learners', 'I want to learn'], ['educators', 'I want to teach']] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={howTab === key}
+                  onClick={() => setHowTab(key)}
+                  className={`px-4 min-h-[40px] rounded-[9px] transition ${howTab === key ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Timeline */}
-          <div className="relative mt-10">
-            <div className="hidden md:block absolute top-[28px] left-[8%] right-[8%] h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" aria-hidden="true" />
+          <ol className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
+            {(howTab === 'learners' ? [
+              { t: 'Find someone', d: 'Browse educators near you, or tell us what you want to learn and your budget.' },
+              { t: 'Agree a session', d: 'Pick a date and time. The educator confirms it.' },
+              { t: 'Pay into escrow', d: 'Pay with MTN or Airtel MoMo. We hold the money until the session is done.' },
+              { t: 'Learn at the bench', d: 'Work with real tools on real jobs, then leave an honest review.' }
+            ] : [
+              { t: 'Apply', d: 'Tell us your trade and your rate. We check your ID and visit your workshop.' },
+              { t: 'Set your terms', d: 'Your hourly rate in UGX, the tools you provide, and where you teach.' },
+              { t: 'Accept bookings', d: 'Confirm the sessions that suit you and teach on your own bench.' },
+              { t: 'Get paid', d: '90% of every session goes to your MoMo once it’s done.' }
+            ]).map((step, index) => (
+              <li key={step.t} className="border-t-2 border-ink-900 pt-4">
+                <span className="font-display text-sm font-bold text-forest-700 tabular-nums" aria-hidden="true">0{index + 1}</span>
+                <h3 className="mt-1 text-base font-bold text-ink-900">{step.t}</h3>
+                <p className="mt-1 text-sm text-ink-600 leading-relaxed">{step.d}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-10 flex flex-wrap gap-3">
             {howTab === 'learners' ? (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {[
-                  { n: 1, t: 'Discover or Request', d: 'Browse verified educators or post a custom learning goal with budget & location.', icon: Search },
-                  { n: 2, t: 'Rule-Based Match', d: '35% skill fit + proximity, format, budget, rating — transparent, no black box.', icon: Layers },
-                  { n: 3, t: 'Escrow via MoMo', d: 'Pay MTN/Airtel. Funds held until you mark milestone complete.', icon: ShieldCheck },
-                  { n: 4, t: 'Build & Review', d: 'Operate machines, build real projects, leave verified review.', icon: Star },
-                ].map(s => (
-                  <div key={s.n} className="bg-white rounded-card border border-ink-200 p-5 shadow-level-1 space-y-3">
-                    <span className="w-9 h-9 rounded-full bg-forest-700 text-white text-sm font-black flex items-center justify-center shadow-sm">{s.n}</span>
-                    <h3 className="font-bold text-ink-900 text-sm flex items-center gap-2"><s.icon className="w-4 h-4 text-forest-700" />{s.t}</h3>
-                    <p className="text-xs text-ink-600 leading-relaxed">{s.d}</p>
-                  </div>
-                ))}
-              </div>
+              <button onClick={() => setCurrentView('find-skill')} className="px-6 min-h-[44px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition">Find an educator</button>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {[
-                  { n: 1, t: 'Apply & Verify', d: 'NIN, trade test, workshop inspection — Mbarara team reviews in 24–48h.', icon: BadgeCheck },
-                  { n: 2, t: 'Set UGX Rates', d: 'Hourly & package pricing, availability, tools you provide.', icon: DollarSign },
-                  { n: 3, t: 'Accept Bookings', d: 'One-click accept, message learners, mentor on your bench.', icon: Users },
-                  { n: 4, t: '90% Payout', d: '10% platform fee. Net disbursed to MTN/Airtel on completion.', icon: Award },
-                ].map(s => (
-                  <div key={s.n} className="bg-white rounded-card border border-ink-200 p-5 shadow-level-1 space-y-3">
-                    <span className="w-9 h-9 rounded-full bg-ink-900 text-white text-sm font-black flex items-center justify-center">{s.n}</span>
-                    <h3 className="font-bold text-ink-900 text-sm flex items-center gap-2"><s.icon className="w-4 h-4 text-ink-700" />{s.t}</h3>
-                    <p className="text-xs text-ink-600 leading-relaxed">{s.d}</p>
-                  </div>
-                ))}
-              </div>
+              <button onClick={() => setCurrentView('become-educator')} className="px-6 min-h-[44px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition">Apply to teach</button>
             )}
-          </div>
-
-          <div className="mt-8 flex justify-center gap-3">
-            <button onClick={() => setCurrentView('find-skill')} className="px-6 py-3 min-h-[44px] rounded-control bg-white text-ink-900 font-bold text-sm shadow hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-white">Find a Skill</button>
-            <button onClick={onOpenSkillRequest} className="px-6 py-3 min-h-[44px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition focus-visible:ring-2 focus-visible:ring-forest-400">Request Custom Skill</button>
+            <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[44px] rounded-control bg-white text-ink-800 font-bold text-sm border border-ink-200 hover:bg-ink-50 transition">More detail</button>
           </div>
         </div>
       </section>
@@ -390,18 +387,15 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="container-app pt-12">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-forest-700">
-              <Verified className="w-3.5 h-3.5" /> Vetted artisans & practitioners
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight mt-1 font-display">
-              Featured Verified Educators
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-[-0.01em] font-display">
+              Educators you can book
             </h2>
             <p className="text-sm text-ink-600 mt-1">
               Every educator here was checked by our team before taking bookings.
             </p>
           </div>
           <button onClick={() => setCurrentView('find-skill')} className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control bg-white border border-ink-200 hover:bg-ink-50 text-ink-800 text-sm font-bold shadow-soft transition">
-            <span>Browse all mentors</span>
+            <span>See all educators</span>
             <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
@@ -410,9 +404,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => <EducatorCardSkeleton key={i} />)}
           </div>
-        ) : featuredEducators.length > 0 ? (
+        ) : showcaseEducators.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredEducators.slice(0, 6).map(edu => (
+            {showcaseEducators.map(edu => (
               <EducatorCard key={edu.id} educator={edu} onViewProfile={onViewEducator} onRequestBooking={onRequestBooking} />
             ))}
           </div>
@@ -424,9 +418,8 @@ export const HomePage: React.FC<HomePageProps> = ({
               <Award className="w-7 h-7" aria-hidden="true" />
             </div>
             <div className="max-w-xl mx-auto space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-forest-50 text-forest-700 px-2.5 py-1 rounded-full border border-forest-200">Educator Onboarding Open • Mbarara & Uganda</span>
               <h3 className="text-xl sm:text-2xl font-bold text-ink-900 tracking-tight font-display">Be among the first verified educators</h3>
-              <p className="text-sm text-ink-600 leading-relaxed">We’re onboarding tailors, technicians, developers, bakers, welders — set your UGX rates, mentor motivated learners, get 90% MoMo payouts.</p>
+              <p className="text-sm text-ink-600 leading-relaxed">We’re welcoming our first tailors, technicians, bakers and welders. Set your own UGX rate and keep 90% of every session.</p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button onClick={() => setCurrentView('become-educator')} className="px-6 py-3 min-h-[44px] rounded-card bg-forest-700 hover:bg-forest-800 text-white font-bold text-sm shadow-level-1 flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-forest-700">
@@ -468,17 +461,14 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* ===== CTA — warm editorial ===== */}
       <section className="container-app pt-10">
-        <div className="relative overflow-hidden bg-gradient-to-br from-forest-800 via-forest-700 to-ink-900 rounded-display p-8 sm:p-10 border border-forest-800 shadow-level-3 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl" aria-hidden="true" />
-          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-amber-200/10 rounded-full blur-3xl" aria-hidden="true" />
-          <div className="relative space-y-2 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-pill bg-white/15 border border-white/15 text-white text-[11px] font-bold tracking-wider uppercase"><Heart className="w-3 h-3" /> Craft • Teach • Earn</div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-display">Are you a skilled artisan or professional?</h2>
+        <div className="bg-forest-800 rounded-display p-8 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-[-0.01em] font-display">Good at a trade? Teach it here.</h2>
             <p className="text-sm text-forest-50 leading-relaxed">Teach on your own bench, set your own UGX rate, and keep 90% of every session — paid to your MoMo.</p>
           </div>
-          <div className="relative flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
             <button onClick={() => setCurrentView('become-educator')} className="px-6 py-3 min-h-[44px] rounded-card bg-white hover:bg-ink-50 text-ink-900 font-bold text-sm shadow flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white">
-              <span>Apply to Teach</span><ArrowRight className="w-4 h-4" />
+              <span>Apply to teach</span><ArrowRight className="w-4 h-4" />
             </button>
             <button onClick={() => setCurrentView('how-it-works')} className="px-6 py-3 min-h-[44px] rounded-card bg-white/10 hover:bg-white/15 text-white font-bold text-sm border border-white/20 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white">
               <span>How vetting works</span><ShieldCheck className="w-4 h-4" />
@@ -486,11 +476,6 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </div>
       </section>
-
-      {/* Newsletter */}
-      <div className="container-app pt-10">
-        <NewsletterSection />
-      </div>
     </div>
   );
 };

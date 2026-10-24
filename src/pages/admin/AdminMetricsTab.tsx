@@ -31,14 +31,14 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
 
       {/* Quick Operations Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+        <div className="bg-white p-6 rounded-2xl border border-ink-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-ink-700">
               Open Custom Skill Requests ({learnerRequests.filter(r => r.status === 'open').length})
             </h3>
             <button
               onClick={() => onNavigateTab('matchmaker')}
-              className="text-xs font-bold text-emerald-700 hover:underline"
+              className="text-xs font-bold text-forest-700 hover:underline"
             >
               Open Matchmaker
             </button>
@@ -46,10 +46,10 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
 
           <div className="space-y-3">
             {learnerRequests.slice(0, 3).map(r => (
-              <div key={r.id} className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 text-xs flex items-center justify-between">
+              <div key={r.id} className="p-3.5 rounded-xl border border-ink-200 bg-ink-50 text-xs flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-gray-900">{r.skill_name}</div>
-                  <div className="text-gray-500 text-[11px]">{r.learner_name} • {r.location} • Budget: {formatUGX(r.budget_ugx)}</div>
+                  <div className="font-bold text-ink-900">{r.skill_name}</div>
+                  <div className="text-ink-500 text-[11px]">{r.learner_name} • {r.location} • Budget: {formatUGX(r.budget_ugx)}</div>
                 </div>
                 <StatusBadge status={r.status} />
               </div>
@@ -57,14 +57,14 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+        <div className="bg-white p-6 rounded-2xl border border-ink-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-ink-700">
               Recent Audit Actions
             </h3>
             <button
               onClick={() => onNavigateTab('audit')}
-              className="text-xs font-bold text-slate-700 hover:underline"
+              className="text-xs font-bold text-ink-700 hover:underline"
             >
               View Full Audit
             </button>
@@ -72,12 +72,12 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
 
           <div className="space-y-3">
             {auditLogs.slice(0, 3).map(log => (
-              <div key={log.id} className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 text-xs space-y-1">
-                <div className="flex items-center justify-between font-semibold text-gray-900">
+              <div key={log.id} className="p-3.5 rounded-xl border border-ink-200 bg-ink-50 text-xs space-y-1">
+                <div className="flex items-center justify-between font-semibold text-ink-900">
                   <span>{log.action_type.replace(/_/g, ' ')}</span>
-                  <span className="text-[10px] text-gray-400">{formatShortDate(log.created_at)}</span>
+                  <span className="text-[10px] text-ink-400">{formatShortDate(log.created_at)}</span>
                 </div>
-                <p className="text-gray-600 text-[11px]">{log.details}</p>
+                <p className="text-ink-600 text-[11px]">{log.details}</p>
               </div>
             ))}
           </div>

@@ -63,8 +63,8 @@ export const EducatorProfilePage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <div className="animate-pulse space-y-4">
-          <div className="w-24 h-24 bg-gray-200 rounded-card mx-auto" />
-          <div className="h-6 bg-gray-200 rounded w-1/3 mx-auto" />
+          <div className="w-24 h-24 bg-ink-200 rounded-card mx-auto" />
+          <div className="h-6 bg-ink-200 rounded w-1/3 mx-auto" />
           <div className="h-4 bg-ink-50 rounded w-1/2 mx-auto" />
         </div>
         <p className="text-xs text-ink-500 mt-6">Loading verified educator profile...</p>
@@ -114,17 +114,17 @@ export const EducatorProfilePage: React.FC = () => {
           <div className="flex gap-5">
             <div className="relative shrink-0">
               <img src={avatar} alt={name} className="w-24 h-24 rounded-card object-cover border-2 border-ink-700 shadow-md" />
-              {educator.status === 'active' && <span className="absolute -bottom-1.5 -right-1.5 bg-emerald-600 text-white p-1 rounded-full ring-2 ring-slate-900"><ShieldCheck className="w-4 h-4" /></span>}
+              {educator.status === 'active' && <span className="absolute -bottom-1.5 -right-1.5 bg-forest-600 text-white p-1 rounded-full ring-2 ring-ink-900"><ShieldCheck className="w-4 h-4" /></span>}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{name}</h1>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-md"><ShieldCheck className="w-3.5 h-3.5" /> Verified</span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-forest-950 text-forest-300 border border-forest-800 px-2 py-0.5 rounded-md"><ShieldCheck className="w-3.5 h-3.5" /> Verified</span>
               </div>
               <p className="text-sm font-medium text-ink-300 mt-1">{educator.title}</p>
               <div className="flex flex-wrap items-center gap-4 text-xs text-ink-300 mt-2">
-                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-emerald-400" />{educator.location}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-emerald-400" />{educator.years_experience} Years</span>
+                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-forest-400" />{educator.location}</span>
+                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-forest-400" />{educator.years_experience} Years</span>
                 {educator.rating > 0 && <span className="flex items-center gap-1 bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-bold"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />{educator.rating.toFixed(2)} ({educator.total_reviews})</span>}
               </div>
             </div>
@@ -132,10 +132,10 @@ export const EducatorProfilePage: React.FC = () => {
           <div className="sm:text-right w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-0 border-ink-800">
             <div className="text-xs text-ink-400 uppercase font-semibold">Standard Rate</div>
             <div className="text-2xl font-bold">{formatUGX(educator.hourly_rate_ugx)}<span className="text-xs font-normal text-ink-400"> / hr</span></div>
-            <button onClick={() => setShowBooking(true)} className="mt-2 w-full sm:w-auto px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-forest-500 text-white font-semibold text-xs transition shadow-md flex items-center justify-center gap-1.5">
+            <button onClick={() => setShowBooking(true)} className="mt-2 w-full sm:w-auto px-5 py-2.5 rounded-lg bg-forest-600 hover:bg-forest-500 text-white font-semibold text-xs transition shadow-md flex items-center justify-center gap-1.5">
               <Calendar className="w-3.5 h-3.5" /><span>Request to Learn</span>
             </button>
-            <button onClick={() => navigate('/find-skill')} className="mt-2 w-full sm:w-auto px-5 py-1.5 rounded-lg bg-ink-900 hover:bg-slate-700 text-ink-200 text-xs font-medium flex items-center justify-center gap-1">
+            <button onClick={() => navigate('/find-skill')} className="mt-2 w-full sm:w-auto px-5 py-1.5 rounded-lg bg-ink-900 hover:bg-ink-700 text-ink-200 text-xs font-medium flex items-center justify-center gap-1">
               <ArrowLeft className="w-3 h-3" /><span>Back to Directory</span>
             </button>
           </div>
@@ -173,7 +173,7 @@ export const EducatorProfilePage: React.FC = () => {
               </div>
               <div className="p-4 rounded-card border border-ink-200 bg-white space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-ink-900"><Award className="w-4 h-4 text-forest-700" /><span>Teaching Formats</span></div>
-                <div className="flex flex-wrap gap-1.5">{educator.teaching_formats.map(f => <span key={f} className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-forest-50 text-emerald-900 border border-forest-200">{f==='in-person'?'In-Person Workshop':f==='online'?'Online Live':'Hybrid'}</span>)}</div>
+                <div className="flex flex-wrap gap-1.5">{educator.teaching_formats.map(f => <span key={f} className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-forest-50 text-forest-900 border border-forest-200">{f==='in-person'?'In-Person Workshop':f==='online'?'Online Live':'Hybrid'}</span>)}</div>
               </div>
             </div>
             {educator.qualifications && educator.qualifications.length>0 && (
@@ -232,7 +232,7 @@ export const EducatorProfilePage: React.FC = () => {
                       <div className="flex items-center gap-1 text-amber-500 text-xs font-bold"><Star className="w-3.5 h-3.5 fill-amber-500" /><span>{r.rating}.0</span></div>
                     </div>
                     <p className="text-xs text-ink-800 leading-relaxed bg-ink-50 p-3 rounded-lg border border-ink-100">"{r.comment}"</p>
-                    {r.educator_reply && <div className="ml-4 pl-3 border-l-2 border-forest-600 text-xs bg-forest-50/50 p-2.5 rounded-r-lg"><span className="font-semibold text-emerald-950 block text-[11px]">Educator Reply:</span><span className="text-ink-800 mt-0.5 block">{r.educator_reply}</span></div>}
+                    {r.educator_reply && <div className="ml-4 pl-3 border-l-2 border-forest-600 text-xs bg-forest-50/50 p-2.5 rounded-r-lg"><span className="font-semibold text-forest-950 block text-[11px]">Educator Reply:</span><span className="text-ink-800 mt-0.5 block">{r.educator_reply}</span></div>}
                   </div>
                 ))}
               </div>

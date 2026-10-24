@@ -38,7 +38,7 @@ export function getStatusBadgeClass(status: string): string {
     case 'completed':
     case 'paid':
     case 'verified':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-forest-50 text-forest-700 border-forest-200';
     case 'in_progress':
     case 'confirmed':
     case 'payment_requested':
@@ -60,6 +60,6 @@ export function getStatusBadgeClass(status: string): string {
     case 'suspended':
       return 'bg-rose-50 text-rose-700 border-rose-200';
     default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
+      return 'bg-ink-50 text-ink-700 border-ink-200';
   }
 }

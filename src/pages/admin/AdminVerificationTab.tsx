@@ -18,10 +18,10 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
   onVerifyStep
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+    <div className="bg-white rounded-2xl border border-ink-200 shadow-sm p-6 space-y-6">
       <div>
-        <h2 className="text-base font-bold text-gray-900">Educator Verification & Vetting Queue</h2>
-        <p className="text-xs text-gray-500">
+        <h2 className="text-base font-bold text-ink-900">Educator Verification & Vetting Queue</h2>
+        <p className="text-xs text-ink-500">
           Review applicant identity, trade tests, workshop readiness, and references before approving active status.
         </p>
       </div>
@@ -34,24 +34,24 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
             return (
               <div
                 key={edu.id}
-                className="p-6 rounded-2xl border border-gray-200 bg-gray-50/50 space-y-5"
+                className="p-6 rounded-2xl border border-ink-200 bg-ink-50/50 space-y-5"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink-200 pb-4">
                   <div className="flex items-center gap-4">
                     <img
                       src={edu.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                       alt={edu.user?.name}
-                      className="w-14 h-14 rounded-xl object-cover border border-gray-300"
+                      className="w-14 h-14 rounded-xl object-cover border border-ink-300"
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-gray-900 text-base">{edu.user?.name}</h3>
+                        <h3 className="font-bold text-ink-900 text-base">{edu.user?.name}</h3>
                         <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
                           {edu.status.toUpperCase()}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 mt-0.5">{edu.title} • {edu.location}</p>
-                      <div className="text-[11px] text-gray-500 flex items-center gap-3 mt-1">
+                      <p className="text-xs text-ink-600 mt-0.5">{edu.title} • {edu.location}</p>
+                      <div className="text-[11px] text-ink-500 flex items-center gap-3 mt-1">
                         <span>Phone: {edu.user?.phone}</span>
                         <span>•</span>
                         <span>Rate: {formatUGX(edu.hourly_rate_ugx)}/hr</span>
@@ -60,9 +60,9 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   </div>
 
                   <div className="flex flex-col sm:items-end gap-2">
-                    <p className="text-xs text-gray-600" aria-live="polite">
-                      <strong className="text-gray-900">{progress.passed} of {progress.total}</strong> checks passed
-                      <span className="block text-[11px] text-gray-500">Goes live automatically after the last check</span>
+                    <p className="text-xs text-ink-600" aria-live="polite">
+                      <strong className="text-ink-900">{progress.passed} of {progress.total}</strong> checks passed
+                      <span className="block text-[11px] text-ink-500">Goes live automatically after the last check</span>
                     </p>
                     <button
                       onClick={() => onSuspendEducator(edu.id)}
@@ -78,24 +78,24 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   {VERIFICATION_STEPS.map((step, index) => {
                     const passed = isStepPassed(v, step);
                     return (
-                      <li key={step.key} className={`p-3.5 rounded-xl border bg-white space-y-2 ${passed ? 'border-emerald-200' : 'border-gray-200'}`}>
+                      <li key={step.key} className={`p-3.5 rounded-xl border bg-white space-y-2 ${passed ? 'border-forest-200' : 'border-ink-200'}`}>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-gray-700">{index + 1}. {step.label}</span>
+                          <span className="font-semibold text-ink-700">{index + 1}. {step.label}</span>
                           <StatusBadge status={v?.[step.field] || 'pending'} />
                         </div>
                         {step.key === 'national_id' ? (
-                          <div className="font-mono text-[11px] text-gray-600">{hasSubmittedNationalId(v) ? v!.national_id_number : 'Not submitted yet'}</div>
+                          <div className="font-mono text-[11px] text-ink-600">{hasSubmittedNationalId(v) ? v!.national_id_number : 'Not submitted yet'}</div>
                         ) : (
-                          <div className="text-[11px] text-gray-500">{step.adminDetail}</div>
+                          <div className="text-[11px] text-ink-500">{step.adminDetail}</div>
                         )}
                         {passed ? (
-                          <div className="flex items-center gap-1 py-1 text-[11px] font-semibold text-emerald-800">
+                          <div className="flex items-center gap-1 py-1 text-[11px] font-semibold text-forest-800">
                             <Check className="w-3.5 h-3.5" aria-hidden="true" /> Passed
                           </div>
                         ) : (
                           <button
                             onClick={() => onVerifyStep(edu.id, step.key)}
-                            className="w-full py-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 transition"
+                            className="w-full py-1.5 text-[11px] font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded border border-forest-200 transition"
                           >
                             {step.adminAction}
                           </button>
@@ -112,7 +112,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
             icon={<ShieldCheck className="w-6 h-6" />}
             title="No pending verifications"
             description="All educator applications have been reviewed. New submissions will appear here for your 4-step vetting."
-            action={<span className="text-xs text-slate-600 flex items-center gap-1.5"><UserCheck className="w-4 h-4 text-emerald-600" />Awaiting new artisan applications</span>}
+            action={<span className="text-xs text-ink-600 flex items-center gap-1.5"><UserCheck className="w-4 h-4 text-forest-600" />Awaiting new artisan applications</span>}
           />
         )}
       </div>

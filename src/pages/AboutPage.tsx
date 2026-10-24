@@ -21,7 +21,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           Where Skills Meet Opportunity
         </h1>
         <p className="text-xs sm:text-sm text-ink-600 leading-relaxed">
-          Founded by <strong>Ashabahebwa Hassan</strong> in Mbarara, Uganda, iSkillLink bridges the divide between theoretical education and real-world practical mastery across East Africa.
+          Started in Mbarara, Uganda, iSkillLink bridges the divide between theoretical education and real-world practical mastery across East Africa.
         </p>
       </div>
 
@@ -79,26 +79,26 @@ export const AboutPage: React.FC<AboutPageProps> = ({
       {/* Leadership & Location */}
       <div className="bg-ink-950 text-white p-8 sm:p-10 rounded-3xl border border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <div className="flex items-center gap-2 text-xs text-emerald-400 font-bold uppercase">
+          <div className="flex items-center gap-2 text-xs text-forest-400 font-bold uppercase">
             <MapPin className="w-4 h-4" />
             <span>Headquartered in Mbarara City, Uganda</span>
           </div>
           <h3 className="text-xl font-bold text-white">Founded by Ashabahebwa Hassan</h3>
           <p className="text-xs text-ink-300 leading-relaxed">
-            Leading practical vocational advancement from Mbarara City, Western Region, across Uganda and East Africa. Contact our office via WhatsApp at <strong>+256 744 024 529</strong> / <strong>+256 772 233 621</strong> or email <a href="mailto:iskilllink0@gmail.com" className="text-emerald-400 underline">iskilllink0@gmail.com</a>.
+            Leading practical vocational advancement from Mbarara City, Western Region, across Uganda and East Africa. Contact our office via WhatsApp at <strong>+256 744 024 529</strong> / <strong>+256 772 233 621</strong> or email <a href="mailto:iskilllink0@gmail.com" className="text-forest-400 underline">iskilllink0@gmail.com</a>.
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 shrink-0">
           <button
             onClick={() => setCurrentView('find-skill')}
-            className="px-5 py-2.5 rounded-card bg-emerald-600 hover:bg-forest-500 text-white font-bold text-xs shadow"
+            className="px-5 py-2.5 rounded-card bg-forest-600 hover:bg-forest-500 text-white font-bold text-xs shadow"
           >
             Find a Skill
           </button>
           <button
             onClick={() => setCurrentView('become-educator')}
-            className="px-5 py-2.5 rounded-card bg-ink-900 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-ink-700"
+            className="px-5 py-2.5 rounded-card bg-ink-900 hover:bg-ink-700 text-ink-100 font-bold text-xs border border-ink-700"
           >
             Teach With Us
           </button>

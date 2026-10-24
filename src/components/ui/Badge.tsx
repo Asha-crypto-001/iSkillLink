@@ -22,7 +22,7 @@ const variantClasses: Record<BadgeVariant, string> = {
 };
 
 const dotClasses: Record<BadgeVariant, string> = {
-  success: 'bg-emerald-500',
+  success: 'bg-forest-500',
   warning: 'bg-amber-500',
   error: 'bg-rose-500',
   info: 'bg-blue-500',

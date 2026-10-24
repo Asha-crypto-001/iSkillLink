@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   ChevronDown, User, LogOut,
   Menu, X, GraduationCap, ArrowRight,
-  Settings, PlusCircle, Phone, Mail, Camera, Sparkles
+  Settings, PlusCircle, Camera, Sparkles
 } from 'lucide-react';
 import { ProfilePhotoUploadModal } from './ProfilePhotoUploadModal';
 import logoUrl from '../assets/logo.png';
@@ -100,41 +100,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <header className={`sticky top-0 z-40 transition-shadow duration-200 ${isScrolled ? 'shadow-level-2' : 'shadow-none'}`}>
-        {/* Utility ribbon — modern minimal */}
-        <div className="overflow-hidden bg-ink-950 text-ink-200 text-xs border-b border-ink-900">
-          <div className="container-app h-8 flex items-center justify-between gap-3 !py-0">
-            <div className="flex items-center gap-2.5 overflow-hidden whitespace-nowrap">
-              <span className="inline-flex items-center gap-1.5 text-forest-300 font-bold uppercase text-[10px] tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-forest-400 animate-pulse" aria-hidden="true" />
-                iSkillLink Uganda
-              </span>
-              <span className="hidden sm:inline w-px h-3 bg-ink-800" aria-hidden="true" />
-              <span className="hidden sm:inline text-ink-300 text-xs font-medium">HQ: Mbarara City</span>
-              <span className="hidden lg:inline-flex items-center gap-1.5 text-ink-400 text-xs">
-                <span className="w-1 h-1 rounded-full bg-ink-700" />
-                Founded by Ashabahebwa Hassan
-              </span>
-            </div>
-
-            <div className="hidden md:flex items-center gap-3 text-xs font-medium text-ink-300 shrink-0">
-              <a href="mailto:iskilllink0@gmail.com" className="inline-flex items-center gap-1.5 hover:text-white transition focus-visible:ring-2 focus-visible:ring-forest-400 rounded-control px-1.5 py-1 -mx-1">
-                <Mail className="w-3 h-3 text-forest-400" aria-hidden="true" />
-                <span className="hidden lg:inline">iskilllink0@gmail.com</span>
-              </a>
-              <span className="w-px h-3 bg-ink-800 hidden lg:block" aria-hidden="true" />
-              <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-white hover:text-amber-300 transition focus-visible:ring-2 focus-visible:ring-amber-300 rounded-control px-1.5 py-1 -mx-1">
-                <Phone className="w-3 h-3 text-forest-400" aria-hidden="true" />
-                <span>+256 744 024 529</span>
-              </a>
-            </div>
-
-            {/* Mobile: only WhatsApp icon */}
-            <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className="md:hidden inline-flex items-center justify-center w-7 h-7 rounded-full bg-forest-700 text-white hover:bg-forest-800 transition focus-visible:ring-2 focus-visible:ring-forest-400" aria-label="WhatsApp +256 744 024 529">
-              <Phone className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-
         {/* Main bar — glass premium */}
         <div className="bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 border-b border-ink-200/70">
           <div className="container-app">
