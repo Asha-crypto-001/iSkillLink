@@ -16,6 +16,7 @@ export interface User {
   id: string;
   email: string;
   google_sub?: string;
+  supabase_id?: string;
   password_hash: string;
   role: UserRole;
   name: string;
