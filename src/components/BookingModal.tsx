@@ -13,6 +13,7 @@ import { Input } from './ui/Input';
 import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
+import { SignInPrompt } from './SignInPrompt';
 
 interface BookingModalProps {
   educator: Educator | null;
@@ -126,6 +127,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </button>
         </div>
 
+        {!user ? (
+          <SignInPrompt
+            title={`Sign in to book ${educator.user?.name?.split(' ')[0] || 'this educator'}`}
+            description="Bookings are tied to your account so your payment, session and review stay together. It takes a minute."
+            next={`/educators/${educator.id}`}
+            onClose={onClose}
+          />
+        ) : (
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {errorMsg && (
@@ -263,6 +272,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </Button>
           </div>
         </form>
+        )}
     </Modal>
   );
 };

@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Lock, Mail, User, Phone, CheckCircle2,
-  AlertCircle, ArrowRight, GraduationCap, BookOpen, MapPin,
+  AlertCircle, ArrowLeft, ArrowRight, GraduationCap, BookOpen, MapPin,
   Camera, Upload
 } from 'lucide-react';
 import { Field } from '../components/ui/Field';
@@ -20,7 +21,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   defaultMode = 'login'
 }) => {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
+  const [searchParams] = useSearchParams();
+  // Visitors sent here from a guarded page or a form get a reason, and are returned afterwards.
+  const returningTo = searchParams.get('next');
+  const [mode, setMode] = useState<'login' | 'register'>(searchParams.get('mode') === 'register' ? 'register' : defaultMode);
   const [role, setRole] = useState<'learner' | 'educator'>('learner');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -95,6 +99,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
   return (
     <div className="max-w-md mx-auto px-4 py-12 space-y-6">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-600 hover:text-ink-900 rounded-control">
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+        Back to iSkillLink
+      </Link>
+
       {/* Brand Header */}
       <div className="text-center space-y-3">
         <div className="w-16 h-16 bg-white rounded-card shadow-level-1 border border-ink-200/90 p-2.5 mx-auto flex items-center justify-center">
@@ -106,10 +115,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </div>
         <div>
           <h1 className="text-2xl font-bold text-ink-900 tracking-tight">
-            {mode === 'login' ? 'Sign In to iSkillLink' : 'Create an Account'}
+            {mode === 'login' ? (returningTo ? 'Sign in to continue' : 'Sign in to iSkillLink') : 'Create your account'}
           </h1>
-          <p className="text-xs text-ink-500 mt-0.5">
-            Where Skills Meet Opportunity • Mbarara, Uganda
+          <p className="text-sm text-ink-600 mt-1">
+            {mode === 'login'
+              ? (returningTo ? 'You’ll go straight back to where you were.' : 'Welcome back.')
+              : 'Free for learners. Educators are checked before taking bookings.'}
           </p>
         </div>
       </div>
@@ -144,19 +155,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             <span>{errorMsg}</span>
           </div>
         )}
-
-        <div className="text-center text-xs font-semibold text-ink-600">
-          Sign in securely with your email and password.
-        </div>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <div className="border-t border-ink-200 w-full" />
-          <span className="bg-white px-2.5 text-[10px] font-bold uppercase tracking-wider text-stone-400 shrink-0">
-            Email and password
-          </span>
-          <div className="border-t border-ink-200 w-full" />
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {mode === 'register' && (
@@ -305,9 +303,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </Button>
         </form>
 
-        <div className="pt-3 border-t border-ink-100 text-center text-xs text-ink-500">
-          Protected by iSkillLink Security • Headquartered in Mbarara City
-        </div>
+        {mode === 'login' && (
+          <p className="pt-3 border-t border-ink-100 text-center text-xs text-ink-600">
+            Forgot your password?{' '}
+            <a href="https://wa.me/256744024529?text=Hello%20iSkillLink%2C%20I%20need%20help%20resetting%20my%20password." target="_blank" rel="noopener noreferrer" className="font-semibold text-forest-700 hover:text-forest-800 underline underline-offset-2">
+              Message us on WhatsApp
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

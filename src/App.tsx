@@ -17,6 +17,7 @@ import { AuthPage } from './pages/AuthPage';
 import { EducatorProfileModal } from './components/EducatorProfileModal';
 import { BookingModal } from './components/BookingModal';
 import { SkillRequestModal } from './components/SkillRequestModal';
+import { RequireAuth } from './components/RequireAuth';
 import { Educator } from './types';
 import { api } from './services/api';
 
@@ -48,6 +49,25 @@ function getViewFromPath(pathname: string): string {
   return 'home';
 }
 
+/** Shown to signed-in users who are not administrators. */
+const AdminRestricted: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
+      <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200 shadow-sm">
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <h2 className="text-2xl font-bold text-ink-900">This area is for administrators</h2>
+      <p className="text-sm text-ink-600 leading-relaxed">Your account doesn’t have access to platform operations.</p>
+      <button onClick={() => navigate('/')} className="px-6 py-2.5 rounded-xl bg-ink-900 text-white text-sm font-bold shadow hover:bg-ink-800 transition">
+        Back to iSkillLink
+      </button>
+    </div>
+  );
+};
+
 const AppContent: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,6 +79,15 @@ const AppContent: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const currentView = getViewFromPath(location.pathname);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('request') === 'skill' && user) {
+      setShowSkillRequestModal(true);
+      params.delete('request');
+      navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+    }
+  }, [location.search, user]);
   const isDashboardRoute = location.pathname.startsWith('/dashboard/');
   const isAuthRoute = location.pathname === '/auth';
 
@@ -121,6 +150,11 @@ const AppContent: React.FC = () => {
   };
 
   const handleAuthSuccess = (role: string) => {
+    const next = new URLSearchParams(location.search).get('next');
+    if (next && next.startsWith('/') && !next.startsWith('//')) {
+      navigate(next, { replace: true });
+      return;
+    }
     if (role === 'admin' || role === 'secondary_admin') navigate('/dashboard/admin');
     else if (role === 'educator') navigate('/dashboard/educator');
     else navigate('/dashboard/learner');
@@ -132,33 +166,6 @@ const AppContent: React.FC = () => {
     const catFromUrl = params.get('category');
     if (catFromUrl) return catFromUrl;
     return selectedCategoryId;
-  };
-
-  const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    if (user && (user.role === 'admin' || user.role === 'secondary_admin')) {
-      return <>{children}</>;
-    }
-    return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200 shadow-sm">
-          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-black text-gray-900">Restricted Administrator Area</h2>
-        <p className="text-xs text-gray-600 leading-relaxed">
-          This operations portal is private and restricted strictly to Founder <strong>Ashabahebwa Hassan</strong> and authorized secondary administrators.
-        </p>
-        <div className="pt-2">
-          <button
-            onClick={() => navigate('/auth')}
-            className="px-6 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow hover:bg-slate-800 transition"
-          >
-            Admin Sign In
-          </button>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -185,7 +192,7 @@ const AppContent: React.FC = () => {
           currentView={currentView}
           setCurrentView={setCurrentView}
           onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-          onOpenAuth={() => navigate('/auth')}
+          onOpenAuth={(mode) => navigate(mode === 'register' ? '/auth?mode=register' : '/auth')}
         />
       )}
 
@@ -229,28 +236,36 @@ const AppContent: React.FC = () => {
           } />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard/learner" element={
-            <LearnerDashboard
-              onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-              onViewEducator={handleViewEducator}
-            />
+            <RequireAuth>
+              <LearnerDashboard
+                onOpenSkillRequest={() => setShowSkillRequestModal(true)}
+                onViewEducator={handleViewEducator}
+              />
+            </RequireAuth>
           } />
           <Route path="/dashboard/learner/*" element={
-            <LearnerDashboard
-              onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-              onViewEducator={handleViewEducator}
-            />
+            <RequireAuth>
+              <LearnerDashboard
+                onOpenSkillRequest={() => setShowSkillRequestModal(true)}
+                onViewEducator={handleViewEducator}
+              />
+            </RequireAuth>
           } />
           <Route path="/dashboard/educator" element={
-            <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            <RequireAuth>
+              <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            </RequireAuth>
           } />
           <Route path="/dashboard/educator/*" element={
-            <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            <RequireAuth>
+              <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            </RequireAuth>
           } />
           <Route path="/dashboard/admin" element={
-            <AdminGuard><AdminDashboard /></AdminGuard>
+            <RequireAuth roles={['admin', 'secondary_admin']} denied={<AdminRestricted />}><AdminDashboard /></RequireAuth>
           } />
           <Route path="/dashboard/admin/*" element={
-            <AdminGuard><AdminDashboard /></AdminGuard>
+            <RequireAuth roles={['admin', 'secondary_admin']} denied={<AdminRestricted />}><AdminDashboard /></RequireAuth>
           } />
           <Route path="/auth" element={<AuthPage onSuccess={handleAuthSuccess} />} />
           {/* Legacy redirects */}

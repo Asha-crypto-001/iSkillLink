@@ -148,12 +148,12 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
   const user = db.findUserByEmail(String(email).trim());
   if (!user) {
-    return res.status(401).json({ error: 'Account not found with this email. Please register.' });
+    return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
 
   const isPasswordValid = await comparePassword(password, user.password_hash);
   if (!isPasswordValid) {
-    return res.status(401).json({ error: 'Incorrect password. Please try again.' });
+    return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
 
   // Return every profile the account owns (a learner may also have applied to teach).

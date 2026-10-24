@@ -13,6 +13,7 @@ import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
+import { SignInPrompt } from './SignInPrompt';
 
 interface SkillRequestModalProps {
   onClose: () => void;
@@ -115,7 +116,14 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
           </button>
         </div>
 
-        {step === 'form' ? (
+        {!user ? (
+          <SignInPrompt
+            title="Sign in to send a request"
+            description="We reply to requests on WhatsApp and in your dashboard, so we need to know who it’s from."
+            next={`${window.location.pathname}?request=skill`}
+            onClose={onClose}
+          />
+        ) : step === 'form' ? (
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {errorMsg && (

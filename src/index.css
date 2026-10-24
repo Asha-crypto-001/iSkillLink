@@ -56,7 +56,8 @@
 
   /* Skip link for keyboard users */
   .skip-link {
-    @apply absolute left-4 top-4 z-[100] -translate-y-20 bg-ink-900 text-white px-4 py-2 rounded-control text-sm font-semibold shadow-level-3 focus:translate-y-0 transition-transform;
+    /* Hidden (including its shadow, which used to peek into the top-left corner) until keyboard focus */
+    @apply absolute left-4 top-4 z-[100] -translate-y-24 opacity-0 bg-ink-900 text-white px-4 py-2 rounded-control text-sm font-semibold shadow-level-3 focus:translate-y-0 focus:opacity-100 transition;
   }
 }
 
