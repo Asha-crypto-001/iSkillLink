@@ -62,7 +62,10 @@ For security, credentials are managed securely via environment variables:
    ADMIN_EMAIL=ashabahebwahassan665@gmail.com
    ADMIN_PASSWORD=your_secure_password_here
    ```
+   `ADMIN_PASSWORD` is applied only when the API seeds a fresh database. Without it, the seeded admin account gets a random password and cannot sign in with a password.
 3. New students, educators, and mentors can register directly in the application using the **Create New Account** form on the Sign In page.
+
+Runtime API data lives in `server/data/iskilllink_db.json` during local development (or in PostgreSQL when `DATABASE_URL` is set). That file is generated from `server/seedData.ts` on first run and is not committed.
 
 ### Google Sign-In configuration
 
@@ -84,11 +87,16 @@ Netlify hosts the static frontend. Supabase provides the existing email/password
    - `VITE_SUPABASE_URL`: the existing Supabase project URL
    - `VITE_SUPABASE_ANON_KEY`: the existing Supabase anon/public key
    - `VITE_GOOGLE_CLIENT_ID`: the Google Web client ID, if Google login is enabled
+   - `VITE_API_URL`: the Express API base URL ending in `/api`. Without it the site runs as a browser-only demo whenever no API answers, and bookings, requests, and payments are not saved to a server.
 3. The frontend uses the existing Supabase Auth email/password users directly. Do not run the included profile migration unless your project does not already have an equivalent profile table.
-4. The included Edge Function is optional and is not required for the current direct Supabase Auth login path.
-5. In Supabase Auth URL Configuration, add the Netlify site URL to the allowed redirect URLs.
-6. In Google Cloud Console, add the exact Netlify site URL to authorized JavaScript origins.
-7. Netlify will redeploy automatically after changes to `main`.
+4. Run the Express API (`npm run server`) with `SUPABASE_URL` and `SUPABASE_ANON_KEY` set, plus `DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, and `CLIENT_ORIGIN` (the Netlify site URL). The API verifies each Supabase session with Supabase and maps it to an API account:
+   - On first sign-in, a new learner or educator account is created from the Supabase user.
+   - An existing API account with the same email is linked only if the Supabase email is confirmed. Keep **Confirm email** enabled in Supabase Auth so nobody can claim another person's account.
+   - Roles come from the API account, never from Supabase user metadata.
+5. The included Edge Function is optional and is not required for the current direct Supabase Auth login path.
+6. In Supabase Auth URL Configuration, add the Netlify site URL to the allowed redirect URLs.
+7. In Google Cloud Console, add the exact Netlify site URL to authorized JavaScript origins.
+8. Netlify will redeploy automatically after changes to `main`.
 
 Verify the API before testing the frontend:
 
