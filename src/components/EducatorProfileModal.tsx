@@ -35,9 +35,9 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
   ];
 
   return (
-    <Modal isOpen={!!educator} onClose={onClose} titleId="educator-profile-title" title={`${name} — Verified Practitioner`} maxWidth="max-w-4xl">
+    <Modal isOpen={!!educator} onClose={onClose} titleId="educator-profile-title" title={`${name} — ${educator.title}`} maxWidth="max-w-4xl">
       {/* Modal Header — pinned */}
-      <div className="shrink-0 relative bg-ink-950 text-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-ink-800">
+      <div className="shrink-0 relative bg-ink-950 text-white p-6 pr-16 sm:p-8 sm:pr-20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-ink-800">
         <button
           onClick={onClose}
           aria-label="Close profile"
@@ -63,10 +63,12 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 id="educator-profile-title" className="text-xl sm:text-2xl font-bold text-white tracking-tight font-display">{name}</h2>
-              <Badge variant="verified" size="sm" dot>
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Verified Practitioner
-              </Badge>
+              {educator.status === 'active' && (
+                <Badge variant="verified" size="sm" dot>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Verified
+                </Badge>
+              )}
             </div>
 
             <p className="text-[13px] font-medium text-ink-300 mt-1">{educator.title}</p>
@@ -78,12 +80,12 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-forest-400" />
-                {educator.years_experience} Years Active Craft
+                {educator.years_experience} years experience
               </span>
               {educator.rating > 0 && (
                 <span className="flex items-center gap-1 bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-pill font-bold border border-amber-400/20">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  {educator.rating.toFixed(2)} ({educator.total_reviews} Reviews)
+                  {educator.rating.toFixed(1)} ({educator.total_reviews} {educator.total_reviews === 1 ? 'review' : 'reviews'})
                 </span>
               )}
             </div>
@@ -96,18 +98,6 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
             {formatUGX(educator.hourly_rate_ugx)}
             <span className="text-xs font-normal text-ink-400"> / hr</span>
           </div>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              onClose();
-              onRequestBooking(educator);
-            }}
-            leftIcon={<Calendar className="w-3.5 h-3.5" />}
-            className="mt-3 w-full sm:w-auto"
-          >
-            Request to Learn
-          </Button>
         </div>
       </div>
 
@@ -332,7 +322,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
       {/* Sticky Bottom Action — Phase 4 safe-area + 44px */}
       <div className="shrink-0 p-4 sm:px-8 bg-ink-50 border-t border-ink-200 flex items-center justify-between gap-4 pb-safe">
         <div className="text-xs text-ink-600 hidden sm:block">
-          Protected by iSkillLink Escrow • Satisfaction Guarantee
+          Your payment is held until the session is done.
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
           <Button variant="outline" size="md" onClick={onClose}>Close</Button>
@@ -345,7 +335,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
             }}
             leftIcon={<Calendar className="w-3.5 h-3.5" />}
           >
-            Book Learning Session
+            Book a session
           </Button>
         </div>
       </div>

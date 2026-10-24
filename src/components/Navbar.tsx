@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  ShieldCheck, ChevronDown, User, LogOut,
+  ChevronDown, User, LogOut,
   Menu, X, GraduationCap, ArrowRight,
   Settings, PlusCircle, Phone, Mail, Camera, Sparkles
 } from 'lucide-react';
@@ -35,21 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const location = useLocation();
 
-  const pageContext = location.pathname.startsWith('/find-skill')
-    ? 'Explore skills'
-    : location.pathname.startsWith('/educators/')
-      ? 'Educator profile'
-      : location.pathname.startsWith('/become-educator')
-        ? 'Teach on iSkillLink'
-        : location.pathname.startsWith('/how-it-works')
-          ? 'How it works'
-          : location.pathname.startsWith('/about')
-            ? 'About iSkillLink'
-            : location.pathname.startsWith('/contact')
-              ? 'Contact'
-              : '';
 
   useEffect(() => {
     let ticking = false;
@@ -105,10 +90,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const navLinks = [
-    { id: 'find-skill', label: 'Explore Skills' },
-    { id: 'become-educator', label: 'Teach on iSkill' },
-    { id: 'how-it-works', label: 'How It Works' },
-    { id: 'about', label: 'About Us' },
+    { id: 'find-skill', label: 'Explore skills' },
+    { id: 'become-educator', label: 'Teach' },
+    { id: 'how-it-works', label: 'How it works' },
+    { id: 'about', label: 'About' },
     { id: 'contact', label: 'Contact' }
   ];
 
@@ -178,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       key={link.id}
                       onClick={() => setCurrentView(link.id)}
                       aria-current={isActive ? 'page' : undefined}
-                      className={`px-3.5 py-1.5 text-[13px] font-semibold rounded-pill transition-all focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-1 ${
+                      className={`px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap rounded-pill transition-all focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-1 ${
                         isActive
                           ? 'bg-white text-ink-900 shadow-soft border border-ink-200'
                           : 'text-ink-600 hover:text-ink-900 hover:bg-white/70 border border-transparent'
@@ -190,17 +175,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   );
                 })}
               </nav>
-              {pageContext && (
-                <span className="hidden max-w-40 truncate text-xs font-semibold text-ink-500 xl:block" aria-current="page">
-                  {pageContext}
-                </span>
-              )}
 
               {/* Right actions — modern, spacious, 44px */}
               <div className="hidden sm:flex items-center gap-2">
                 <button
                   onClick={onOpenSkillRequest}
-                  className="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[13px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                  className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[13px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
                   style={{ fontFamily: "'Google Sans', sans-serif" }}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-forest-600" aria-hidden="true" />
@@ -299,10 +279,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[40px] text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[40px] whitespace-nowrap text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                       Sign In
                     </button>
-                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[40px] text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[40px] whitespace-nowrap text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                       <span>Get Started</span>
                       <ArrowRight className="w-4 h-4 text-white/90" aria-hidden="true" />
                     </button>
@@ -338,10 +318,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative bg-white w-full max-h-[88vh] overflow-y-auto rounded-b-display shadow-level-3 border-b border-ink-200 animate-slideUp flex flex-col">
               <div className="sticky top-0 bg-white/90 backdrop-blur-xl border-b border-ink-100 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-8 h-8 bg-ink-900 text-white rounded-lg flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4" />
-                  </span>
-                  <span className="font-bold text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif" }}>Menu</span>
+                  <img src={logoUrl} alt="" className="w-8 h-8 object-contain" aria-hidden="true" />
+                  <span className="font-bold text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif" }}>iSkillLink</span>
                 </div>
                 <button onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-xl bg-ink-50 border border-ink-200 text-ink-700 hover:bg-ink-100 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Close menu">
                   <X className="w-5 h-5" />

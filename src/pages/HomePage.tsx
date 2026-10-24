@@ -12,9 +12,21 @@ import {
   Award, Users, Briefcase, Sparkles,
   Scissors, Code, Smartphone, Utensils, Zap, Hammer,
   Wrench, Sprout, Camera, Palette, TrendingUp, ChevronRight,
-  BadgeCheck, Clock, DollarSign, ArrowUpRight,
+  BadgeCheck, Clock, DollarSign,
+  Droplets, Car, MessageSquare, Music, Building2, Feather, Cpu,
   Verified, Layers, Heart
 } from 'lucide-react';
+
+// One icon per seeded category (see Category.icon_name); unknown names fall back to a briefcase.
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Scissors, Code, Smartphone, Utensils, Zap, Hammer, Wrench, Sprout, Camera, Palette,
+  Briefcase, TrendingUp, Sparkles, Droplets, Car, MessageSquare, Music, Building2, Feather, Cpu
+};
+
+const renderCategoryIcon = (iconName: string) => {
+  const Icon = CATEGORY_ICONS[iconName] || Briefcase;
+  return <Icon className="w-5 h-5" />;
+};
 
 interface HomePageProps {
   setCurrentView: (view: string) => void;
@@ -87,21 +99,17 @@ export const HomePage: React.FC<HomePageProps> = ({
     }
   };
 
-  const getCategoryIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Scissors': return <Scissors className="w-5 h-5" />;
-      case 'Code': return <Code className="w-5 h-5" />;
-      case 'Smartphone': return <Smartphone className="w-5 h-5" />;
-      case 'Utensils': return <Utensils className="w-5 h-5" />;
-      case 'Zap': return <Zap className="w-5 h-5" />;
-      case 'Hammer': return <Hammer className="w-5 h-5" />;
-      case 'Wrench': return <Wrench className="w-5 h-5" />;
-      case 'Sprout': return <Sprout className="w-5 h-5" />;
-      case 'Camera': return <Camera className="w-5 h-5" />;
-      case 'Palette': return <Palette className="w-5 h-5" />;
-      case 'TrendingUp': return <TrendingUp className="w-5 h-5" />;
-      default: return <Briefcase className="w-5 h-5" />;
-    }
+  const educatorCountByCategory = activeEducators.reduce<Record<string, number>>((counts, edu) => {
+    new Set((edu.skills || []).map(skill => skill.category_id)).forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+    return counts;
+  }, {});
+  // Trades people can book today come first; the rest keep their curated order.
+  const sortedCategories = [...categories].sort((a, b) =>
+    Number((educatorCountByCategory[b.id] || 0) > 0) - Number((educatorCountByCategory[a.id] || 0) > 0)
+  );
+  const educatorCountLabel = (categoryId: string) => {
+    const count = educatorCountByCategory[categoryId] || 0;
+    return count === 0 ? 'No educators yet' : `${count} ${count === 1 ? 'educator' : 'educators'}`;
   };
 
   return (
@@ -273,7 +281,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <>
             {/* Mobile snap */}
             <div className="sm:hidden flex gap-3 overflow-x-auto snap-x-mandatory pb-3 no-scrollbar -mx-4 px-4">
-              {categories.map((cat) => (
+              {sortedCategories.map((cat) => (
                 <button
                   key={`m-${cat.id}`}
                   onClick={() => onSelectCategory(cat.id)}
@@ -281,10 +289,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   aria-label={`Browse ${cat.name}`}
                 >
                   <div className="flex items-start justify-between">
-                    <span className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 text-forest-700 flex items-center justify-center group-hover:bg-forest-700 group-hover:text-white transition" aria-hidden="true">
-                      {getCategoryIcon(cat.icon_name)}
+                    <span className={`w-11 h-11 rounded-xl border flex items-center justify-center group-hover:bg-forest-700 group-hover:border-forest-700 group-hover:text-white transition ${educatorCountByCategory[cat.id] ? 'bg-forest-50 border-forest-100 text-forest-700' : 'bg-ink-50 border-ink-200 text-ink-500'}`} aria-hidden="true">
+                      {renderCategoryIcon(cat.icon_name)}
                     </span>
-                    <ArrowUpRight className="w-4 h-4 text-ink-300 group-hover:text-forest-600 transition" />
+                    <span className={`text-xs font-semibold ${educatorCountByCategory[cat.id] ? 'text-forest-700' : 'text-ink-500'}`}>{educatorCountLabel(cat.id)}</span>
                   </div>
                   <div className="pt-6">
                     <h3 className="font-bold text-ink-900 text-[15px] leading-tight">{cat.name}</h3>
@@ -295,7 +303,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
             {/* Desktop grid */}
             <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {categories.map((cat) => (
+              {sortedCategories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => onSelectCategory(cat.id)}
@@ -303,10 +311,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   aria-label={`Browse ${cat.name}`}
                 >
                   <div className="flex items-start justify-between">
-                    <span className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 text-forest-700 flex items-center justify-center group-hover:bg-forest-700 group-hover:text-white transition" aria-hidden="true">
-                      {getCategoryIcon(cat.icon_name)}
+                    <span className={`w-11 h-11 rounded-xl border flex items-center justify-center group-hover:bg-forest-700 group-hover:border-forest-700 group-hover:text-white transition ${educatorCountByCategory[cat.id] ? 'bg-forest-50 border-forest-100 text-forest-700' : 'bg-ink-50 border-ink-200 text-ink-500'}`} aria-hidden="true">
+                      {renderCategoryIcon(cat.icon_name)}
                     </span>
-                    <ArrowUpRight className="w-4 h-4 text-ink-300 group-hover:text-forest-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+                    <span className={`text-xs font-semibold ${educatorCountByCategory[cat.id] ? 'text-forest-700' : 'text-ink-500'}`}>{educatorCountLabel(cat.id)}</span>
                   </div>
                   <div>
                     <h3 className="font-bold text-ink-900 text-sm leading-tight">{cat.name}</h3>

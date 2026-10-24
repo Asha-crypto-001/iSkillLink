@@ -37,7 +37,7 @@ export const NewsletterSection: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white font-serif">
+          <h2 className="text-2xl sm:text-4xl font-bold tracking-[-0.01em] text-white font-display">
             Subscribe to the iSkillLink Newsletter
           </h2>
           <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl mx-auto leading-relaxed">

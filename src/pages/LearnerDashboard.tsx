@@ -110,6 +110,9 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
     }
   };
 
+  const awaitingReview = bookings.filter(b => b.status === 'completed' && !b.review);
+  const reviewedBookings = bookings.filter(b => b.review);
+
   const threadMessages = messages.filter(m => m.sender_id === selectedRecipientId || m.receiver_id === selectedRecipientId);
 
   const activeBookingsCount = bookings.filter(b => b.status === 'confirmed' || b.status === 'in_progress').length;
@@ -467,6 +470,72 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   </div>
                 ))}
               </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* TAB CONTENT: REVIEWS */}
+      {activeTab === 'reviews' && (
+        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
+          <div>
+            <h2 className="text-base font-bold text-ink-900">Your reviews</h2>
+            <p className="text-xs text-ink-500">An honest review helps the next learner choose — and helps good educators get booked.</p>
+          </div>
+
+          {awaitingReview.length === 0 && reviewedBookings.length === 0 ? (
+            <EmptyState
+              icon={<Star className="w-6 h-6" />}
+              title="Nothing to review yet"
+              description="When you finish a session, it appears here so you can rate your educator."
+              action={<button onClick={() => navigate('/find-skill')} className="px-5 py-2.5 rounded-card bg-forest-700 text-white text-xs font-bold hover:bg-forest-800">Find an educator</button>}
+            />
+          ) : (
+            <>
+              {awaitingReview.length > 0 && (
+                <section aria-labelledby="awaiting-review-heading" className="space-y-3">
+                  <h3 id="awaiting-review-heading" className="text-sm font-bold text-ink-900">Waiting for your review</h3>
+                  {awaitingReview.map(b => (
+                    <div key={b.id} className="p-4 rounded-card border border-amber-200 bg-amber-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="font-bold text-sm text-ink-900">{b.skill_name}</div>
+                        <div className="text-xs text-ink-600">with {b.educator?.user?.name || 'your educator'} · {formatShortDate(b.scheduled_date)}</div>
+                      </div>
+                      <button
+                        onClick={() => setReviewModalBooking(b)}
+                        className="px-4 py-2.5 min-h-[44px] rounded-control bg-ink-950 hover:bg-ink-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 shrink-0"
+                      >
+                        <Star className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                        Write a review
+                      </button>
+                    </div>
+                  ))}
+                </section>
+              )}
+
+              {reviewedBookings.length > 0 && (
+                <section aria-labelledby="written-reviews-heading" className="space-y-3">
+                  <h3 id="written-reviews-heading" className="text-sm font-bold text-ink-900">Reviews you’ve written</h3>
+                  {reviewedBookings.map(b => (
+                    <article key={b.id} className="p-4 rounded-card border border-ink-200 space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="text-sm font-bold text-ink-900">{b.skill_name} <span className="font-normal text-ink-600">with {b.educator?.user?.name || 'your educator'}</span></div>
+                        <div className="flex gap-0.5" role="img" aria-label={`${b.review!.rating} out of 5 stars`}>
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`w-4 h-4 ${i < b.review!.rating ? 'fill-amber-500 text-amber-500' : 'text-ink-300'}`} aria-hidden="true" />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-sm text-ink-700 leading-relaxed">“{b.review!.comment}”</p>
+                      {b.review!.educator_reply && (
+                        <div className="pl-3 border-l-2 border-forest-700 text-xs text-ink-700">
+                          <span className="font-semibold text-ink-900">{b.educator?.user?.name || 'Educator'} replied:</span> {b.review!.educator_reply}
+                        </div>
+                      )}
+                    </article>
+                  ))}
+                </section>
+              )}
             </>
           )}
         </div>

@@ -86,9 +86,11 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
               key={s.id}
               variant="success"
               size="sm"
-              className="truncate max-w-[150px]"
+              className="max-w-full"
+              title={s.skill_name}
             >
-              {s.skill_name}
+              {/* Text needs its own box: truncate has no effect directly inside inline-flex */}
+              <span className="truncate min-w-0">{s.skill_name}</span>
             </Badge>
           ))}
         </div>
