@@ -57,14 +57,11 @@ export const ContactPage: React.FC = () => {
   return (
     <div className="container-app py-12 space-y-12">
       {/* Header */}
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <span className="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-50 px-3 py-1 rounded-md border border-forest-200">
-          Support & Management
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-ink-900 tracking-tight">
-          Contact iSkillLink Uganda
+      <div className="space-y-3 max-w-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-ink-900 font-display">
+          Talk to us
         </h1>
-        <p className="text-xs sm:text-sm text-ink-600 leading-relaxed">
+        <p className="text-base text-ink-600 leading-relaxed">
           Questions about a booking, a payment or teaching on iSkillLink? Our team in Mbarara reads every message.
         </p>
       </div>
@@ -72,56 +69,35 @@ export const ContactPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Contact Info Sidebar */}
         <div className="space-y-6">
-          <div className="bg-ink-900 text-white p-6 rounded-2xl border border-ink-800 space-y-4">
-            <h3 className="font-bold text-sm text-white uppercase tracking-wider">
-              Mbarara Operations HQ
-            </h3>
-
-            <div className="space-y-3 text-xs text-ink-300">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-forest-400 shrink-0 mt-0.5" />
-                <span>Mbarara City, Western Region, Uganda</span>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-forest-400 shrink-0 mt-0.5" />
-                <div>
-                  <div>WhatsApp: +256 744 024 529</div>
-                  <div className="text-ink-400 mt-0.5">Direct Line: +256 772 233 621</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-forest-400 shrink-0 mt-0.5" />
-                <div>
-                  <div><a href="mailto:iskilllink0@gmail.com" className="hover:text-forest-300 underline font-medium">iskilllink0@gmail.com</a> (Official Inquiries)</div>
-                  <div className="text-ink-400 mt-0.5"><a href="mailto:ashabahebwahassan665@gmail.com" className="hover:text-forest-300 underline">ashabahebwahassan665@gmail.com</a> (Founder)</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Clock className="w-4 h-4 text-forest-400 shrink-0 mt-0.5" />
-                <span>Mon – Sat: 8:00 AM – 6:00 PM EAT</span>
-              </div>
-            </div>
+          {/* WhatsApp is how most people reach us — make it the obvious first choice */}
+          <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
+            <h2 className="font-bold text-base text-ink-900">Fastest: WhatsApp</h2>
+            <a
+              href="https://wa.me/256744024529"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-control bg-forest-700 hover:bg-forest-800 text-white text-sm font-bold"
+            >
+              <Phone className="w-4 h-4" aria-hidden="true" /> +256 744 024 529
+            </a>
+            <p className="flex items-center gap-2 text-sm text-ink-600"><Clock className="w-4 h-4" aria-hidden="true" /> Mon – Sat, 8am – 6pm</p>
           </div>
 
-          <div className="bg-forest-50/70 p-5 rounded-2xl border border-forest-200 space-y-2 text-xs text-forest-950">
-            <h4 className="font-bold text-forest-900">Direct WhatsApp Helpline</h4>
-            <p className="text-[12px] text-forest-800 leading-relaxed">
-              For immediate assistance with bookings or verification, message us on WhatsApp at <a href="https://wa.me/256744024529" target="_blank" rel="noreferrer" className="underline font-bold">+256 744 024 529</a>.
-            </p>
-          </div>
+          <ul className="space-y-3 text-sm text-ink-700 px-1">
+            <li className="flex items-start gap-3"><Phone className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><span>Call: +256 772 233 621</span></li>
+            <li className="flex items-start gap-3"><Mail className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><a href="mailto:iskilllink0@gmail.com" className="underline underline-offset-2 hover:text-ink-900">iskilllink0@gmail.com</a></li>
+            <li className="flex items-start gap-3"><MapPin className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><span>Mbarara City, Western Uganda</span></li>
+          </ul>
         </div>
 
         {/* Contact Form — now unified via Field/Input primitives (Phase 3) */}
         <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-card border border-ink-200 shadow-level-1 space-y-4">
-          <h3 className="font-bold text-base text-ink-900 font-display">Send Us a Message</h3>
+          <h2 className="font-bold text-base text-ink-900 font-display">Or send a message</h2>
 
           {submitted ? (
             <div className="p-6 bg-forest-50 rounded-card border border-forest-200 text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-forest-600 mx-auto" />
-              <h4 className="font-bold text-forest-900 text-[14px]">Message Sent Successfully!</h4>
+              <h3 className="font-bold text-forest-900 text-[14px]">Message sent</h3>
               <p className="text-[14px] text-forest-800">
                 Thank you, {name}. We’ve got your message and will reply by email or WhatsApp.
               </p>
