@@ -13,6 +13,12 @@ interface AdminVerificationTabProps {
   onVerifyStep: (educatorId: string, step: string) => void;
 }
 
+// Waiting time is shown prominently: an applicant who has waited a week should be noticed.
+function appliedAgo(iso: string) {
+  const days = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+  return days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
+}
+
 export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
   verificationQueue,
   onSuspendEducator,
@@ -48,6 +54,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                         </span>
                       </div>
                       <p className="text-xs text-ink-600 mt-0.5">{edu.title} • {edu.location}</p>
+                      <p className="text-xs font-semibold text-ink-800 mt-0.5">Applied {appliedAgo(edu.created_at)}</p>
                       <div className="text-[12px] text-ink-500 flex items-center gap-3 mt-1">
                         <span>Phone: {edu.user?.phone}</span>
                         <span>•</span>

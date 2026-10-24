@@ -8,11 +8,11 @@ import {
 import { api } from '../services/api';
 import {
   ShieldCheck, Users, GraduationCap, CreditCard,
-  CheckCircle2, Sparkles, FileText, RefreshCw,
-  Camera, Phone, Mail, MapPin, UserCheck, TrendingUp
+  CheckCircle2, Sparkles, FileText, RefreshCw, TrendingUp
 } from 'lucide-react';
-import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
-import { AdminMetricsTab } from './admin/AdminMetricsTab';
+import { AdminMetricsTab, NeedItem } from './admin/AdminMetricsTab';
+import { formatUGX } from '../utils/formatters';
+import { verificationProgress } from '../utils/verification';
 import { AdminUsersTab } from './admin/AdminUsersTab';
 import { AdminInterestsTab } from './admin/AdminInterestsTab';
 import { AdminVerificationTab } from './admin/AdminVerificationTab';
@@ -22,7 +22,6 @@ import { AdminPaymentsTab } from './admin/AdminPaymentsTab';
 import { AdminAuditTab } from './admin/AdminAuditTab';
 import { DashboardHeader, DashboardShell } from '../components/dashboard';
 import { Alert } from '../components/ui/Alert';
-import { Avatar } from '../components/ui/Avatar';
 
 type AdminTab =
   | 'metrics'
@@ -54,11 +53,10 @@ export const AdminDashboard: React.FC = () => {
   const [verificationQueue, setVerificationQueue] = useState<Educator[]>([]);
   const [allEducators, setAllEducators] = useState<Educator[]>([]);
   const [learnerRequests, setLearnerRequests] = useState<LearnerRequest[]>([]);
-  const [, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [auditLogs, setAuditLogs] = useState<AdminAction[]>([]);
   const [, setLoading] = useState(true);
-  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   // User directory search & filter state
   const [userSearchQuery, setUserSearchQuery] = useState('');
@@ -193,9 +191,12 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleReleasePayout = async (paymentId: string) => {
+  const handleReleasePayout = async (payment: Payment, booking?: Booking) => {
+    const educatorName = booking?.educator?.user?.name || 'the educator';
+    // The one action in the app that sends money out: confirm the amount and the recipient.
+    if (!window.confirm(`Send ${formatUGX(payment.payout_amount_ugx)} to ${educatorName} for "${booking?.skill_name || 'this session'}"? This can't be undone.`)) return;
     try {
-      await api.releasePayout(paymentId, 'Ashabahebwa Hassan (Admin & Founder)');
+      await api.releasePayout(payment.id, user?.name || 'Administrator');
       loadAdminData();
     } catch (e: any) {
       console.error('Error releasing payout:', e);
@@ -204,6 +205,51 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const isLeadAdmin = user?.email === 'ashabahebwahassan665@gmail.com' || user?.role === 'admin';
+
+  const TAB_HEADERS: Record<AdminTab, { label: string; title: string; description?: string }> = {
+    metrics: { label: 'Overview', title: 'Operations' },
+    users: { label: 'Users', title: 'People', description: 'Everyone on iSkillLink, how to reach them, and who has admin access.' },
+    interests: { label: 'Interests', title: 'What people want to learn' },
+    verification: { label: 'Verification', title: 'Applicants', description: 'Each educator passes four checks before learners can book them.' },
+    matchmaker: { label: 'Matchmaker', title: 'Match requests to educators' },
+    educators: { label: 'Educators', title: 'Educators' },
+    payments: { label: 'Payments', title: 'Payments & payouts' },
+    audit: { label: 'Audit trail', title: 'Audit trail', description: 'Every admin action, newest first.' }
+  };
+
+  const daysSince = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+  const waitedFor = (iso: string) => {
+    const days = daysSince(iso);
+    return days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
+  };
+
+  // What needs an admin now, most urgent first: money owed, people waiting, then requests.
+  const needs: NeedItem[] = [
+    ...payments
+      .filter(p => p.status === 'paid' && bookings.find(b => b.id === p.booking_id)?.status === 'completed')
+      .map(p => {
+        const booking = bookings.find(b => b.id === p.booking_id)!;
+        return {
+          key: `pay-${p.id}`, kind: 'money' as const, tab: 'payments' as const, actionLabel: 'Release payout',
+          title: `Release ${formatUGX(p.payout_amount_ugx)} to ${booking.educator?.user?.name || 'an educator'}`,
+          detail: `${booking.skill_name} with ${booking.learnerUser?.name || 'a learner'} is done`
+        };
+      }),
+    ...[...verificationQueue]
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      .map(e => ({
+        key: `edu-${e.id}`, kind: 'applicant' as const, tab: 'verification' as const, actionLabel: 'Review',
+        title: `${e.user?.name || 'An applicant'} applied ${waitedFor(e.created_at)}`,
+        detail: `${e.title} · ${verificationProgress(e.verification).passed} of 4 checks passed`
+      })),
+    ...learnerRequests
+      .filter(r => r.status === 'open')
+      .map(r => ({
+        key: `req-${r.id}`, kind: 'request' as const, tab: 'matchmaker' as const, actionLabel: 'Find a match',
+        title: `${r.learner_name} wants to learn ${r.skill_name}`,
+        detail: `${r.location} · budget ${formatUGX(r.budget_ugx)} · asked ${waitedFor(r.created_at)}`
+      }))
+  ];
 
   return (
     <DashboardShell role="admin" navItems={[
@@ -218,67 +264,14 @@ export const AdminDashboard: React.FC = () => {
     ]}>
     <div className="max-w-7xl mx-auto space-y-6">
       <DashboardHeader
-        eyebrow="Platform operations & trust center"
-        title="iSkillLink Operations Dashboard"
-        description="Admin oversight for verification queues, user directory, demand intelligence, delegation, and escrow."
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Operations', href: '/dashboard/admin' }, { label: activeTab }]}
-        actions={<button onClick={loadAdminData} className="rounded-card bg-forest-700 px-4 py-2 text-xs font-semibold text-white"><RefreshCw className="mr-2 inline h-4 w-4" />Refresh Data</button>}
+        title={TAB_HEADERS[activeTab].title}
+        description={TAB_HEADERS[activeTab].description}
+        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Operations', href: '/dashboard/admin' }, { label: TAB_HEADERS[activeTab].label }]}
+        actions={<button onClick={loadAdminData} className="inline-flex items-center min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 px-4 text-xs font-semibold text-ink-800"><RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />Refresh</button>}
       />
 
-      {/* Admin Profile & Lead Badge */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-ink-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <Avatar src={user?.avatar_url} name={user?.name || 'Ashabahebwa Hassan'} className="w-16 h-16 rounded-2xl border-2 border-forest-600 shadow-sm" />
-            <button
-              onClick={() => setShowPhotoModal(true)}
-              className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-forest-700 text-white shadow hover:bg-forest-800 transition"
-              title="Change Profile Photo"
-            >
-              <Camera className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-ink-900">{user?.name || 'Ashabahebwa Hassan'}</span>
-              <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-ink-900 text-white flex items-center gap-1">
-                <UserCheck className="w-3 h-3 text-forest-400" />
-                {user?.role === 'admin' ? 'Founder & Primary Admin' : 'Secondary Administrator'}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-ink-500 mt-1">
-              <span className="flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-ink-400" />
-                {user?.email || 'ashabahebwahassan665@gmail.com'}
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-ink-400" />
-                {user?.phone || '+256 744 024 529'}
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-ink-400" />
-                Mbarara City HQ
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={() => setShowPhotoModal(true)}
-          className="px-4 py-2 bg-forest-50 hover:bg-forest-100 text-forest-800 border border-forest-200 rounded-xl text-xs font-bold transition flex items-center gap-2"
-        >
-          <Camera className="w-4 h-4 text-forest-700" />
-          <span>Update Profile Picture</span>
-        </button>
-      </div>
-
       {assignActionMsg && (
-        <div className="p-3.5 rounded-xl bg-forest-50 border border-forest-200 text-forest-900 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-forest-700 shrink-0" />
-          <span>{assignActionMsg}</span>
-        </div>
+        <Alert tone="success" onDismiss={() => setAssignActionMsg('')}>{assignActionMsg}</Alert>
       )}
 
       {actionError && (
@@ -290,7 +283,7 @@ export const AdminDashboard: React.FC = () => {
         <AdminMetricsTab
           metrics={metrics}
           totalUsersCount={allUsers.length}
-          learnerRequests={learnerRequests}
+          needs={needs}
           auditLogs={auditLogs}
           onNavigateTab={setActiveTab}
         />
@@ -343,6 +336,7 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'payments' && (
         <AdminPaymentsTab
           payments={payments}
+          bookings={bookings}
           onReleasePayout={handleReleasePayout}
         />
       )}
@@ -351,11 +345,6 @@ export const AdminDashboard: React.FC = () => {
         <AdminAuditTab auditLogs={auditLogs} />
       )}
 
-      {/* Profile Photo Upload Modal */}
-      <ProfilePhotoUploadModal
-        isOpen={showPhotoModal}
-        onClose={() => setShowPhotoModal(false)}
-      />
     </div>
     </DashboardShell>
   );
