@@ -332,7 +332,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                           if (onSelectEducator) onSelectEducator(m.educator.id);
                         }}
                       >
-                        View & Book
+                        View profile
                       </Button>
                     </div>
 

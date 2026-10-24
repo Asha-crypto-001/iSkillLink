@@ -257,7 +257,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
 
   return (
     <div className="container-app py-6 space-y-6">
-      <Breadcrumbs items={[{ label: 'Explore Skills', to: '/find-skill' }]} />
+      <Breadcrumbs items={[{ label: 'Explore skills', to: '/find-skill' }]} />
       <div className="space-y-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 font-display">Find someone to learn from</h1>

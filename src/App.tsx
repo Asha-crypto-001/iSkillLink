@@ -14,12 +14,10 @@ import { LearnerDashboard } from './pages/LearnerDashboard';
 import { EducatorDashboard } from './pages/EducatorDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AuthPage } from './pages/AuthPage';
-import { EducatorProfileModal } from './components/EducatorProfileModal';
 import { BookingModal } from './components/BookingModal';
 import { SkillRequestModal } from './components/SkillRequestModal';
 import { RequireAuth } from './components/RequireAuth';
 import { Educator } from './types';
-import { api } from './services/api';
 
 const viewToPath: Record<string, string> = {
   'home': '/',
@@ -73,7 +71,6 @@ const AppContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
-  const [selectedEducatorForModal, setSelectedEducatorForModal] = useState<Educator | null>(null);
   const [selectedEducatorForBooking, setSelectedEducatorForBooking] = useState<Educator | null>(null);
   const [showSkillRequestModal, setShowSkillRequestModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -122,8 +119,9 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // The profile page is the one place an educator is shown in full (shareable, back button works).
   const handleViewEducator = (educator: Educator) => {
-    setSelectedEducatorForModal(educator);
+    navigate(`/educators/${educator.id}`);
   };
 
   const handleRequestBooking = (educator: Educator) => {
@@ -132,21 +130,16 @@ const AppContent: React.FC = () => {
 
   const handleBookingSuccess = () => {
     setSelectedEducatorForBooking(null);
-    showToast('Booking request submitted successfully! Funds held safely in escrow.');
+    showToast('Booking request sent. Once the educator confirms, pay into escrow from your dashboard.');
     navigate('/dashboard/learner');
   };
 
   const handleSkillRequestSuccess = () => {
-    showToast('Custom skill request submitted! Matches computed.');
+    showToast('Request sent. We’ll look for someone and get back to you.');
   };
 
-  const handleSelectEducatorById = async (educatorId: string) => {
-    try {
-      const edu = await api.getEducatorById(educatorId);
-      setSelectedEducatorForModal(edu);
-    } catch (e) {
-      console.error('Failed to load educator:', e);
-    }
+  const handleSelectEducatorById = (educatorId: string) => {
+    navigate(`/educators/${educatorId}`);
   };
 
   const handleAuthSuccess = (role: string) => {
@@ -276,14 +269,6 @@ const AppContent: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-
-      {selectedEducatorForModal && (
-        <EducatorProfileModal
-          educator={selectedEducatorForModal}
-          onClose={() => setSelectedEducatorForModal(null)}
-          onRequestBooking={handleRequestBooking}
-        />
-      )}
 
       {selectedEducatorForBooking && (
         <BookingModal
