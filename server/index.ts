@@ -1512,6 +1512,13 @@ app.get('/api/admin/verification-queue', authenticateToken, requireRole('admin')
   res.json(queue);
 });
 
+const VERIFICATION_STEP_LABELS: Record<string, string> = {
+  national_id: 'National ID check',
+  background_check: 'Background check',
+  interview: 'Interview',
+  skill_assessment: 'Skill assessment'
+};
+
 app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
   const { educator_id, step, status, notes } = req.body;
   const verification = db.getVerifications().find(v => v.educator_id === educator_id);
@@ -1553,7 +1560,7 @@ app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'
     action_type: 'UPDATE_VERIFICATION_STEP',
     target_entity: 'Verification',
     target_id: educator_id,
-    details: `Updated ${step} to status: ${status}. Notes: ${notes || 'None'}`
+    details: `${VERIFICATION_STEP_LABELS[step] || step} ${status} for ${db.findEducatorById(educator_id)?.user?.name || 'educator'}.${notes ? ` Note: ${notes}` : ''}`
   });
 
   res.json({ success: true, verification: db.getVerifications().find(v => v.educator_id === educator_id) });

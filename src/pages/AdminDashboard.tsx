@@ -73,12 +73,13 @@ export const AdminDashboard: React.FC = () => {
   const loadAdminData = async () => {
     try {
       setLoading(true);
-      const [m, usersList, demand, queue, edus, reqs, bks, pays, logs] = await Promise.all([
+      const [m, usersList, demand, queue, edus, suspended, reqs, bks, pays, logs] = await Promise.all([
         api.getAdminMetrics(),
         api.getAdminUsers(),
         api.getInterestsDemand(),
         api.getVerificationQueue(),
         api.getEducators({ status: undefined }),
+        api.getEducators({ status: 'suspended' }),
         api.getLearnerRequests(),
         api.getBookings(),
         api.getPayments(),
@@ -89,14 +90,17 @@ export const AdminDashboard: React.FC = () => {
       setAllUsers(usersList);
       setDemandData(demand);
       setVerificationQueue(queue);
-      setAllEducators(edus);
+      // The educators endpoint only lists live educators by default; add applicants and suspended ones.
+      const byId = new Map<string, Educator>();
+      [...edus, ...queue, ...suspended].forEach((e: Educator) => byId.set(e.id, e));
+      setAllEducators([...byId.values()]);
       setLearnerRequests(reqs);
       setBookings(bks);
       setPayments(pays);
       setAuditLogs(logs);
 
       if (reqs.length > 0 && !selectedRequest) {
-        handleSelectRequestForMatching(reqs[0]);
+        handleSelectRequestForMatching(reqs.find((r: LearnerRequest) => r.status === 'open') || reqs[0]);
       }
     } catch (err) {
       console.error('Failed to load admin operations data:', err);
@@ -209,10 +213,10 @@ export const AdminDashboard: React.FC = () => {
   const TAB_HEADERS: Record<AdminTab, { label: string; title: string; description?: string }> = {
     metrics: { label: 'Overview', title: 'Operations' },
     users: { label: 'Users', title: 'People', description: 'Everyone on iSkillLink, how to reach them, and who has admin access.' },
-    interests: { label: 'Interests', title: 'What people want to learn' },
+    interests: { label: 'Interests', title: 'What people want to learn', description: 'Requests learners have sent and the interests they picked, so you know which trades to recruit for.' },
     verification: { label: 'Verification', title: 'Applicants', description: 'Each educator passes four checks before learners can book them.' },
-    matchmaker: { label: 'Matchmaker', title: 'Match requests to educators' },
-    educators: { label: 'Educators', title: 'Educators' },
+    matchmaker: { label: 'Matchmaker', title: 'Match requests to educators', description: 'Live educators ranked by skill, teaching format, location, budget and experience. Matching tells the learner who you picked.' },
+    educators: { label: 'Educators', title: 'Educators', description: 'Everyone who teaches or has applied to, and where each one stands.' },
     payments: { label: 'Payments', title: 'Payments & payouts' },
     audit: { label: 'Audit trail', title: 'Audit trail', description: 'Every admin action, newest first.' }
   };
@@ -306,6 +310,7 @@ export const AdminDashboard: React.FC = () => {
         <AdminInterestsTab
           demandData={demandData}
           learnerRequests={learnerRequests}
+          onFindMatch={(req) => { handleSelectRequestForMatching(req); setActiveTab('matchmaker'); }}
         />
       )}
 

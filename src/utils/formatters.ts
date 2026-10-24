@@ -63,3 +63,10 @@ export function getStatusBadgeClass(status: string): string {
       return 'bg-ink-50 text-ink-700 border-ink-200';
   }
 }
+
+/** A Ugandan phone number in the international form wa.me links expect ("0772…" → "256772…"). */
+export function whatsappNumber(phone?: string): string {
+  const digits = (phone || '').replace(/\D/g, '');
+  if (!digits) return '';
+  return digits.startsWith('256') ? digits : `256${digits.replace(/^0/, '')}`;
+}

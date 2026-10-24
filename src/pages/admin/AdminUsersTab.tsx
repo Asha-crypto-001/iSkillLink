@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, Phone, MessageCircle, Mail, UserMinus, UserPlus } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
+import { whatsappNumber } from '../../utils/formatters';
 
 interface AdminUsersTabProps {
   users: any[];
@@ -26,12 +27,6 @@ const ROLE_CLASSES: Record<string, string> = {
   educator: 'bg-forest-50 text-forest-800 border-forest-200',
   learner: 'bg-white text-ink-700 border-ink-200'
 };
-
-function whatsappNumber(phone?: string) {
-  const digits = (phone || '').replace(/\D/g, '');
-  if (!digits) return '';
-  return digits.startsWith('256') ? digits : `256${digits.replace(/^0/, '')}`;
-}
 
 export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
   users,
