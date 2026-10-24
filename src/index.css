@@ -78,6 +78,23 @@
   .card-hover {
     @apply hover:border-forest-200 hover:shadow-level-2 transition-all duration-200;
   }
+
+  /* Paper receipt — perforated top and bottom edges cut with repeating radial masks.
+     Masks clip box-shadow, so shadow the wrapper with .receipt-shadow instead. */
+  .receipt {
+    -webkit-mask:
+      radial-gradient(circle at 6px 0, transparent 5px, #000 5.5px) top left / 12px 51% repeat-x,
+      radial-gradient(circle at 6px 100%, transparent 5px, #000 5.5px) bottom left / 12px 51% repeat-x;
+    mask:
+      radial-gradient(circle at 6px 0, transparent 5px, #000 5.5px) top left / 12px 51% repeat-x,
+      radial-gradient(circle at 6px 100%, transparent 5px, #000 5.5px) bottom left / 12px 51% repeat-x;
+    border-top-width: 0;
+    border-bottom-width: 0;
+  }
+
+  .receipt-shadow {
+    filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.06)) drop-shadow(0 12px 24px rgba(15, 23, 42, 0.10));
+  }
 }
 
 /* Scrollbar — subtle, ink-based */

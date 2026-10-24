@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Category, Educator, Skill } from '../types';
+import { Category, Educator, Review, Skill } from '../types';
 import { api } from '../services/api';
 import { EducatorCard } from '../components/EducatorCard';
 import { NewsletterSection } from '../components/NewsletterSection';
@@ -8,11 +8,11 @@ import { formatUGX } from '../utils/formatters';
 import { EducatorCardSkeleton, CategorySkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import {
-  Search, ShieldCheck, CheckCircle2, ArrowRight, Star,
-  Award, Users, Briefcase, GraduationCap, MapPin, Sparkles,
+  Search, ShieldCheck, ArrowRight, Star,
+  Award, Users, Briefcase, Sparkles,
   Scissors, Code, Smartphone, Utensils, Zap, Hammer,
-  Wrench, Sprout, Camera, Palette, TrendingUp, ChevronRight, Phone,
-  Play, Quote, BadgeCheck, Clock, DollarSign, ArrowUpRight,
+  Wrench, Sprout, Camera, Palette, TrendingUp, ChevronRight,
+  BadgeCheck, Clock, DollarSign, ArrowUpRight,
   Verified, Layers, Heart
 } from 'lucide-react';
 
@@ -35,6 +35,8 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredEducators, setFeaturedEducators] = useState<Educator[]>([]);
   const [popularSkills, setPopularSkills] = useState<Skill[]>([]);
+  const [activeEducators, setActiveEducators] = useState<Educator[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [howTab, setHowTab] = useState<'learners' | 'educators'>('learners');
   const [loading, setLoading] = useState(true);
@@ -45,14 +47,18 @@ export const HomePage: React.FC<HomePageProps> = ({
       try {
         setLoading(true);
         setLoadError(null);
-        const [cats, edus, skills] = await Promise.all([
+        const [cats, edus, skills, active, allReviews] = await Promise.all([
           api.getCategories(),
           api.getEducators({ featured: true }),
-          api.getSkills(undefined, true)
+          api.getSkills(undefined, true),
+          api.getEducators(),
+          api.getReviews()
         ]);
         setCategories(cats);
         setFeaturedEducators(edus);
         setPopularSkills(skills);
+        setActiveEducators(active);
+        setReviews(allReviews);
       } catch (err: any) {
         setLoadError(err.message || 'Failed to load. Please retry.');
         console.error('Failed to load homepage data:', err);
@@ -62,6 +68,14 @@ export const HomePage: React.FC<HomePageProps> = ({
     };
     loadData();
   }, []);
+
+  // Real numbers only: trades are the distinct categories that active educators teach.
+  const tradeCount = new Set(activeEducators.flatMap(e => (e.skills || []).map(s => s.category_id))).size;
+  const educatorById = new Map(activeEducators.map(e => [e.id, e]));
+  const recentReviews = [...reviews]
+    .filter(r => r.comment?.trim())
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, 3);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,207 +106,128 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="pb-16 overflow-x-clip">
-      {/* ===== PREMIUM HERO — editorial split + workshop imagery ===== */}
-      <section className="relative overflow-hidden bg-white">
-        {/* Background gradient mesh */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-forest-50/80 via-white to-ink-50/60" />
-          <div className="absolute -top-32 -right-32 w-[640px] h-[640px] bg-forest-100 rounded-full blur-[120px] opacity-50" />
-          <div className="absolute -bottom-40 -left-40 w-[560px] h-[560px] bg-amber-50 rounded-full blur-[100px] opacity-40" />
-        </div>
-
-        <div className="container-app relative pt-8 lg:pt-14 pb-10 lg:pb-16">
-          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-10 items-center">
-            {/* Left: copy + search */}
-            <div className="space-y-6 lg:pr-6">
-              {/* Founder pill — subtle, not noisy */}
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-pill bg-white border border-ink-200 shadow-soft text-xs">
-                <span className="w-2 h-2 rounded-full bg-forest-600 animate-pulse" aria-hidden="true" />
-                <span className="font-bold text-ink-900">Mbarara • Founded by Ashabahebwa Hassan</span>
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-ink-500">
-                  <span className="w-1 h-1 rounded-full bg-ink-300" />
-                  Where Skills Meet Opportunity
-                </span>
-              </div>
-
+      {/* ===== HERO — plain promise, search first, and how the money moves ===== */}
+      <section className="bg-white border-b border-ink-200">
+        <div className="container-app pt-10 lg:pt-16 pb-12 lg:pb-20">
+          <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
+            {/* Left: promise + search */}
+            <div className="space-y-7">
               <div className="space-y-4">
-                <h1 className="font-display font-bold tracking-tight text-ink-900 leading-[0.95]">
-                  <span className="block text-[2rem] sm:text-[2.6rem] lg:text-[3.3rem]">Master</span>
-                  <span className="block text-[2rem] sm:text-[2.6rem] lg:text-[3.3rem] bg-gradient-to-r from-forest-700 via-forest-800 to-emerald-700 bg-clip-text text-transparent">
-                    real skills.
-                  </span>
-                  <span className="block text-[1.35rem] sm:text-[1.55rem] lg:text-[1.9rem] font-semibold text-ink-700 mt-1">In real workshops. With real masters.</span>
+                <h1 className="font-display font-bold text-ink-900 text-[2.25rem] sm:text-5xl lg:text-[3.5rem] leading-[1.05] tracking-[-0.02em] max-w-[15ch]">
+                  Learn a trade at a real workbench.
                 </h1>
-                <p className="text-[15px] sm:text-[16px] text-ink-600 leading-relaxed max-w-[560px]">
-                  Not videos. Hands-on apprenticeships with verified Ugandan artisans, technicians & creatives — MTN/Airtel escrow protected, inspected workbenches, rule-based matching.
+                <p className="text-base sm:text-lg text-ink-600 leading-relaxed max-w-[34rem]">
+                  Book hands-on sessions with tailors, electricians, bakers and technicians in Mbarara.
+                  Pay with MTN or Airtel MoMo — we hold the money until your session is done.
                 </p>
               </div>
 
-              {/* Search — premium card */}
               <form
                 onSubmit={handleHeroSearch}
-                className="bg-white p-2 rounded-card shadow-level-2 border border-ink-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2"
+                className="bg-white p-2 rounded-card shadow-level-2 border border-ink-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-[36rem]"
                 role="search"
                 aria-label="Find a skill educator"
               >
-                <div className="flex-1 flex items-center gap-2.5 px-3 py-1 min-h-[44px] text-ink-800">
-                  <span className="w-8 h-8 rounded-lg bg-forest-50 border border-forest-100 text-forest-700 flex items-center justify-center shrink-0">
-                    <Search className="w-4 h-4" aria-hidden="true" />
-                  </span>
+                <label className="flex-1 flex items-center gap-3 px-3 min-h-[48px] text-ink-800">
+                  <Search className="w-5 h-5 text-ink-400 shrink-0" aria-hidden="true" />
+                  <span className="sr-only">What do you want to learn?</span>
                   <input
                     type="text"
-                    placeholder="Try: Tailoring, Solar, Python, Dairy..."
+                    placeholder="What do you want to learn?"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    aria-label="Skill search"
-                    className="w-full text-[14px] font-medium text-ink-900 placeholder:text-ink-500 focus:outline-none bg-transparent"
+                    className="w-full text-base text-ink-900 placeholder:text-ink-500 focus:outline-none bg-transparent"
                   />
-                </div>
+                </label>
                 <button
                   type="submit"
-                  className="px-6 py-3 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 active:bg-forest-900 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-soft focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2"
+                  className="px-6 min-h-[48px] rounded-control bg-forest-700 hover:bg-forest-800 active:bg-forest-900 text-white font-bold text-sm transition flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2"
                 >
-                  <span>Find an Educator</span>
+                  Find an educator
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
               </form>
 
-              {/* Popular pills + CTAs */}
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-ink-500 font-medium">Popular:</span>
-                {['Tailoring', 'Solar', 'React', 'Baking'].map(k => (
-                  <button key={k} onClick={() => navigate(`/find-skill?search=${encodeURIComponent(k)}`)} className="px-3 py-1.5 rounded-pill bg-ink-50 hover:bg-ink-100 border border-ink-200 text-ink-700 font-semibold transition focus-visible:ring-2 focus-visible:ring-forest-700">
-                    {k}
-                  </button>
-                ))}
-                <span className="text-ink-300 hidden sm:inline">•</span>
-                <button onClick={() => setCurrentView('find-skill')} className="font-bold text-forest-700 hover:text-forest-800 underline underline-offset-4 decoration-forest-200">Browse all</button>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <button
-                  onClick={() => setCurrentView('become-educator')}
-                  className="px-5 py-2.5 min-h-[44px] rounded-control bg-ink-900 hover:bg-black text-white font-bold text-sm shadow-soft flex items-center gap-2 transition focus-visible:ring-2 focus-visible:ring-ink-800"
-                >
-                  <span>Teach on iSkillLink</span>
-                  <ArrowUpRight className="w-4 h-4 text-forest-300" />
-                </button>
-                <button
-                  onClick={onOpenSkillRequest}
-                  className="px-5 py-2.5 min-h-[44px] rounded-control bg-white hover:bg-ink-50 text-ink-800 font-bold text-sm border border-ink-200 shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
-                >
-                  Submit Custom Request
-                </button>
-              </div>
-
-              {/* Avatars + rating social proof */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="flex -space-x-2">
+              {/* Start from the outcome, not the category name */}
+              <div className="space-y-2.5">
+                <p className="text-sm text-ink-600">Or start from what you want to make:</p>
+                <div className="flex flex-wrap gap-2">
                   {[
-                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
-                    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80',
-                    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80',
-                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80',
-                  ].map((src, i) => (
-                    <img key={i} src={src} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm" aria-hidden="true" />
+                    { label: 'a wedding cake', search: 'cake' },
+                    { label: 'a kitenge dress', search: 'tailor' },
+                    { label: 'a home solar setup', search: 'solar' },
+                    { label: 'a fixed phone screen', search: 'phone' }
+                  ].map(outcome => (
+                    <button
+                      key={outcome.label}
+                      onClick={() => navigate(`/find-skill?search=${encodeURIComponent(outcome.search)}`)}
+                      className="px-3.5 min-h-[40px] rounded-pill bg-ink-50 hover:bg-forest-50 hover:border-forest-200 border border-ink-200 text-ink-800 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                    >
+                      {outcome.label}
+                    </button>
                   ))}
-                  <span className="w-8 h-8 rounded-full bg-forest-700 text-white border-2 border-white flex items-center justify-center text-[10px] font-bold">+800</span>
                 </div>
-                <div className="text-xs">
-                  <div className="flex items-center gap-1 font-bold text-ink-900">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                    <span>4.9/5 from 1,200+ reviews</span>
-                  </div>
-                  <div className="text-ink-500">Trusted by learners across Uganda</div>
-                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5 text-sm">
+                {!loading && activeEducators.length > 0 && (
+                  <p className="text-ink-700">
+                    <strong className="font-semibold text-ink-900">{activeEducators.length} {activeEducators.length === 1 ? 'educator' : 'educators'}</strong> teaching{' '}
+                    <strong className="font-semibold text-ink-900">{tradeCount} {tradeCount === 1 ? 'trade' : 'trades'}</strong>
+                    {reviews.length > 0 && <> · <strong className="font-semibold text-ink-900">{reviews.length}</strong> {reviews.length === 1 ? 'review' : 'reviews'} from finished sessions</>}
+                  </p>
+                )}
+                <button onClick={onOpenSkillRequest} className="self-start font-semibold text-forest-700 hover:text-forest-800 underline underline-offset-4 decoration-forest-200 hover:decoration-forest-700">
+                  Can’t find it? Tell us what you want to learn
+                </button>
               </div>
             </div>
 
-            {/* Right: workshop collage */}
-            <div className="relative lg:h-[560px] flex items-center">
-              <div className="relative w-full">
-                {/* Main image */}
-                <div className="relative rounded-display overflow-hidden border border-ink-200 shadow-level-3 bg-white">
-                  <img
-                    src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
-                    alt="Master artisan mentoring apprentice at workshop bench"
-                    className="w-full h-[380px] lg:h-[460px] object-cover"
-                    loading="eager"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink-900/30 via-transparent to-transparent pointer-events-none" />
-                  {/* Bottom bar inside image */}
-                  <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md rounded-card border border-white/60 shadow-soft p-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-9 h-9 rounded-lg bg-forest-700 text-white flex items-center justify-center"><ShieldCheck className="w-5 h-5" /></span>
-                      <div>
-                        <div className="text-xs font-bold text-ink-900 leading-none">Workshop Inspected</div>
-                        <div className="text-[11px] text-ink-600">Bench tools • Safety • ID verified</div>
-                      </div>
+            {/* Right: an example receipt — explains the escrow promise without stock photography */}
+            <figure className="receipt-shadow relative mx-auto w-full max-w-[25rem] lg:rotate-[1.5deg]" aria-labelledby="escrow-example-caption">
+              <div className="receipt bg-white border border-ink-200 px-6 pt-7 pb-8">
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500">Example booking</span>
+                  <span className="text-xs text-ink-500">3 hrs</span>
+                </div>
+                <p className="mt-2 font-display text-lg font-bold text-ink-900 leading-snug">Pattern drafting with a tailor in Kakoba</p>
+
+                <ol className="mt-6 space-y-5 border-l border-dashed border-ink-300 pl-5">
+                  <li className="relative">
+                    <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-amber-600 ring-4 ring-white" aria-hidden="true" />
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm font-semibold text-ink-900">You pay with MoMo</span>
+                      <span className="font-mono text-sm tabular-nums text-ink-900">90,000</span>
                     </div>
-                    <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-forest-50 border border-forest-200 text-forest-800 text-[11px] font-bold">✓ Verified</span>
-                  </div>
-                </div>
+                    <p className="text-[13px] text-ink-600">Held by iSkillLink — not sent to anyone yet</p>
+                  </li>
+                  <li className="relative">
+                    <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-ink-300 ring-4 ring-white" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-ink-900">Session at the workbench</span>
+                    <p className="text-[13px] text-ink-600">You confirm it happened</p>
+                  </li>
+                  <li className="relative">
+                    <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-forest-700 ring-4 ring-white" aria-hidden="true" />
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm font-semibold text-ink-900">Educator is paid (90%)</span>
+                      <span className="font-mono text-sm tabular-nums text-ink-900">81,000</span>
+                    </div>
+                    <div className="mt-1 flex items-baseline justify-between gap-3 text-[13px] text-ink-600">
+                      <span>iSkillLink fee (10%)</span>
+                      <span className="font-mono tabular-nums">9,000</span>
+                    </div>
+                  </li>
+                </ol>
 
-                {/* Floating stat — escrow */}
-                <div className="absolute -top-3 -right-2 sm:right-4 bg-white rounded-card border border-ink-200 shadow-level-2 p-3 flex items-center gap-3 min-w-[200px] animate-slideUp">
-                  <span className="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-sm"><DollarSign className="w-5 h-5" /></span>
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-ink-500">Escrow Protected</div>
-                    <div className="text-sm font-bold text-ink-900">MTN • Airtel</div>
-                  </div>
-                  <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-                </div>
-
-                {/* Floating rating */}
-                <div className="absolute -bottom-4 -left-2 sm:left-2 bg-ink-900 text-white rounded-card border border-ink-800 shadow-level-3 p-3 flex items-center gap-3 min-w-[220px] animate-slideUp" style={{ animationDelay: '120ms' }}>
-                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" alt="" className="w-10 h-10 rounded-full object-cover border-2 border-forest-500" aria-hidden="true" />
-                  <div className="flex-1">
-                    <div className="text-xs font-bold text-white flex items-center gap-1">Amina • Tailoring <BadgeCheck className="w-3.5 h-3.5 text-forest-400" /></div>
-                    <div className="text-[11px] text-ink-300 flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /> 4.9 • Kakoba, Mbarara</div>
-                  </div>
-                  <span className="text-[10px] font-bold bg-white text-ink-900 px-2 py-1 rounded-pill">UGX 35k/hr</span>
-                </div>
+                <p className="mt-6 pt-4 border-t border-dashed border-ink-300 text-[13px] text-ink-700 leading-relaxed">
+                  If the session doesn’t happen, our team refunds you in full.
+                </p>
               </div>
-            </div>
+              <figcaption id="escrow-example-caption" className="sr-only">
+                Example of how a UGX 90,000 booking payment is held in escrow and then split 90% to the educator and 10% to iSkillLink.
+              </figcaption>
+            </figure>
           </div>
-
-          {/* Trust strip */}
-          <div className="mt-8 lg:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { icon: ShieldCheck, title: '100% Vetted', desc: 'NIN + trade checks' },
-              { icon: BadgeCheck, title: 'Escrow Safe', desc: 'MTN & Airtel MoMo' },
-              { icon: MapPin, title: 'Mbarara HQ', desc: 'Uganda nationwide' },
-              { icon: Layers, title: 'Rule-Based', desc: 'Skill • budget • proximity' },
-            ].map(item => (
-              <div key={item.title} className="flex items-center gap-2.5 bg-white border border-ink-200 rounded-card px-3.5 py-3 shadow-soft">
-                <item.icon className="w-4 h-4 text-forest-700 shrink-0" aria-hidden="true" />
-                <div>
-                  <div className="text-xs font-bold text-ink-900 leading-none">{item.title}</div>
-                  <div className="text-[11px] text-ink-600">{item.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats bar */}
-      <section className="container-app -mt-3">
-        <div className="bg-ink-950 rounded-display border border-ink-800 shadow-level-3 px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { k: '120+', v: 'Verified Educators', icon: Award },
-            { k: '800+', v: 'Learners Mentored', icon: Users },
-            { k: '20+', v: 'Practical Trades', icon: Wrench },
-            { k: 'UGX 50M+', v: 'Escrow Volume', icon: TrendingUp },
-          ].map(s => (
-            <div key={s.v} className="text-center lg:text-left flex lg:items-center gap-3">
-              <span className="hidden lg:flex w-9 h-9 rounded-lg bg-white/10 border border-white/10 text-forest-300 items-center justify-center"><s.icon className="w-4 h-4" /></span>
-              <div>
-                <div className="text-xl font-black text-white tracking-tight">{s.k}</div>
-                <div className="text-xs text-ink-300">{s.v}</div>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -454,7 +389,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               Featured Verified Educators
             </h2>
             <p className="text-sm text-ink-600 mt-1">
-              Identity verified, workshop inspected, highly rated by apprentices — across Mbarara & Uganda.
+              Every educator here was checked by our team before taking bookings.
             </p>
           </div>
           <button onClick={() => setCurrentView('find-skill')} className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control bg-white border border-ink-200 hover:bg-ink-50 text-ink-800 text-sm font-bold shadow-soft transition">
@@ -495,27 +430,33 @@ export const HomePage: React.FC<HomePageProps> = ({
         )}
       </section>
 
-      {/* ===== TESTIMONIALS — social proof ===== */}
-      <section className="container-app pt-12">
-        <div className="bg-ink-50 rounded-display border border-ink-200 p-6 sm:p-8 shadow-level-1">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-forest-700 mb-4">
-            <Quote className="w-3.5 h-3.5" /> Learners say it best
+      {/* ===== REVIEWS — only real ones, from finished sessions; hidden until there are some ===== */}
+      {recentReviews.length > 0 && (
+        <section className="container-app pt-14" aria-labelledby="reviews-heading">
+          <h2 id="reviews-heading" className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-[-0.01em] font-display">
+            From learners who finished a session
+          </h2>
+          <div className="mt-6 grid md:grid-cols-3 gap-x-8 gap-y-8">
+            {recentReviews.map(review => {
+              const educator = educatorById.get(review.educator_id);
+              return (
+                <figure key={review.id} className="border-l-2 border-forest-700 pl-5">
+                  <div className="flex gap-0.5" role="img" aria-label={`${review.rating} out of 5 stars`}>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-amber-500 text-amber-500' : 'text-ink-300'}`} aria-hidden="true" />
+                    ))}
+                  </div>
+                  <blockquote className="mt-3 text-[15px] text-ink-800 leading-relaxed">“{review.comment}”</blockquote>
+                  <figcaption className="mt-3 text-sm text-ink-600">
+                    <span className="font-semibold text-ink-900">{review.learner_name}</span>
+                    {educator && <> learned with {educator.user?.name || 'their educator'} · {educator.title}</>}
+                  </figcaption>
+                </figure>
+              );
+            })}
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              { q: 'Learned pattern drafting on real Juki machines. My blazer sold in week two.', n: 'Grace N.', r: 'Tailoring • Kakoba', stars: 5 },
-              { q: 'Solar sizing taught with actual panels. Now I install for rentals in Booma.', n: 'Musa K.', r: 'Solar • Mbarara', stars: 5 },
-              { q: 'Bookkeeping in UGX, MTN escrow — felt safe as a first-time learner.', n: 'Janet A.', r: 'Accounting • Kampala', stars: 5 },
-            ].map(t => (
-              <div key={t.n} className="bg-white rounded-card border border-ink-200 p-5 space-y-3">
-                <div className="flex gap-0.5" aria-label={`${t.stars} stars`}>{Array.from({ length: t.stars }).map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
-                <p className="text-sm text-ink-800 leading-relaxed">“{t.q}”</p>
-                <div className="text-xs font-bold text-ink-900">{t.n} <span className="text-ink-500 font-medium">— {t.r}</span></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ===== CTA — warm editorial ===== */}
       <section className="container-app pt-10">
@@ -525,7 +466,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="relative space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-pill bg-white/15 border border-white/15 text-white text-[11px] font-bold tracking-wider uppercase"><Heart className="w-3 h-3" /> Craft • Teach • Earn</div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-display">Are you a skilled artisan or professional?</h2>
-            <p className="text-sm text-forest-50 leading-relaxed">Monetize your expertise. Teach on your bench, set UGX rates, receive 90% MoMo payouts guaranteed.</p>
+            <p className="text-sm text-forest-50 leading-relaxed">Teach on your own bench, set your own UGX rate, and keep 90% of every session — paid to your MoMo.</p>
           </div>
           <div className="relative flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
             <button onClick={() => setCurrentView('become-educator')} className="px-6 py-3 min-h-[44px] rounded-card bg-white hover:bg-ink-50 text-ink-900 font-bold text-sm shadow flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white">
