@@ -14,7 +14,7 @@ import {
   Camera
 } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
-import { StatusBadge } from '../components/ui/Badge';
+import { PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
 import { DashboardHeader, DashboardShell, SectionHeader, StatRow } from '../components/dashboard';
 
 interface LearnerDashboardProps {
@@ -120,6 +120,11 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   const totalInvestedUGX = payments
     .filter(p => p.status === 'paid' || p.status === 'completed')
     .reduce((sum, p) => sum + p.amount_ugx, 0);
+  const bookingLabel = (bookingId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    return booking ? `${booking.skill_name}${booking.educator?.user?.name ? ` with ${booking.educator.user.name}` : ''}` : 'Session';
+  };
+  const heldInEscrowUGX = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount_ugx, 0);
 
   if (loading) {
     return (
@@ -175,7 +180,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
             { label: 'Active Bookings', value: activeBookingsCount, detail: 'Scheduled & in progress', trend: 'up', icon: Calendar },
             { label: 'Completed Sessions', value: completedSessionsCount, detail: 'Verified practical milestones', icon: CheckCircle2 },
             { label: 'Active Skill Requests', value: requests.length, detail: 'In matching pool', icon: Clock, accent: 'ink' },
-            { label: 'Total Escrow Volume', value: formatUGX(totalInvestedUGX), detail: 'Protected by iSkillLink Escrow', icon: CreditCard }
+            { label: 'Paid so far', value: formatUGX(totalInvestedUGX), detail: heldInEscrowUGX > 0 ? `${formatUGX(heldInEscrowUGX)} held until your session is done` : 'Nothing waiting in escrow', icon: CreditCard }
           ]} />
 
           {/* Upcoming Sessions Section */}
@@ -341,8 +346,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
                   <div className="text-right">
                     <div className="text-base font-bold text-ink-900">{formatUGX(b.total_amount_ugx)}</div>
-                    <div className="text-[11px] text-forest-700 font-semibold">
-                      {b.payment?.status === 'paid' ? 'Paid in Escrow' : b.payment?.status === 'completed' ? 'Disbursed on Completion' : 'Payment Pending'}
+                    <div className="mt-1">
+                      <PaymentStatusBadge status={b.payment?.status || 'pending'} audience="learner" />
                     </div>
                   </div>
                 </div>
@@ -410,8 +415,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
       {activeTab === 'payments' && (
         <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
           <div>
-            <h2 className="text-base font-bold text-ink-900">Escrow Payments & Transactions Ledger</h2>
-            <p className="text-xs text-ink-500">Every shilling is held safely in escrow until your training is completed.</p>
+            <h2 className="text-base font-bold text-ink-900">Payments</h2>
+            <p className="text-xs text-ink-500">iSkillLink holds your money until your session is done, then releases it to the educator. If a session doesn’t happen, we refund you in full.</p>
           </div>
 
           {payments.length === 0 ? (
@@ -432,7 +437,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       <th className="p-3">Session / Educator</th>
                       <th className="p-3">Amount (UGX)</th>
                       <th className="p-3">Method</th>
-                      <th className="p-3">Escrow Status</th>
+                      <th className="p-3">Status</th>
                       <th className="p-3">Date</th>
                     </tr>
                   </thead>
@@ -441,12 +446,12 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       <tr key={p.id} className="hover:bg-ink-50/50">
                         <td className="p-3 font-mono font-semibold text-ink-900">{p.payment_reference}</td>
                         <td className="p-3">
-                          Booking #{p.booking_id}
+                          {bookingLabel(p.booking_id)}
                         </td>
                         <td className="p-3 font-bold text-ink-900">{formatUGX(p.amount_ugx)}</td>
                         <td className="p-3 uppercase font-semibold text-forest-800">{p.method.replace('_', ' ')}</td>
                         <td className="p-3">
-                          <StatusBadge status={p.status} />
+                          <PaymentStatusBadge status={p.status} audience="learner" />
                         </td>
                         <td className="p-3 text-ink-500">{formatShortDate(p.created_at)}</td>
                       </tr>
@@ -460,9 +465,9 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   <div key={p.id} className="p-4 rounded-card border border-ink-200 bg-white shadow-level-1 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-bold text-xs text-ink-900">{p.payment_reference}</span>
-                      <StatusBadge status={p.status} />
+                      <PaymentStatusBadge status={p.status} audience="learner" />
                     </div>
-                    <div className="text-xs text-ink-600">Booking <span className="font-semibold text-ink-900">#{p.booking_id}</span> • {formatShortDate(p.created_at)}</div>
+                    <div className="text-xs text-ink-600"><span className="font-semibold text-ink-900">{bookingLabel(p.booking_id)}</span> · {formatShortDate(p.created_at)}</div>
                     <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-ink-100">
                       <div><span className="text-ink-500">Amount:</span> <span className="font-bold text-ink-900">{formatUGX(p.amount_ugx)}</span></div>
                       <div><span className="text-ink-500">Method:</span> <span className="font-semibold text-forest-800 uppercase">{p.method.replace('_', ' ')}</span></div>

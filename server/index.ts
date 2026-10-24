@@ -1097,6 +1097,14 @@ app.patch('/api/bookings/:id/status', authenticateToken, (req: Request, res: Res
   }
 
   const updated = db.updateBooking(booking.id, updates);
+
+  if (status === 'completed') {
+    const learnersTaught = new Set(
+      db.getBookings().filter(b => b.educator_id === booking.educator_id && b.status === 'completed').map(b => b.learner_id)
+    );
+    db.updateEducator(booking.educator_id, { total_students: learnersTaught.size });
+  }
+
   res.json(updated);
 });
 
@@ -1548,6 +1556,17 @@ app.patch('/api/admin/educator-status', authenticateToken, requireRole('admin'),
 
   if (!educator) {
     return res.status(404).json({ error: 'Educator not found' });
+  }
+
+  // "Verified" must mean something: an educator only goes live after all four checks pass.
+  const v = educator.verification;
+  const fullyVerified = !!v &&
+    v.national_id_status === 'verified' &&
+    v.background_check_status === 'verified' &&
+    v.interview_status === 'completed' &&
+    v.skill_assessment_status === 'verified';
+  if ((status === 'active' || status === 'approved') && !fullyVerified) {
+    return res.status(409).json({ error: 'Complete all four verification checks before activating this educator.' });
   }
 
   const adminId = req.user?.id || 'usr-admin-ashabahebwa';

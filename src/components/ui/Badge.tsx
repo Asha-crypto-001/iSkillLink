@@ -45,7 +45,7 @@ export const Badge: React.FC<BadgeProps> = ({
 }) => {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-semibold rounded-pill border tracking-tight leading-none ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap font-semibold rounded-pill border tracking-tight leading-none ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...props}
     >
       {dot && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClasses[variant]}`} aria-hidden="true" />}
@@ -64,6 +64,32 @@ export function statusToBadgeVariant(status: string): BadgeVariant {
   if (['pending','applied','under_review','verification','open','suggested','warning'].includes(s)) return 'warning';
   if (['declined','failed','refunded','cancelled','rejected','suspended','error'].includes(s)) return 'error';
   return 'neutral';
+}
+
+// The same payment means different things to each side: for a learner "paid" is money handed
+// over and held; for an educator it is money they have not received yet.
+const PAYMENT_LABELS: Record<'learner' | 'educator', Record<string, [string, BadgeVariant]>> = {
+  learner: {
+    pending: ['Not paid yet', 'warning'],
+    payment_requested: ['Payment requested', 'warning'],
+    paid: ['Held in escrow', 'info'],
+    completed: ['Released to educator', 'success'],
+    refunded: ['Refunded to you', 'neutral'],
+    failed: ['Payment failed', 'error']
+  },
+  educator: {
+    pending: ['Awaiting learner payment', 'neutral'],
+    payment_requested: ['Awaiting learner payment', 'neutral'],
+    paid: ['Held in escrow', 'info'],
+    completed: ['Paid out', 'success'],
+    refunded: ['Refunded to learner', 'neutral'],
+    failed: ['Payment failed', 'error']
+  }
+};
+
+export function PaymentStatusBadge({ status, audience, size = 'sm' }: { status: string; audience: 'learner' | 'educator'; size?: BadgeSize }) {
+  const [label, variant] = PAYMENT_LABELS[audience][status] || [status.replace(/_/g, ' '), statusToBadgeVariant(status)];
+  return <Badge variant={variant} size={size} dot>{label}</Badge>;
 }
 
 export function StatusBadge({ status, size = 'sm' }: { status: string; size?: BadgeSize }) {

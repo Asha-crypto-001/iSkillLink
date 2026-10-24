@@ -4,7 +4,8 @@ import { Educator, Booking, Review, LearnerRequest, Payment, Message } from '../
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatUGX, formatShortDate } from '../utils/formatters';
-import { StatusBadge } from '../components/ui/Badge';
+import { PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
+import { VERIFICATION_STEPS, isStepPassed, verificationProgress } from '../utils/verification';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -120,14 +121,26 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   };
 
   const ratingLabel = educator?.rating ? `${educator.rating}★` : 'No ratings yet';
+  const introductionLink = (req: LearnerRequest) =>
+    `https://wa.me/256744024529?text=${encodeURIComponent(`Hello iSkillLink, I'm ${user?.name} (${educator?.title}). Please introduce me to the learner who requested "${req.skill_name}" (request ${req.id}).`)}`;
 
-  const totalEarningsGross = payments
+  const heldPayout = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.payout_amount_ugx, 0);
+  const paidOut = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.payout_amount_ugx, 0);
+  const platformFees = payments
     .filter(p => p.status === 'paid' || p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount_ugx, 0);
+    .reduce((sum, p) => sum + p.platform_fee_ugx, 0);
 
-  const totalNetPayout = payments
-    .filter(p => p.status === 'paid' || p.status === 'completed')
-    .reduce((sum, p) => sum + p.payout_amount_ugx, 0);
+  const isLive = educator?.status === 'active' || educator?.status === 'approved';
+  const progress = verificationProgress(educator?.verification);
+  const nextStepIndex = VERIFICATION_STEPS.findIndex(step => !isStepPassed(educator?.verification, step));
+  const reviewCount = educator?.total_reviews || 0;
+  const ratingSummary = educator?.rating ? `${educator.rating}★ from ${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'}` : 'No reviews yet';
+
+  // Leads in the educator's own trade come first; a word match on title/skills is enough here.
+  const tradeText = [educator?.title, ...(educator?.skills || []).map(s => s.skill_name)].join(' ').toLowerCase();
+  const matchesTrade = (req: LearnerRequest) =>
+    req.skill_name.toLowerCase().split(/[^a-z]+/).some(word => word.length > 3 && tradeText.includes(word));
+  const sortedLeads = [...openRequests].sort((a, b) => Number(matchesTrade(b)) - Number(matchesTrade(a)));
 
   if (loading) {
     return (
@@ -180,11 +193,11 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     ]}>
     <div className="container-app space-y-6">
       <DashboardHeader
-        eyebrow="Verified educator portal"
-        title={`${user?.name || 'Educator'}${educator?.title ? ` (${educator.title})` : ''}`}
-        description={`${educator?.years_experience || 0} years craft experience • ${ratingLabel} from ${educator?.total_reviews || 0} reviews • ${formatUGX(educator?.hourly_rate_ugx || 35000)}/hr`}
+        eyebrow={isLive ? 'Educator portal' : 'Application in review'}
+        title={user?.name || 'Educator'}
+        description={[educator?.title, `${educator?.years_experience || 0} years experience`, ratingSummary, `${formatUGX(educator?.hourly_rate_ugx || 0)}/hr`].filter(Boolean).join(' · ')}
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: activeTab }]}
-        actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button><span className="rounded-card bg-forest-50 px-3 py-2 text-xs font-bold text-forest-700">Status: {educator?.status?.toUpperCase()}</span></>}
+        actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button>{educator?.status && <StatusBadge status={educator.status} size="md" />}</>}
       />
 
       {actionError && (
@@ -197,14 +210,57 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       {/* OVERVIEW TAB */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <StatRow stats={[
-            { label: 'Total Students Mentored', value: educator?.total_students ?? 0, detail: 'Hands-on apprentices', icon: User },
-            { label: 'Active Bookings', value: bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length, detail: 'Upcoming training sessions', icon: Calendar },
-            { label: 'Net Payouts (UGX)', value: formatUGX(totalNetPayout), detail: 'Direct Mobile Money disbursal', icon: DollarSign },
-            { label: 'Average Rating', value: ratingLabel, detail: `From ${reviews.length} reviews`, icon: Star, accent: 'amber' }
-          ]} />
+          {educator?.status === 'suspended' ? (
+            <section className="bg-white rounded-card border border-rose-200 shadow-level-1 p-6 space-y-2" aria-labelledby="hold-heading">
+              <h2 id="hold-heading" className="text-lg font-bold text-ink-900">Your profile is on hold</h2>
+              <p className="text-sm text-ink-600">Learners can’t book you right now. {educator.verification_notes ? `Reason: ${educator.verification_notes}. ` : ''}Message us on WhatsApp to sort it out.</p>
+              <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className="inline-flex px-4 py-2.5 min-h-[44px] items-center rounded-control bg-forest-700 hover:bg-forest-800 text-white text-xs font-bold">WhatsApp iSkillLink</a>
+            </section>
+          ) : !isLive ? (
+            <section className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-5" aria-labelledby="application-heading">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div>
+                  <h2 id="application-heading" className="text-lg font-bold text-ink-900">
+                    Your application: {progress.passed} of {progress.total} checks done
+                  </h2>
+                  <p className="text-sm text-ink-600 mt-1">Learners can book you as soon as all four checks pass. We’ll contact you on WhatsApp to arrange each one.</p>
+                </div>
+                <button onClick={() => navigate(`/educators/${educator?.id}`)} className="shrink-0 px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 text-xs font-bold text-ink-800">
+                  Preview your public profile
+                </button>
+              </div>
+              <ol className="space-y-3">
+                {VERIFICATION_STEPS.map((step, index) => {
+                  const passed = isStepPassed(educator?.verification, step);
+                  const isNext = index === nextStepIndex;
+                  return (
+                    <li key={step.key} className={`flex items-start gap-3 p-3.5 rounded-card border ${isNext ? 'border-forest-200 bg-forest-50/60' : 'border-ink-200'}`}>
+                      <span className={`mt-0.5 w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${passed ? 'bg-forest-700 text-white' : isNext ? 'bg-white border-2 border-forest-700 text-forest-800' : 'bg-ink-100 text-ink-500'}`} aria-hidden="true">
+                        {passed ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-ink-900">{step.label}</span>
+                          <span className={`text-xs font-semibold ${passed ? 'text-forest-700' : isNext ? 'text-forest-800' : 'text-ink-500'}`}>{passed ? 'Done' : isNext ? 'Next' : 'Waiting'}</span>
+                        </div>
+                        <p className="text-[13px] text-ink-600">{step.applicantDetail}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          ) : (
+            <StatRow stats={[
+              { label: 'Students taught', value: educator?.total_students ?? 0, detail: 'Learners with a completed session', icon: User },
+              { label: 'Upcoming sessions', value: bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length, detail: 'Confirmed or awaiting your reply', icon: Calendar },
+              { label: 'Paid out to you', value: formatUGX(paidOut), detail: heldPayout > 0 ? `${formatUGX(heldPayout)} still held in escrow` : 'Sent to your MoMo', icon: DollarSign },
+              { label: 'Average rating', value: ratingLabel, detail: `From ${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'}`, icon: Star, accent: 'amber' }
+            ]} />
+          )}
 
-          {/* Pending Bookings to Accept */}
+          {/* Pending Bookings to Accept — only once learners can book this educator */}
+          {isLive && (
           <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
             <SectionHeader title="Pending Learner Requests" action={<button
                 onClick={() => setActiveTab('bookings')}
@@ -256,6 +312,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
               )}
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -341,24 +398,35 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       {activeTab === 'leads' && (
         <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
           <div>
-            <h2 className="text-base font-bold text-ink-900">Open Learner Inquiries in Kampala</h2>
-            <p className="text-xs text-ink-500">Learners seeking mentoring in your practical trade.</p>
+            <h2 className="text-base font-bold text-ink-900">Open learner requests</h2>
+            <p className="text-xs text-ink-500">Learners who described what they want to learn. Ones that match your trade are listed first — ask us and we’ll introduce you.</p>
           </div>
 
+          {sortedLeads.length === 0 && (
+            <EmptyState
+              icon={<Clock className="w-6 h-6" />}
+              title="No open requests right now"
+              description="When a learner posts a request, it shows up here. Requests in your trade are listed first."
+            />
+          )}
+
           <div className="space-y-4">
-            {openRequests.map(req => (
+            {sortedLeads.map(req => (
               <div
                 key={req.id}
                 className="p-5 rounded-card border border-ink-200 bg-white space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
+                      {matchesTrade(req) && <span className="text-[11px] font-semibold px-2 py-0.5 rounded-pill bg-forest-50 text-forest-800 border border-forest-200">Matches your trade</span>}
+                    </div>
                     <p className="text-xs text-ink-600 mt-1">{req.learning_goal}</p>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-bold text-forest-800">{formatUGX(req.budget_ugx)}</div>
-                    <div className="text-[11px] text-ink-500">Allocated Budget</div>
+                    <div className="text-[11px] text-ink-500">Learner’s budget</div>
                   </div>
                 </div>
 
@@ -367,6 +435,16 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <div><strong>Location:</strong> {req.location}</div>
                   <div><strong>Format:</strong> <span className="capitalize">{req.format_preference}</span></div>
                   <div><strong>Schedule:</strong> {req.preferred_schedule}</div>
+                </div>
+                <div className="flex justify-end">
+                  <a
+                    href={introductionLink(req)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-control border border-forest-700 text-forest-800 hover:bg-forest-50 text-xs font-bold"
+                  >
+                    Ask us to introduce you
+                  </a>
                 </div>
               </div>
             ))}
@@ -378,22 +456,24 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       {activeTab === 'earnings' && (
         <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
           <div>
-            <h2 className="text-base font-bold text-ink-900">Earnings & Escrow Payout Breakdown</h2>
-            <p className="text-xs text-ink-500">iSkillLink retains 10% platform facilitation fee and releases 90% net payout via Mobile Money upon completion.</p>
+            <h2 className="text-base font-bold text-ink-900">Earnings</h2>
+            <p className="text-xs text-ink-500">Learners pay into escrow when they book. After the session is done, we send 90% to your MoMo and keep 10%.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
-              <div className="text-xs text-ink-500 font-semibold">Total Gross Bookings</div>
-              <div className="text-xl font-bold text-ink-900 mt-1">{formatUGX(totalEarningsGross)}</div>
-            </div>
-            <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
-              <div className="text-xs text-ink-500 font-semibold">Platform Fee (10%)</div>
-              <div className="text-xl font-bold text-ink-700 mt-1">{formatUGX(Math.round(totalEarningsGross * 0.10))}</div>
+              <div className="text-xs text-ink-500 font-semibold">Held in escrow</div>
+              <div className="text-xl font-bold text-ink-900 mt-1">{formatUGX(heldPayout)}</div>
+              <div className="text-[11px] text-ink-500 mt-0.5">Released after each session is done</div>
             </div>
             <div className="p-4 rounded-card bg-forest-50 border border-forest-200">
-              <div className="text-xs text-forest-800 font-semibold">Net Educator Payouts (90%)</div>
-              <div className="text-xl font-bold text-emerald-950 mt-1">{formatUGX(totalNetPayout)}</div>
+              <div className="text-xs text-forest-800 font-semibold">Paid out to you</div>
+              <div className="text-xl font-bold text-forest-900 mt-1">{formatUGX(paidOut)}</div>
+              <div className="text-[11px] text-forest-800 mt-0.5">Sent to your MoMo</div>
+            </div>
+            <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
+              <div className="text-xs text-ink-500 font-semibold">iSkillLink fee (10%)</div>
+              <div className="text-xl font-bold text-ink-700 mt-1">{formatUGX(platformFees)}</div>
             </div>
           </div>
 
@@ -406,7 +486,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <th className="p-3">Gross Amount</th>
                   <th className="p-3">Platform Fee (10%)</th>
                   <th className="p-3">Your Net Share (90%)</th>
-                  <th className="p-3">Escrow Payout Status</th>
+                  <th className="p-3">Status</th>
                   <th className="p-3">Date</th>
                 </tr>
               </thead>
@@ -418,7 +498,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     <td className="p-3 text-ink-500">{formatUGX(p.platform_fee_ugx)}</td>
                     <td className="p-3 font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</td>
                     <td className="p-3">
-                      <StatusBadge status={p.status} />
+                      <PaymentStatusBadge status={p.status} audience="educator" />
                     </td>
                     <td className="p-3 text-ink-500">{formatShortDate(p.created_at)}</td>
                   </tr>
@@ -432,7 +512,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
               <div key={p.id} className="p-4 rounded-card border border-ink-200 bg-white shadow-level-1 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-xs text-ink-900">{p.payment_reference}</span>
-                  <StatusBadge status={p.status} />
+                  <PaymentStatusBadge status={p.status} audience="educator" />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div><span className="text-ink-500">Gross:</span> <span className="font-bold">{formatUGX(p.amount_ugx)}</span></div>
@@ -442,7 +522,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                 </div>
               </div>
             ))}
-            {payments.length === 0 && <div className="text-center py-8 text-xs text-ink-400">No earnings yet.</div>}
+            {payments.length === 0 && <div className="text-center py-8 text-xs text-ink-500">No payments yet. They appear here when a learner books you.</div>}
           </div>
         </div>
       )}

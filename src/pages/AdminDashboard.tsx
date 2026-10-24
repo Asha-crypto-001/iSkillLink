@@ -181,16 +181,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleApproveEducator = async (educatorId: string) => {
-    try {
-      await api.updateEducatorStatus(educatorId, 'active', 'Approved following complete verification & trade review', 'Ashabahebwa Hassan');
-      loadAdminData();
-    } catch (e: any) {
-      console.error('Error approving educator:', e);
-      setActionError(e.message || 'The action could not be completed. Please try again.');
-    }
-  };
-
   const handleSuspendEducator = async (educatorId: string) => {
     try {
       await api.updateEducatorStatus(educatorId, 'suspended', 'Administrative hold pending inquiry', 'Ashabahebwa Hassan');
@@ -334,7 +324,6 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'verification' && (
         <AdminVerificationTab
           verificationQueue={verificationQueue}
-          onApproveEducator={handleApproveEducator}
           onSuspendEducator={handleSuspendEducator}
           onVerifyStep={handleVerifyStep}
         />
