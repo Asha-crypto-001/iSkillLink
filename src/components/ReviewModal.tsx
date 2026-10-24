@@ -59,15 +59,15 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   };
 
   return (
-    <Modal isOpen={!!booking} onClose={onClose} titleId="review-modal-title" title="Leave Verified Review" maxWidth="max-w-lg">
-        <div className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
+    <Modal isOpen={!!booking} onClose={onClose} titleId="review-modal-title" title="Review your session" maxWidth="max-w-lg">
+        <div className="shrink-0 bg-white px-5 py-4 flex items-center justify-between gap-3 border-b border-ink-200">
           <div>
-            <h3 id="review-modal-title" className="font-bold text-sm text-white font-display">Leave Verified Review</h3>
-            <p className="text-xs text-ink-300">For {booking.educator?.user?.name || 'Educator'} • {booking.skill_name}</p>
+            <h3 id="review-modal-title" className="font-bold text-lg text-ink-900 font-display">How was your session?</h3>
+            <p className="text-sm text-ink-600">{booking.skill_name} with {booking.educator?.user?.name || 'your educator'}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-control bg-ink-800 hover:bg-ink-700 text-ink-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="rounded-control text-ink-500 hover:bg-ink-100 hover:text-ink-900 transition w-11 h-11 shrink-0 flex items-center justify-center"
             aria-label="Close review"
           >
             <X className="w-5 h-5" />
