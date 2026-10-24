@@ -455,6 +455,20 @@ export const api = {
     );
   },
 
+  async updateEducator(id: string, updates: Partial<Educator>) {
+    return withLocalFallback(
+      () => apiRequest<Educator>(`/educators/${id}`, jsonRequest('PATCH', updates)),
+      () => {
+        const educators = getLocalStorageData<Educator[]>('educators', initialLocalEducators);
+        const index = educators.findIndex(e => e.id === id);
+        if (index === -1) throw new Error('Educator not found');
+        educators[index] = { ...educators[index], ...updates };
+        setLocalStorageData('educators', educators);
+        return educators[index];
+      }
+    );
+  },
+
   async submitEducatorOnboarding(data: any) {
     return withLocalFallback(
       () => apiRequest<any>('/educators/onboard', jsonRequest('POST', data)),

@@ -17,6 +17,10 @@ import {
   Camera, User
 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
+import { Field } from '../components/ui/Field';
+import { Input } from '../components/ui/Input';
+import { Textarea } from '../components/ui/Textarea';
+import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/ui/Avatar';
 
 interface EducatorDashboardProps {
@@ -123,6 +127,42 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   };
 
   const ratingLabel = educator?.rating ? `${educator.rating}★` : 'No ratings yet';
+  const TAB_LABELS: Record<typeof activeTab, string> = {
+    overview: 'Overview', bookings: 'Bookings', leads: 'Leads', earnings: 'Earnings', reviews: 'Reviews', profile: 'Profile'
+  };
+  const FORMAT_LABELS: Record<string, string> = { 'in-person': 'At your workshop', hybrid: 'Online and workshop', online: 'Online' };
+  const pendingBookings = bookings.filter(b => b.status === 'pending');
+
+  // Editable profile fields (PATCH /api/educators/:id accepts these from the owner).
+  const [profileForm, setProfileForm] = useState({ title: '', hourly_rate_ugx: 0, location: '', service_area: '', equipment_provided: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
+  useEffect(() => {
+    if (!educator) return;
+    setProfileForm({
+      title: educator.title || '',
+      hourly_rate_ugx: educator.hourly_rate_ugx || 0,
+      location: educator.location || '',
+      service_area: educator.service_area || '',
+      equipment_provided: educator.equipment_provided || ''
+    });
+  }, [educator?.id]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!educator) return;
+    setSavingProfile(true);
+    setProfileMessage(null);
+    try {
+      const updated = await api.updateEducator(educator.id, { ...profileForm, hourly_rate_ugx: Number(profileForm.hourly_rate_ugx) });
+      setEducator(prev => prev ? { ...prev, ...updated } : updated);
+      setProfileMessage({ tone: 'success', text: 'Saved. Learners see the new details straight away.' });
+    } catch (err: any) {
+      setProfileMessage({ tone: 'error', text: err.message || 'Could not save your profile. Please try again.' });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
   const introductionLink = (req: LearnerRequest) =>
     `https://wa.me/256744024529?text=${encodeURIComponent(`Hello iSkillLink, I'm ${user?.name} (${educator?.title}). Please introduce me to the learner who requested "${req.skill_name}" (request ${req.id}).`)}`;
 
@@ -198,8 +238,8 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         eyebrow={isLive ? 'Educator portal' : 'Application in review'}
         title={user?.name || 'Educator'}
         description={[educator?.title, `${educator?.years_experience || 0} years experience`, ratingSummary, `${formatUGX(educator?.hourly_rate_ugx || 0)}/hr`].filter(Boolean).join(' · ')}
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: activeTab }]}
-        actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button>{educator?.status && <StatusBadge status={educator.status} size="md" />}</>}
+        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: TAB_LABELS[activeTab] }]}
+        actions={educator?.status && <StatusBadge status={educator.status} size="md" />}
       />
 
       {actionError && (
@@ -261,29 +301,24 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           {/* Pending Bookings to Accept — only once learners can book this educator */}
           {isLive && (
           <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
-            <SectionHeader title="Pending Learner Requests" action={<button
+            <SectionHeader title={pendingBookings.length > 0 ? `Waiting for your reply (${pendingBookings.length})` : 'Waiting for your reply'} action={<button
                 onClick={() => setActiveTab('bookings')}
-                className="text-xs font-bold text-forest-700 hover:text-forest-800"
+                className="text-xs font-bold text-forest-700 hover:text-forest-800 min-h-[44px]"
               >
-                View all bookings
+                All bookings
               </button>} />
 
             <div className="space-y-3">
-              {bookings.filter(b => b.status === 'pending').length > 0 ? (
-                bookings.filter(b => b.status === 'pending').map(b => (
+              {pendingBookings.length > 0 ? (
+                pendingBookings.map(b => (
                   <div
                     key={b.id}
                     className="p-4 rounded-card border border-amber-200 bg-amber-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                   >
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-ink-900 text-sm">{b.skill_name}</span>
-                        <span className="text-[12px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
-                          Awaiting Your Approval
-                        </span>
-                      </div>
+                      <div className="font-bold text-ink-900 text-sm">{b.learnerUser?.name || 'A learner'} wants to learn {b.skill_name}</div>
                       <p className="text-xs text-ink-700 mt-1">
-                        Requested on {formatShortDate(b.scheduled_date)} at {b.start_time} ({b.duration_hours} hrs) • {formatUGX(b.total_amount_ugx)}
+                        {formatShortDate(b.scheduled_date)} at {b.start_time} · {b.duration_hours} {b.duration_hours === 1 ? 'hour' : 'hours'} · you’d receive {formatUGX(b.educator_payout_ugx)}
                       </p>
                       {b.notes && <p className="text-xs text-ink-500 italic mt-0.5">"{b.notes}"</p>}
                     </div>
@@ -293,7 +328,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                         onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')}
                         className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-level-1"
                       >
-                        Accept & Confirm
+                        Accept
                       </button>
                       <button
                         onClick={() => handleUpdateBookingStatus(b.id, 'declined')}
@@ -305,9 +340,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-ink-500 text-xs">
-                  No pending booking requests at the moment.
-                </div>
+                <p className="py-4 text-ink-600 text-sm">Nothing to reply to. New booking requests show up here.</p>
               )}
             </div>
           </div>
@@ -319,9 +352,17 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       {activeTab === 'bookings' && (
         <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
           <div>
-            <h2 className="text-base font-bold text-ink-900">Manage Practical Training Sessions</h2>
-            <p className="text-xs text-ink-500">Update session status and mark progress milestones.</p>
+            <h2 className="text-base font-bold text-ink-900">{bookings.length} {bookings.length === 1 ? 'booking' : 'bookings'}</h2>
+            <p className="text-xs text-ink-600">Set progress as you go. Mark a session done after it happens — that’s when your payout is released.</p>
           </div>
+
+          {bookings.length === 0 && (
+            <EmptyState
+              icon={<Calendar className="w-6 h-6" />}
+              title="No bookings yet"
+              description="When a learner books you, the request shows up here and on your overview."
+            />
+          )}
 
           <div className="space-y-4">
             {bookings.map(b => (
@@ -336,20 +377,21 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                       <StatusBadge status={b.status} />
                     </div>
                     <div className="text-xs text-ink-600 mt-1">
-                      Learner: <strong className="text-ink-900">{b.learnerUser?.name || 'Registered Student'}</strong> {b.learnerUser?.phone ? `(${b.learnerUser.phone})` : ''}
+                      with <strong className="text-ink-900">{b.learnerUser?.name || 'a learner'}</strong>{b.learnerUser?.phone ? ` · ${b.learnerUser.phone}` : ''}
                     </div>
                   </div>
 
                   <div className="text-right">
                     <div className="text-base font-bold text-ink-900">{formatUGX(b.educator_payout_ugx || b.total_amount_ugx * 0.9)}</div>
-                    <div className="text-[12px] text-ink-500">Net Educator Share (90%)</div>
+                    <div className="mt-1"><PaymentStatusBadge status={b.payment?.status || 'pending'} audience="educator" /></div>
                   </div>
                 </div>
 
-                {/* Milestone Progress Controller */}
+                {/* Progress only means something while the session is under way */}
+                {(b.status === 'confirmed' || b.status === 'in_progress') && (
                 <div className="bg-ink-50 p-3.5 rounded-card border border-ink-200 space-y-2">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-semibold text-ink-700">Practical Milestone Progress:</span>
+                    <span className="font-semibold text-ink-700">Progress the learner sees</span>
                     <span className="font-bold text-forest-800">{b.milestone_progress}%</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -357,7 +399,8 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                       <button
                         key={pct}
                         onClick={() => handleUpdateProgress(b.id, pct)}
-                        className={`px-3 py-1 rounded text-xs font-bold transition border ${
+                        aria-pressed={b.milestone_progress === pct}
+                        className={`px-3 min-h-[40px] rounded-control text-xs font-bold transition border ${
                           b.milestone_progress === pct
                             ? 'bg-forest-700 text-white border-forest-700'
                             : 'bg-white text-ink-700 border-ink-200 hover:bg-ink-50'
@@ -368,24 +411,37 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     ))}
                   </div>
                 </div>
+                )}
 
                 {/* Session Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-ink-600">
-                  <div><strong>Date:</strong> {formatShortDate(b.scheduled_date)} at {b.start_time}</div>
-                  <div><strong>Format:</strong> <span className="capitalize">{b.format}</span></div>
-                  <div><strong>Location:</strong> {b.location_or_link}</div>
+                  <div><strong>When:</strong> {formatShortDate(b.scheduled_date)} at {b.start_time}</div>
+                  <div><strong>How:</strong> {FORMAT_LABELS[b.format] || b.format}</div>
+                  <div><strong>Where:</strong> {b.location_or_link}</div>
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-100">
-                  {b.status === 'confirmed' && (
-                    <button
-                      onClick={() => handleUpdateBookingStatus(b.id, 'completed')}
-                      className="px-4 py-2 rounded-lg bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-level-1 flex items-center gap-1.5"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Complete Practical Session</span>
-                    </button>
+                  {b.status === 'pending' && (
+                    <>
+                      <button onClick={() => handleUpdateBookingStatus(b.id, 'declined')} className="px-4 min-h-[44px] rounded-control bg-white hover:bg-ink-50 text-ink-700 font-bold text-xs border border-ink-200">Decline</button>
+                      <button onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')} className="px-4 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs">Accept</button>
+                    </>
                   )}
+                  {(b.status === 'confirmed' || b.status === 'in_progress') && (
+                    b.payment?.status === 'paid' ? (
+                      <button
+                        onClick={() => handleUpdateBookingStatus(b.id, 'completed')}
+                        className="px-4 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                        Mark session done
+                      </button>
+                    ) : (
+                      // Completing an unpaid session would leave nothing in escrow to release.
+                      <span className="text-sm text-ink-600">Waiting for {b.learnerUser?.name?.split(' ')[0] || 'the learner'} to pay</span>
+                    )
+                  )}
+                  {b.status === 'completed' && <span className="text-sm text-ink-600">Done{b.payment?.status === 'completed' ? ' · paid out' : ' · payout on its way'}</span>}
                 </div>
               </div>
             ))}
@@ -530,9 +586,17 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       {activeTab === 'reviews' && (
         <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
           <div>
-            <h2 className="text-base font-bold text-ink-900">Apprentice Ratings & Reviews</h2>
-            <p className="text-xs text-ink-500">Public ratings left by students who completed practical sessions with you.</p>
+            <h2 className="text-base font-bold text-ink-900">Reviews from learners</h2>
+            <p className="text-xs text-ink-600">Shown on your public profile. A short, kind reply goes a long way.</p>
           </div>
+
+          {reviews.length === 0 && (
+            <EmptyState
+              icon={<Star className="w-6 h-6" />}
+              title="No reviews yet"
+              description="Learners can review you after a session is marked done."
+            />
+          )}
 
           <div className="space-y-4">
             {reviews.map(r => (
@@ -543,7 +607,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-bold text-ink-900 text-sm block">{r.learner_name}</span>
-                    <span className="text-[12px] text-ink-400">{formatShortDate(r.created_at)}</span>
+                    <span className="text-[12px] text-ink-600">{formatShortDate(r.created_at)}</span>
                   </div>
                   <div className="flex items-center gap-1 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                     <Star className="w-3.5 h-3.5 fill-amber-500" />
@@ -557,21 +621,24 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
                 {r.educator_reply ? (
                   <div className="ml-4 pl-3 border-l-2 border-forest-600 bg-forest-50/40 p-2.5 rounded-r-lg text-xs">
-                    <span className="font-semibold text-forest-950 block text-[12px]">Your Published Reply:</span>
+                    <span className="font-semibold text-forest-950 block text-[12px]">Your reply</span>
                     <p className="text-ink-700 mt-0.5">{r.educator_reply}</p>
                   </div>
                 ) : (
                   <div className="pt-2 flex items-center gap-2">
+                    <label htmlFor={`reply-${r.id}`} className="sr-only">Reply to {r.learner_name}</label>
                     <input
+                      id={`reply-${r.id}`}
                       type="text"
                       value={replyText[r.id] || ''}
                       onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
-                      placeholder="Write a public reply to this student review..."
-                      className="flex-1 text-xs p-2 rounded-lg border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700"
+                      placeholder="Reply publicly — thank them, or answer a concern"
+                      className="flex-1 text-sm px-3 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700"
                     />
                     <button
                       onClick={() => handleReplyReview(r.id)}
-                      className="px-4 py-2 rounded-lg bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs"
+                      disabled={!replyText[r.id]?.trim()}
+                      className="px-4 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs disabled:opacity-50"
                     >
                       Reply
                     </button>
@@ -583,67 +650,64 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         </div>
       )}
 
-      {/* PROFILE & SETTINGS TAB */}
+      {/* PROFILE TAB — what learners see on the public profile */}
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6 max-w-3xl">
-          <div className="flex items-center justify-between pb-4 border-b border-ink-100">
-            <div>
-              <h2 className="text-base font-bold text-ink-900">Educator Workshop & Rate Settings</h2>
-              <p className="text-xs text-ink-500">Manage your publicly displayed rates in UGX and workshop tooling.</p>
+        <form onSubmit={handleSaveProfile} className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6 max-w-3xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ink-100">
+            <div className="flex items-center gap-4">
+              <Avatar src={user?.avatar_url} name={user?.name} className="w-20 h-20 rounded-card" />
+              <div className="space-y-1.5">
+                <div className={`text-sm font-semibold ${isLive ? 'text-forest-700' : 'text-ink-600'}`}>{isLive ? 'Verified educator' : 'Application in review'}</div>
+                <button
+                  type="button"
+                  onClick={() => setShowPhotoModal(true)}
+                  className="px-3.5 min-h-[40px] rounded-control border border-ink-200 bg-white text-ink-800 text-xs font-bold hover:bg-ink-50 inline-flex items-center gap-1.5"
+                >
+                  <Camera className="w-3.5 h-3.5" aria-hidden="true" />
+                  {user?.avatar_url ? 'Change photo' : 'Add a photo'}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setShowPhotoModal(true)}
-              className="px-3.5 py-2 rounded-card bg-forest-50 text-forest-800 border border-forest-200 text-xs font-bold hover:bg-forest-100 transition flex items-center gap-1.5"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Update Workshop Photo</span>
+            <button type="button" onClick={() => navigate(`/educators/${educator?.id}`)} className="self-start sm:self-auto px-4 min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 text-xs font-bold text-ink-800">
+              View public profile
             </button>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar src={user?.avatar_url} name={user?.name} className="w-20 h-20 rounded-card border-2 border-forest-500 shadow-level-1" />
-              <button
-                onClick={() => setShowPhotoModal(true)}
-                className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-forest-700 text-white shadow hover:bg-forest-800 transition"
-              >
-                <Camera className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <div>
-              <div className="text-sm font-bold text-ink-900">{user?.name}</div>
-              <div className="text-xs text-ink-500">{educator?.title}</div>
-              <div className={`text-[12px] font-semibold mt-0.5 ${isLive ? 'text-forest-700' : 'text-ink-600'}`}>{isLive ? 'Verified educator' : 'Application in review'} · {educator?.location}</div>
-            </div>
+          {profileMessage && (
+            <Alert tone={profileMessage.tone} onDismiss={() => setProfileMessage(null)}>{profileMessage.text}</Alert>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="What you teach (your title)" htmlFor="edu-title" required>
+              <Input id="edu-title" value={profileForm.title} onChange={(e) => setProfileForm({ ...profileForm, title: e.target.value })} required />
+            </Field>
+            <Field label="Your rate per hour (UGX)" htmlFor="edu-rate" required hint="Learners see this before they book.">
+              <Input
+                id="edu-rate"
+                type="number"
+                inputMode="numeric"
+                min={5000}
+                step={1000}
+                value={profileForm.hourly_rate_ugx || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, hourly_rate_ugx: Number(e.target.value) })}
+                required
+              />
+            </Field>
+            <Field label="Where your workshop is" htmlFor="edu-location" required>
+              <Input id="edu-location" value={profileForm.location} onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })} required />
+            </Field>
+            <Field label="Where else you teach" htmlFor="edu-area">
+              <Input id="edu-area" value={profileForm.service_area} onChange={(e) => setProfileForm({ ...profileForm, service_area: e.target.value })} placeholder="e.g. Anywhere in Mbarara city" />
+            </Field>
+            <Field label="Tools learners will use" htmlFor="edu-tools" className="sm:col-span-2" hint="e.g. Two industrial straight-stitch machines, an overlocker and a cutting table.">
+              <Textarea id="edu-tools" rows={3} value={profileForm.equipment_provided} onChange={(e) => setProfileForm({ ...profileForm, equipment_provided: e.target.value })} />
+            </Field>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block text-ink-600 font-semibold mb-1">Professional Title</label>
-              <input type="text" value={educator?.title} disabled className="w-full p-2.5 rounded-lg border bg-ink-50 text-ink-800" />
-            </div>
-
-            <div>
-              <label className="block text-ink-600 font-semibold mb-1">Standard Hourly Rate (UGX)</label>
-              <input type="text" value={formatUGX(educator?.hourly_rate_ugx || 35000)} disabled className="w-full p-2.5 rounded-lg border bg-ink-50 text-ink-800 font-bold" />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-ink-600 font-semibold mb-1">Workshop Tools & Equipment</label>
-              <textarea rows={2} value={educator?.equipment_provided} disabled className="w-full p-2.5 rounded-lg border bg-ink-50 text-ink-800" />
-            </div>
-
-            <div>
-              <label className="block text-ink-600 font-semibold mb-1">Base Workshop Location</label>
-              <input type="text" value={educator?.location} disabled className="w-full p-2.5 rounded-lg border bg-ink-50 text-ink-800" />
-            </div>
-
-            <div>
-              <label className="block text-ink-600 font-semibold mb-1">Service Radius</label>
-              <input type="text" value={educator?.service_area} disabled className="w-full p-2.5 rounded-lg border bg-ink-50 text-ink-800" />
-            </div>
+          <div className="flex justify-end">
+            <Button type="submit" isLoading={savingProfile}>Save changes</Button>
           </div>
-        </div>
+        </form>
       )}
 
       {/* Global Profile Photo Upload Modal */}
