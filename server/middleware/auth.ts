@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, TokenPayload, isTokenRevoked } from '../utils/security.js';
+import { isSupabaseToken, verifySupabaseToken } from '../utils/supabaseAuth.js';
 import { UserRole } from '../types.js';
 
 // Extend Express Request to include authenticated user payload
@@ -13,42 +14,62 @@ declare global {
 }
 
 /**
- * Middleware that strictly verifies a Bearer JWT in the Authorization header.
+ * Resolves a Bearer token to user claims. Accepts tokens signed by this API and, when
+ * Supabase is configured, Supabase access tokens (mapped onto local accounts).
+ * Returns null for invalid, expired, or revoked tokens.
+ */
+async function resolveToken(token: string): Promise<TokenPayload | null> {
+  let decoded: TokenPayload | null = null;
+  if (isSupabaseToken(token)) {
+    try {
+      decoded = await verifySupabaseToken(token);
+    } catch (err) {
+      console.error('[Auth] Supabase token verification failed:', err instanceof Error ? err.message : err);
+      decoded = null;
+    }
+  } else {
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    } catch {
+      decoded = null;
+    }
+  }
+  if (!decoded || !decoded.jti || isTokenRevoked(decoded.jti)) return null;
+  return decoded;
+}
+
+function bearerToken(req: Request): string | null {
+  const authHeader = req.headers['authorization'];
+  return authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+}
+
+/**
+ * Middleware that strictly verifies a Bearer token in the Authorization header.
  * Rejects unauthenticated requests with HTTP 401.
  */
-export function authenticateToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+export async function authenticateToken(req: Request, res: Response, next: NextFunction) {
+  const token = bearerToken(req);
 
   if (!token) {
     return res.status(401).json({ error: 'Authentication required. Missing Bearer token.' });
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
-    if (!decoded.jti || isTokenRevoked(decoded.jti)) {
-      return res.status(401).json({ error: 'This session has been revoked. Please sign in again.' });
-    }
-    req.user = decoded;
-    next();
-  } catch (err: any) {
-    return res.status(401).json({ error: 'Invalid or expired session token. Please sign in again.' });
+  const decoded = await resolveToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: 'Invalid, expired, or revoked session. Please sign in again.' });
   }
+  req.user = decoded;
+  next();
 }
 
 /**
- * Middleware that parses Bearer JWT if present, but does not block if missing.
+ * Middleware that parses a Bearer token if present, but does not block if missing or invalid.
  */
-export function optionalToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
-
+export async function optionalToken(req: Request, res: Response, next: NextFunction) {
+  const token = bearerToken(req);
   if (token) {
-    try {
-      req.user = jwt.verify(token, JWT_SECRET) as TokenPayload;
-    } catch {
-      // Ignored for optional identification
-    }
+    const decoded = await resolveToken(token);
+    if (decoded) req.user = decoded;
   }
   next();
 }
