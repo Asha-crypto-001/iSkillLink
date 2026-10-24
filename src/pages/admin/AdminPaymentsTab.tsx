@@ -26,7 +26,7 @@ export const AdminPaymentsTab: React.FC<AdminPaymentsTabProps> = ({
     return (
       <button
         onClick={() => onReleasePayout(p, booking)}
-        className="px-3 min-h-[36px] bg-forest-700 hover:bg-forest-800 text-white font-bold rounded-control text-xs whitespace-nowrap"
+        className="px-3 min-h-[44px] md:min-h-[36px] bg-forest-700 hover:bg-forest-800 text-white font-bold rounded-control text-xs whitespace-nowrap"
       >
         Release {formatUGX(p.payout_amount_ugx)}
       </button>

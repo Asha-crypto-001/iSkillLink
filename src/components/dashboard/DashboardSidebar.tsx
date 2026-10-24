@@ -45,13 +45,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ items, role,
       )}
     >
       <div className="flex h-20 items-center justify-between border-b border-ink-200 px-6">
-        <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2 rounded-control focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Go to home">
+        <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2 min-h-[44px] rounded-control focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Go to home">
           <span className="grid h-9 w-9 place-items-center rounded-control border border-ink-200 bg-white p-1 shadow-soft">
             <img src={logoUrl} alt="" className="h-full w-full object-contain" aria-hidden="true" />
           </span>
           <span className="font-display text-lg font-bold tracking-tight text-ink-950">iSkillLink</span>
         </button>
-        <button type="button" onClick={onClose} className="rounded-control p-2 text-ink-500 hover:bg-ink-100 lg:hidden" aria-label="Close navigation">
+        <button type="button" onClick={onClose} className="rounded-control p-3 text-ink-500 hover:bg-ink-100 lg:hidden" aria-label="Close navigation">
           <X className="h-5 w-5" />
         </button>
       </div>

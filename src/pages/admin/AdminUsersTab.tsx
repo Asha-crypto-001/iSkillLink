@@ -62,11 +62,11 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
     const isFounder = u.role === 'admin';
     if (!isLeadAdmin || isFounder) return null;
     return u.role === 'secondary_admin' ? (
-      <button onClick={() => onRevokeSecondaryAdmin(u)} className="px-3 min-h-[36px] rounded-control border border-rose-200 text-rose-800 hover:bg-rose-50 text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap">
+      <button onClick={() => onRevokeSecondaryAdmin(u)} className="px-3 min-h-[44px] md:min-h-[36px] rounded-control border border-rose-200 text-rose-800 hover:bg-rose-50 text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap">
         <UserMinus className="w-3.5 h-3.5" aria-hidden="true" /> Remove admin
       </button>
     ) : (
-      <button onClick={() => onAssignSecondaryAdmin(u)} className="px-3 min-h-[36px] rounded-control border border-ink-200 text-ink-800 hover:bg-ink-50 text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap">
+      <button onClick={() => onAssignSecondaryAdmin(u)} className="px-3 min-h-[44px] md:min-h-[36px] rounded-control border border-ink-200 text-ink-800 hover:bg-ink-50 text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap">
         <UserPlus className="w-3.5 h-3.5" aria-hidden="true" /> Make admin
       </button>
     );
@@ -74,7 +74,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
   const contactLinks = (u: any) => {
     const wa = whatsappNumber(u.phone);
-    const link = 'w-9 h-9 rounded-control border border-ink-200 hover:bg-ink-50 inline-flex items-center justify-center text-ink-700';
+    const link = 'w-11 h-11 md:w-9 md:h-9 rounded-control border border-ink-200 hover:bg-ink-50 inline-flex items-center justify-center text-ink-700';
     return (
       <div className="flex items-center gap-1.5">
         {u.phone && <a href={`tel:${u.phone}`} className={link} aria-label={`Call ${u.name}`} title={u.phone}><Phone className="w-4 h-4" aria-hidden="true" /></a>}
@@ -95,7 +95,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             value={userSearchQuery}
             onChange={(e) => setUserSearchQuery(e.target.value)}
             placeholder="Name, phone, email or trade"
-            className="w-full text-sm min-h-[44px] pl-9 pr-3 rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 bg-white"
+            className="w-full text-base sm:text-sm min-h-[44px] pl-9 pr-3 rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 bg-white"
           />
         </label>
 
@@ -105,7 +105,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
               key={id}
               onClick={() => setUserRoleFilter(id)}
               aria-pressed={userRoleFilter === id}
-              className={`px-3 min-h-[36px] rounded-[9px] whitespace-nowrap transition ${userRoleFilter === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+              className={`px-3 min-h-[44px] md:min-h-[36px] rounded-[9px] whitespace-nowrap transition ${userRoleFilter === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
             >
               {id === 'all' ? 'Everyone' : id === 'admin' ? 'Lead admin' : ROLE_LABELS[id] + 's'} <span className="text-ink-500">{counts[id]}</span>
             </button>

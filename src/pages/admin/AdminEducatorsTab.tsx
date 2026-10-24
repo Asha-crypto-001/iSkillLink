@@ -58,7 +58,7 @@ export const AdminEducatorsTab: React.FC<AdminEducatorsTabProps> = ({ educators 
             key={id}
             onClick={() => setGroup(id)}
             aria-pressed={group === id}
-            className={`px-3 min-h-[40px] rounded-[9px] whitespace-nowrap transition ${group === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+            className={`px-3 min-h-[44px] md:min-h-[40px] rounded-[9px] whitespace-nowrap transition ${group === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
           >
             {GROUP_LABELS[id]} <span className="text-ink-500">{counts[id]}</span>
           </button>

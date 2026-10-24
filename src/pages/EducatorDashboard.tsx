@@ -400,7 +400,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                         key={pct}
                         onClick={() => handleUpdateProgress(b.id, pct)}
                         aria-pressed={b.milestone_progress === pct}
-                        className={`px-3 min-h-[40px] rounded-control text-xs font-bold transition border ${
+                        className={`px-3 min-h-[44px] md:min-h-[40px] rounded-control text-xs font-bold transition border ${
                           b.milestone_progress === pct
                             ? 'bg-forest-700 text-white border-forest-700'
                             : 'bg-white text-ink-700 border-ink-200 hover:bg-ink-50'
@@ -633,7 +633,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                       value={replyText[r.id] || ''}
                       onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
                       placeholder="Reply publicly — thank them, or answer a concern"
-                      className="flex-1 text-sm px-3 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700"
+                      className="flex-1 text-base sm:text-sm px-3 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700"
                     />
                     <button
                       onClick={() => handleReplyReview(r.id)}
@@ -661,7 +661,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                 <button
                   type="button"
                   onClick={() => setShowPhotoModal(true)}
-                  className="px-3.5 min-h-[40px] rounded-control border border-ink-200 bg-white text-ink-800 text-xs font-bold hover:bg-ink-50 inline-flex items-center gap-1.5"
+                  className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-control border border-ink-200 bg-white text-ink-800 text-xs font-bold hover:bg-ink-50 inline-flex items-center gap-1.5"
                 >
                   <Camera className="w-3.5 h-3.5" aria-hidden="true" />
                   {user?.avatar_url ? 'Change photo' : 'Add a photo'}

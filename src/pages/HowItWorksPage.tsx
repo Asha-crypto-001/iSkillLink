@@ -37,7 +37,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
         </p>
         <nav aria-label="On this page" className="flex flex-wrap gap-2 pt-2 text-sm">
           {[['#money', 'Where your money goes'], ['#learners', 'If you want to learn'], ['#educators', 'If you want to teach'], ['#checks', 'How we check educators']].map(([href, label]) => (
-            <a key={href} href={href} className="px-3 min-h-[40px] inline-flex items-center rounded-pill border border-ink-200 bg-white hover:border-ink-400 text-ink-800 font-medium">{label}</a>
+            <a key={href} href={href} className="px-3 min-h-[44px] md:min-h-[40px] inline-flex items-center rounded-pill border border-ink-200 bg-white hover:border-ink-400 text-ink-800 font-medium">{label}</a>
           ))}
         </nav>
       </header>

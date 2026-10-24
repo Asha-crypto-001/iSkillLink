@@ -112,7 +112,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               <select
                 value={skillRating}
                 onChange={(e) => setSkillRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-base sm:text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Master</option>
                 <option value={4}>4★ High</option>
@@ -124,7 +124,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               <select
                 value={punctualityRating}
                 onChange={(e) => setPunctualityRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-base sm:text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ On Time</option>
                 <option value={4}>4★ Minor delay</option>
@@ -136,7 +136,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               <select
                 value={communicationRating}
                 onChange={(e) => setCommunicationRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-base sm:text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Clear</option>
                 <option value={4}>4★ Good</option>
@@ -155,7 +155,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Describe what practical skills you practiced, how well the educator explained steps, and what you created..."
-              className="w-full text-[14px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
+              className="w-full text-base sm:text-[14px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
               required
             />
           </div>

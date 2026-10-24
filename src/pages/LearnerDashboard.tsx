@@ -662,7 +662,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   onChange={(e) => setNewMessageText(e.target.value)}
                   placeholder={selectedRecipientId ? 'Type your message...' : 'Book a session to message an instructor'}
                   disabled={!selectedRecipientId}
-                  className="flex-1 text-xs p-2.5 rounded-lg border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 disabled:bg-ink-50"
+                  className="flex-1 text-base sm:text-xs p-2.5 rounded-lg border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 disabled:bg-ink-50"
                 />
                 <button
                   type="submit"
@@ -688,7 +688,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setShowPhotoModal(true)}
-                className="px-3.5 min-h-[40px] rounded-control border border-ink-200 bg-white text-ink-800 text-xs font-bold hover:bg-ink-50 inline-flex items-center gap-1.5"
+                className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-control border border-ink-200 bg-white text-ink-800 text-xs font-bold hover:bg-ink-50 inline-flex items-center gap-1.5"
               >
                 <Camera className="w-3.5 h-3.5" aria-hidden="true" />
                 {user?.avatar_url ? 'Change photo' : 'Add a photo'}

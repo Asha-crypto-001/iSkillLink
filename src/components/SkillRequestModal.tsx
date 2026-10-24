@@ -223,7 +223,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                     min={30000}
                     value={budgetUGX}
                     onChange={(e) => setBudgetUGX(Number(e.target.value))}
-                    className="w-24 bg-transparent focus:outline-none font-semibold text-ink-900"
+                    className="w-24 bg-transparent focus:outline-none text-base sm:text-sm font-semibold text-ink-900"
                     aria-label="Budget in UGX"
                     required
                   />

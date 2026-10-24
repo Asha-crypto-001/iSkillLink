@@ -64,7 +64,7 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
                 </div>
                 <button
                   onClick={() => onNavigateTab(item.tab)}
-                  className="self-start sm:self-auto shrink-0 px-3 min-h-[40px] rounded-control border border-ink-200 hover:bg-ink-50 text-xs font-bold text-ink-800 inline-flex items-center gap-1"
+                  className="self-start sm:self-auto shrink-0 px-3 min-h-[44px] md:min-h-[40px] rounded-control border border-ink-200 hover:bg-ink-50 text-xs font-bold text-ink-800 inline-flex items-center gap-1"
                 >
                   {item.actionLabel} <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
@@ -84,7 +84,7 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
       <section aria-labelledby="recent-heading" className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
         <div className="flex items-center justify-between">
           <h2 id="recent-heading" className="text-base font-bold text-ink-900">Recent activity</h2>
-          <button onClick={() => onNavigateTab('audit')} className="text-xs font-bold text-forest-700 hover:text-forest-800 min-h-[40px]">
+          <button onClick={() => onNavigateTab('audit')} className="text-xs font-bold text-forest-700 hover:text-forest-800 min-h-[44px] md:min-h-[40px]">
             Full audit trail
           </button>
         </div>

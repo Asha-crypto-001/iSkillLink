@@ -34,7 +34,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
     }
   };
 
-  const linkClass = 'hover:text-white transition rounded-control';
+  const linkClass = 'inline-flex items-center min-h-[44px] md:min-h-0 hover:text-white transition rounded-control';
 
   return (
     <footer className="bg-ink-950 text-ink-300 border-t border-ink-800">
@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             <p className="text-sm text-ink-400 leading-relaxed max-w-sm">
               Hands-on lessons from people who do the work — tailors, electricians, bakers and technicians in Mbarara and across Uganda.
             </p>
-            <ul className="space-y-2 text-sm text-ink-400">
+            <ul className="md:space-y-2 text-sm text-ink-400">
               <li className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-forest-400 shrink-0" aria-hidden="true" />
                 Mbarara City, Uganda
@@ -74,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           {/* Trades */}
           <nav className="md:col-span-2" aria-labelledby="footer-trades">
             <h3 id="footer-trades" className="text-sm font-semibold text-white mb-3">Learn a trade</h3>
-            <ul className="space-y-2 text-sm text-ink-400">
+            <ul className="md:space-y-2 text-sm text-ink-400">
               {TRADE_LINKS.map(link => (
                 <li key={link.categoryId}>
                   <Link to={`/find-skill?category=${link.categoryId}`} className={linkClass}>{link.label}</Link>
@@ -86,7 +86,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           {/* Platform */}
           <nav className="md:col-span-2" aria-labelledby="footer-platform">
             <h3 id="footer-platform" className="text-sm font-semibold text-white mb-3">iSkillLink</h3>
-            <ul className="space-y-2 text-sm text-ink-400">
+            <ul className="md:space-y-2 text-sm text-ink-400">
               <li><button onClick={() => setCurrentView('how-it-works')} className={linkClass}>How it works</button></li>
               <li><button onClick={() => setCurrentView('become-educator')} className={linkClass}>Teach on iSkillLink</button></li>
               <li><button onClick={() => setCurrentView('about')} className={linkClass}>About us</button></li>
@@ -115,7 +115,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                   onChange={(e) => setFooterEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="flex-1 min-w-0 text-sm px-3 min-h-[44px] rounded-control bg-ink-900 border border-ink-700 text-white placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-forest-500"
+                  className="flex-1 min-w-0 text-base sm:text-sm px-3 min-h-[44px] rounded-control bg-ink-900 border border-ink-700 text-white placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-forest-500"
                 />
                 <button
                   type="submit"

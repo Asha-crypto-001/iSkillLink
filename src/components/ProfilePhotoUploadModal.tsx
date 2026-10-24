@@ -231,7 +231,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     placeholder="https://example.com/my-photo.jpg"
-                    className="flex-1 p-2 rounded-lg border border-ink-300 text-xs focus:ring-2 focus:ring-forest-600 focus:outline-none"
+                    className="flex-1 p-2 rounded-lg border border-ink-300 text-base sm:text-xs focus:ring-2 focus:ring-forest-600 focus:outline-none"
                   />
                   <button
                     type="button"

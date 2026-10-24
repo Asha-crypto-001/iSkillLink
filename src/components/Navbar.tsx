@@ -145,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="hidden sm:flex items-center gap-2">
                 <button
                   onClick={onOpenSkillRequest}
-                  className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[14px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                  className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 min-h-[44px] md:min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[14px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-forest-600" aria-hidden="true" />
                   <span>Custom Request</span>
@@ -242,10 +242,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[40px] whitespace-nowrap text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700">
+                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[44px] md:min-h-[40px] whitespace-nowrap text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700">
                       Sign In
                     </button>
-                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[40px] whitespace-nowrap text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700">
+                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[44px] md:min-h-[40px] whitespace-nowrap text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700">
                       <span>Get Started</span>
                       <ArrowRight className="w-4 h-4 text-white/90" aria-hidden="true" />
                     </button>
@@ -299,7 +299,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <div className="text-xs font-bold text-forest-700 uppercase tracking-wide">{user.role} Portal</div>
                       </div>
                     </div>
-                    <button onClick={() => { setShowPhotoModal(true); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white border border-ink-200 rounded-xl text-xs font-bold text-ink-700 flex items-center gap-1.5 shadow-soft min-h-[40px] focus-visible:ring-2 focus-visible:ring-forest-700">
+                    <button onClick={() => { setShowPhotoModal(true); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white border border-ink-200 rounded-xl text-xs font-bold text-ink-700 flex items-center gap-1.5 shadow-soft min-h-[44px] md:min-h-[40px] focus-visible:ring-2 focus-visible:ring-forest-700">
                       <Camera className="w-3.5 h-3.5 text-forest-700" aria-hidden="true" />
                       <span>Photo</span>
                     </button>

@@ -173,7 +173,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <button
                       key={outcome.label}
                       onClick={() => navigate(`/find-skill?search=${encodeURIComponent(outcome.search)}`)}
-                      className="px-3.5 min-h-[40px] rounded-pill bg-ink-50 hover:bg-forest-50 hover:border-forest-200 border border-ink-200 text-ink-800 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                      className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill bg-ink-50 hover:bg-forest-50 hover:border-forest-200 border border-ink-200 text-ink-800 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-forest-700"
                     >
                       {outcome.label}
                     </button>
@@ -189,7 +189,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     {reviews.length > 0 && <> · <strong className="font-semibold text-ink-900">{reviews.length}</strong> {reviews.length === 1 ? 'review' : 'reviews'} from finished sessions</>}
                   </p>
                 )}
-                <button onClick={onOpenSkillRequest} className="self-start font-semibold text-forest-700 hover:text-forest-800 underline underline-offset-4 decoration-forest-200 hover:decoration-forest-700">
+                <button onClick={onOpenSkillRequest} className="self-start min-h-[44px] text-left font-semibold text-forest-700 hover:text-forest-800 underline underline-offset-4 decoration-forest-200 hover:decoration-forest-700">
                   Can’t find it? Tell us what you want to learn
                 </button>
               </div>
@@ -276,7 +276,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <Alert>
             <span className="flex flex-wrap items-center justify-between gap-2">
               {loadError}
-              <button onClick={() => window.location.reload()} className="px-3 min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Try again</button>
+              <button onClick={() => window.location.reload()} className="px-3 min-h-[44px] md:min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Try again</button>
             </span>
           </Alert>
         ) : (
@@ -344,7 +344,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   role="tab"
                   aria-selected={howTab === key}
                   onClick={() => setHowTab(key)}
-                  className={`px-4 min-h-[40px] rounded-[9px] transition ${howTab === key ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+                  className={`px-4 min-h-[44px] md:min-h-[40px] rounded-[9px] transition ${howTab === key ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
                 >
                   {label}
                 </button>

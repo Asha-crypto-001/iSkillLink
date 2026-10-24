@@ -133,7 +133,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); }}
-            className={`flex-1 py-2 rounded-lg transition ${
+            className={`flex-1 min-h-[44px] rounded-lg transition ${
               mode === 'login' ? 'bg-white text-ink-900 shadow-level-1' : 'text-ink-500 hover:text-ink-900'
             }`}
           >
@@ -142,7 +142,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           <button
             type="button"
             onClick={() => { setMode('register'); setErrorMsg(''); }}
-            className={`flex-1 py-2 rounded-lg transition ${
+            className={`flex-1 min-h-[44px] rounded-lg transition ${
               mode === 'register' ? 'bg-white text-ink-900 shadow-level-1' : 'text-ink-500 hover:text-ink-900'
             }`}
           >

@@ -197,7 +197,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           id={`${idPrefix}-category`}
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full text-sm rounded-control border-ink-200 border px-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+          className="w-full text-base sm:text-sm rounded-control border-ink-200 border px-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
         >
           <option value="all">All trades</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -292,7 +292,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
               id="sort-educators"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="w-full sm:w-auto text-sm font-semibold px-3 min-h-[48px] rounded-control border border-ink-200 bg-white text-ink-800 focus:outline-none focus:ring-2 focus:ring-forest-700"
+              className="w-full sm:w-auto text-base sm:text-sm font-semibold px-3 min-h-[48px] rounded-control border border-ink-200 bg-white text-ink-800 focus:outline-none focus:ring-2 focus:ring-forest-700"
             >
               <option value="relevance">Recommended</option>
               <option value="rating">Highest rated</option>
@@ -323,7 +323,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
                 key={place.value}
                 onClick={() => { setSelectedLocation(place.value); if (selectedFormat === 'online') setSelectedFormat('all'); }}
                 aria-pressed={active}
-                className={`shrink-0 px-3.5 min-h-[40px] rounded-pill border text-sm font-medium transition ${active ? 'bg-ink-900 border-ink-900 text-white' : 'bg-white border-ink-200 text-ink-700 hover:border-ink-400'}`}
+                className={`shrink-0 px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill border text-sm font-medium transition ${active ? 'bg-ink-900 border-ink-900 text-white' : 'bg-white border-ink-200 text-ink-700 hover:border-ink-400'}`}
               >
                 {place.label}
               </button>
@@ -332,7 +332,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           <button
             onClick={() => { setSelectedFormat('online'); setSelectedLocation('all'); }}
             aria-pressed={selectedFormat === 'online'}
-            className={`shrink-0 px-3.5 min-h-[40px] rounded-pill border text-sm font-medium transition ${selectedFormat === 'online' ? 'bg-ink-900 border-ink-900 text-white' : 'bg-white border-ink-200 text-ink-700 hover:border-ink-400'}`}
+            className={`shrink-0 px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill border text-sm font-medium transition ${selectedFormat === 'online' ? 'bg-ink-900 border-ink-900 text-white' : 'bg-white border-ink-200 text-ink-700 hover:border-ink-400'}`}
           >
             Online
           </button>
@@ -344,7 +344,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             {activeChips.map(chip => (
               <span key={chip.key} className="inline-flex items-center gap-1 pl-3 pr-1 min-h-[32px] rounded-pill bg-forest-50 text-forest-800 border border-forest-200 text-xs font-semibold">
                 {chip.label}
-                <button onClick={chip.clear} className="w-7 h-7 flex items-center justify-center hover:bg-forest-100 rounded-full" aria-label={`Remove filter: ${chip.label}`}>
+                <button onClick={chip.clear} className="relative w-7 h-7 flex items-center justify-center hover:bg-forest-100 rounded-full after:absolute after:-inset-2 after:content-['']" aria-label={`Remove filter: ${chip.label}`}>
                   <X className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </span>
@@ -414,7 +414,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             <Alert>
               <span className="flex flex-wrap items-center justify-between gap-2">
                 Couldn’t load educators. {loadError}
-                <button onClick={fetchEducators} className="px-3 min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Try again</button>
+                <button onClick={fetchEducators} className="px-3 min-h-[44px] md:min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Try again</button>
               </span>
             </Alert>
           ) : loading ? (

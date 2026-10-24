@@ -668,7 +668,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     value={qualificationTitle}
                     onChange={(e) => setQualificationTitle(e.target.value)}
                     placeholder="e.g. DIT Master Artisan Trade Test 1 (Tailoring)"
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
+                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
                   />
                 </div>
                 <div>
@@ -677,7 +677,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     type="number"
                     value={qualificationYear}
                     onChange={(e) => setQualificationYear(Number(e.target.value))}
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
+                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
                   />
                 </div>
                 <div className="sm:col-span-3">
@@ -687,7 +687,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     value={qualificationInstitution}
                     onChange={(e) => setQualificationInstitution(e.target.value)}
                     placeholder="e.g. Directorate of Industrial Training (DIT) Uganda"
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
+                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
                   />
                 </div>
               </div>
@@ -706,7 +706,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     value={portfolioTitle}
                     onChange={(e) => setPortfolioTitle(e.target.value)}
                     placeholder="e.g. Bespoke 3-Piece Linen Groom Suit"
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
+                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
                   />
                 </div>
                 <div>
@@ -716,7 +716,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     value={portfolioImageUrl}
                     onChange={(e) => setPortfolioImageUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
+                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -726,7 +726,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     value={portfolioDescription}
                     onChange={(e) => setPortfolioDescription(e.target.value)}
                     placeholder="e.g. Hand-tailored canvas interlining and custom lapel stitch finish."
-                    className="w-full text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
+                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
                   />
                 </div>
               </div>
@@ -742,7 +742,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                 value={referenceContact}
                 onChange={(e) => setReferenceContact(e.target.value)}
                 placeholder="e.g. Charles Ssemakula (Workshop Chairman Kiyembe) - 0772 334 112"
-                className="w-full text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900"
+                className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900"
               />
             </div>
 
@@ -888,7 +888,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   type="button"
                   onClick={() => setCalcHoursPerWeek(hours)}
                   aria-pressed={calcHoursPerWeek === hours}
-                  className={`min-h-[40px] rounded-control border text-sm font-semibold ${calcHoursPerWeek === hours ? 'bg-forest-50 border-forest-600 text-forest-900' : 'border-ink-200 text-ink-700 hover:bg-ink-50'}`}
+                  className={`min-h-[44px] md:min-h-[40px] rounded-control border text-sm font-semibold ${calcHoursPerWeek === hours ? 'bg-forest-50 border-forest-600 text-forest-900' : 'border-ink-200 text-ink-700 hover:bg-ink-50'}`}
                 >
                   {hours} hrs
                 </button>

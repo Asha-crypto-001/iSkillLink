@@ -99,7 +99,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                         ) : (
                           <button
                             onClick={() => onVerifyStep(edu.id, step.key)}
-                            className="w-full py-1.5 text-[12px] font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded border border-forest-200 transition"
+                            className="w-full min-h-[44px] md:min-h-[36px] text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded-control border border-forest-200 transition"
                           >
                             {step.adminAction}
                           </button>
