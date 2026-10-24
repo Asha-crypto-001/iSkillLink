@@ -12,6 +12,7 @@ import {
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { EducatorCardSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Alert } from '../components/ui/Alert';
 
 interface FindSkillPageProps {
   initialCategoryId?: string;
@@ -30,6 +31,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
   const [educators, setEducators] = useState<Educator[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Initialize from URL or prop
   const getInitial = (key: string, fallback: string) => searchParams.get(key) || fallback;
@@ -48,16 +50,25 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
   const [sortOption, setSortOption] = useState<string>(getInitial('sort', 'relevance'));
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const ugandanLocations = [
-    { value: 'all', label: 'All Locations in Uganda' },
-    { value: 'mbarara', label: 'Mbarara City (HQ & Central)' },
-    { value: 'kakoba', label: 'Kakoba / Kamukuzi (Mbarara)' },
-    { value: 'ruharo', label: 'Ruharo / Booma (Mbarara)' },
-    { value: 'kampala', label: 'Kampala & Central Region' },
-    { value: 'entebbe', label: 'Entebbe' },
-    { value: 'jinja', label: 'Jinja' },
-    { value: 'wakiso', label: 'Wakiso' },
-    { value: 'online', label: 'Online Remote Mentoring' }
+  // Places people actually say when asked where they are; matched against educators' locations.
+  const places = [
+    { value: 'all', label: 'Anywhere' },
+    { value: 'kakoba', label: 'Kakoba' },
+    { value: 'kamukuzi', label: 'Kamukuzi' },
+    { value: 'nyamitanga', label: 'Nyamitanga' },
+    { value: 'ruharo', label: 'Ruharo' },
+    { value: 'kampala', label: 'Kampala' }
+  ];
+  const pricePresets = [
+    { value: 60000, label: 'Any', spoken: 'Any price' },
+    { value: 40000, label: '≤ 40k', spoken: 'Up to UGX 40,000 per hour' },
+    { value: 25000, label: '≤ 25k', spoken: 'Up to UGX 25,000 per hour' }
+  ];
+  const formatOptions = [
+    { id: 'all', label: 'Any way' },
+    { id: 'in-person', label: 'At their workshop' },
+    { id: 'hybrid', label: 'Mix of online and workshop' },
+    { id: 'online', label: 'Online' }
   ];
 
   // Body scroll lock when mobile filter drawer is open (3.4)
@@ -113,6 +124,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
   const fetchEducators = async () => {
     try {
       setLoading(true);
+      setLoadError('');
       const data = await api.getEducators({
         search: debouncedSearch || undefined,
         category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
@@ -123,8 +135,10 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
         sort: sortOption
       });
       setEducators(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching educators:', err);
+      setLoadError(err.message || 'Could not load educators.');
+      setEducators([]);
     } finally {
       setLoading(false);
     }
@@ -165,34 +179,106 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
     maxPrice < 60000 ||
     minRating > 0;
 
+  const activeChips = [
+    search && { key: 'search', label: `“${search}”`, clear: () => setSearch('') },
+    selectedCategory !== 'all' && { key: 'category', label: categories.find(c => c.id === selectedCategory)?.name || selectedCategory, clear: () => setSelectedCategory('all') },
+    selectedFormat !== 'all' && selectedFormat !== 'online' && { key: 'format', label: formatOptions.find(f => f.id === selectedFormat)?.label || selectedFormat, clear: () => setSelectedFormat('all') },
+    maxPrice < 60000 && { key: 'price', label: `Up to ${formatUGX(maxPrice)}/hr`, clear: () => setMaxPrice(60000) },
+    minRating > 0 && { key: 'rating', label: `${minRating}★ and up`, clear: () => setMinRating(0) }
+  ].filter(Boolean) as Array<{ key: string; label: string; clear: () => void }>;
+  // Only offer a rating filter once some results actually have ratings.
+  const showRatingFilter = minRating > 0 || educators.some(e => e.rating > 0);
+
+  const filterControls = (idPrefix: string) => (
+    <>
+      <div>
+        <label htmlFor={`${idPrefix}-category`} className="block text-sm font-bold text-ink-800 mb-2">Trade</label>
+        <select
+          id={`${idPrefix}-category`}
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full text-sm rounded-control border-ink-200 border px-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+        >
+          <option value="all">All trades</option>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </div>
+
+      <fieldset>
+        <legend className="block text-sm font-bold text-ink-800 mb-2">How you’ll learn</legend>
+        <div className="space-y-1.5 text-sm">
+          {formatOptions.map(f => (
+            <label key={f.id} className="flex items-center gap-2.5 px-2.5 min-h-[44px] rounded-control hover:bg-ink-50 cursor-pointer border border-transparent has-[input:checked]:bg-forest-50 has-[input:checked]:border-forest-200 transition">
+              <input type="radio" name={`${idPrefix}-format`} checked={selectedFormat === f.id} onChange={() => setSelectedFormat(f.id)} className="text-forest-700 focus:ring-forest-500 w-4 h-4" />
+              <span className={selectedFormat === f.id ? 'font-bold text-ink-900' : 'text-ink-700'}>{f.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="block text-sm font-bold text-ink-800 mb-2">Price per hour</legend>
+        <div className="grid grid-cols-3 gap-2 text-sm">
+          {pricePresets.map(preset => (
+            <button
+              key={preset.value}
+              type="button"
+              onClick={() => setMaxPrice(preset.value)}
+              aria-pressed={maxPrice === preset.value}
+              aria-label={preset.spoken}
+              className={`px-2 min-h-[44px] whitespace-nowrap rounded-control border text-center font-semibold transition ${maxPrice === preset.value ? 'bg-forest-50 border-forest-300 text-forest-900' : 'border-ink-200 text-ink-700 hover:bg-ink-50'}`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      {showRatingFilter && (
+        <fieldset>
+          <legend className="block text-sm font-bold text-ink-800 mb-2">Rating</legend>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            {[{ val: 0, label: 'Any' }, { val: 4.5, label: '4.5★ +' }, { val: 4.8, label: '4.8★ +' }].map(r => (
+              <button
+                key={r.val}
+                type="button"
+                onClick={() => setMinRating(r.val)}
+                aria-pressed={minRating === r.val}
+                className={`px-2 min-h-[44px] rounded-control border text-center font-semibold transition ${minRating === r.val ? 'bg-forest-50 border-forest-300 text-forest-900' : 'border-ink-200 text-ink-700 hover:bg-ink-50'}`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+    </>
+  );
+
   return (
     <div className="container-app py-6 space-y-6">
       <Breadcrumbs items={[{ label: 'Explore Skills', to: '/find-skill' }]} />
-      <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-4">
+      <div className="space-y-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight font-display">
-            Find a Verified Skill Educator
-          </h1>
-          <p className="text-[14px] sm:text-body-sm text-ink-600 mt-1">
-            Browse vetted master artisans, practical technicians, and trainers in Mbarara and across Uganda.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 font-display">Find someone to learn from</h1>
+          <p className="text-sm text-ink-600 mt-1">Educators in Mbarara and across Uganda, each checked by our team before taking bookings.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
+            <Search className="w-5 h-5 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search skill, educator, keyword (e.g. Tailoring, Solar, React)..."
-              className="w-full text-[14px] sm:text-sm pl-10 pr-10 py-2.5 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 bg-white placeholder:text-ink-400"
+              placeholder="A trade, a skill or a name — e.g. tailoring, solar, Grace"
+              className="w-full text-base pl-11 pr-12 min-h-[48px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 bg-white placeholder:text-ink-500"
               aria-label="Search educators"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-control text-ink-400 hover:text-ink-700 hover:bg-ink-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-control text-ink-500 hover:text-ink-800 hover:bg-ink-50 w-11 h-11 flex items-center justify-center"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -201,65 +287,71 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            <label htmlFor="sort-educators" className="sr-only">Sort educators</label>
             <select
+              id="sort-educators"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="w-full sm:w-auto text-xs font-semibold px-3 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-ink-800 focus:outline-none focus:ring-2 focus:ring-forest-700"
-              aria-label="Sort educators"
+              className="w-full sm:w-auto text-sm font-semibold px-3 min-h-[48px] rounded-control border border-ink-200 bg-white text-ink-800 focus:outline-none focus:ring-2 focus:ring-forest-700"
             >
-              <option value="relevance">Recommended & Featured</option>
-              <option value="rating">Highest Rating (5★ first)</option>
-              <option value="experience">Years of Experience</option>
-              <option value="price_asc">Price (Low to High)</option>
-              <option value="price_desc">Price (High to Low)</option>
+              <option value="relevance">Recommended</option>
+              <option value="rating">Highest rated</option>
+              <option value="experience">Most experienced</option>
+              <option value="price_asc">Lowest price</option>
+              <option value="price_desc">Highest price</option>
             </select>
 
             <button
               onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-              className="lg:hidden inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-ink-800 text-[14px] font-bold shadow-soft hover:bg-ink-50 shrink-0"
+              className="lg:hidden inline-flex items-center justify-center gap-1.5 px-4 min-h-[48px] rounded-control border border-ink-200 bg-white text-ink-800 text-sm font-bold hover:bg-ink-50 shrink-0"
               aria-expanded={mobileFiltersOpen}
               aria-haspopup="dialog"
-              aria-label="Open filters"
             >
-              <Filter className="w-4 h-4 text-forest-700" />
+              <Filter className="w-4 h-4 text-forest-700" aria-hidden="true" />
               <span>Filters</span>
             </button>
           </div>
         </div>
 
-        {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-ink-100 text-[14px]">
-            <span className="text-ink-500 font-semibold">Active:</span>
-            {selectedCategory !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[32px] rounded-pill bg-forest-50 text-forest-800 border border-forest-200 text-xs font-semibold">
-                <span>Cat: {categories.find(c => c.id === selectedCategory)?.name || selectedCategory}</span>
-                <button onClick={() => setSelectedCategory('all')} className="p-1 -mr-1 hover:bg-forest-100 rounded-full" aria-label="Clear category filter"><X className="w-3.5 h-3.5" /></button>
+        {/* Where — the most local filter, one tap, always visible */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0" role="group" aria-label="Where">
+          <span className="text-sm font-semibold text-ink-700 shrink-0">Where:</span>
+          {places.map(place => {
+            const active = selectedLocation === place.value && selectedFormat !== 'online';
+            return (
+              <button
+                key={place.value}
+                onClick={() => { setSelectedLocation(place.value); if (selectedFormat === 'online') setSelectedFormat('all'); }}
+                aria-pressed={active}
+                className={`shrink-0 px-3.5 min-h-[40px] rounded-pill border text-sm font-medium transition ${active ? 'bg-ink-900 border-ink-900 text-white' : 'bg-white border-ink-200 text-ink-700 hover:border-ink-400'}`}
+              >
+                {place.label}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => { setSelectedFormat('online'); setSelectedLocation('all'); }}
+            aria-pressed={selectedFormat === 'online'}
+            className={`shrink-0 px-3.5 min-h-[40px] rounded-pill border text-sm font-medium transition ${selectedFormat === 'online' ? 'bg-ink-900 border-ink-900 text-white' : 'bg-white border-ink-200 text-ink-700 hover:border-ink-400'}`}
+          >
+            Online
+          </button>
+        </div>
+
+        {activeChips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-ink-600">Filtered by:</span>
+            {activeChips.map(chip => (
+              <span key={chip.key} className="inline-flex items-center gap-1 pl-3 pr-1 min-h-[32px] rounded-pill bg-forest-50 text-forest-800 border border-forest-200 text-xs font-semibold">
+                {chip.label}
+                <button onClick={chip.clear} className="w-7 h-7 flex items-center justify-center hover:bg-forest-100 rounded-full" aria-label={`Remove filter: ${chip.label}`}>
+                  <X className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
               </span>
-            )}
-            {selectedFormat !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[32px] rounded-pill bg-forest-50 text-forest-800 border border-forest-200 capitalize text-xs font-semibold">
-                <span>{selectedFormat}</span>
-                <button onClick={() => setSelectedFormat('all')} className="p-1 -mr-1 hover:bg-forest-100 rounded-full" aria-label="Clear format filter"><X className="w-3.5 h-3.5" /></button>
-              </span>
-            )}
-            {selectedLocation !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[32px] rounded-pill bg-forest-50 text-forest-800 border border-forest-200 capitalize text-xs font-semibold">
-                <span>{selectedLocation}</span>
-                <button onClick={() => setSelectedLocation('all')} className="p-1 -mr-1 hover:bg-forest-100 rounded-full" aria-label="Clear location filter"><X className="w-3.5 h-3.5" /></button>
-              </span>
-            )}
-            {minRating > 0 && (
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[32px] rounded-pill bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold">
-                <span>{minRating}★+</span>
-                <button onClick={() => setMinRating(0)} className="p-1 -mr-1 hover:bg-amber-100 rounded-full" aria-label="Clear rating filter"><X className="w-3.5 h-3.5" /></button>
-              </span>
-            )}
-            <button
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1 text-ink-600 hover:text-ink-900 font-bold ml-auto text-xs min-h-[44px] px-3 py-2"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset All</span>
+            ))}
+            <button onClick={resetFilters} className="inline-flex items-center gap-1 text-ink-600 hover:text-ink-900 font-semibold text-xs min-h-[44px] px-2">
+              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+              Clear all
             </button>
           </div>
         )}
@@ -278,47 +370,11 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
               <button onClick={() => setMobileFiltersOpen(false)} className="p-2 rounded-control hover:bg-ink-50 text-ink-600 min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Close filters"><X className="w-5 h-5" /></button>
             </div>
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 overscroll-contain">
-              <div>
-                <label className="block text-[14px] font-bold text-ink-800 mb-2">Skill Category</label>
-                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full text-[14px] min-h-[44px] rounded-control border border-ink-200 p-2.5 bg-white focus:ring-2 focus:ring-forest-700">
-                  <option value="all">All Skill Categories</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-[14px] font-bold text-ink-800 mb-2">Learning Format</label>
-                <div className="space-y-2 text-[14px]">
-                  {[{id:'all',label:'All Formats'},{id:'in-person',label:'In-Person Workshop'},{id:'hybrid',label:'Hybrid'},{id:'online',label:'Online Live'}].map(f => (
-                    <label key={f.id} className="flex items-center gap-3 p-3 rounded-control border hover:bg-ink-50 cursor-pointer min-h-[44px] transition">
-                      <input type="radio" name="format-mobile" checked={selectedFormat===f.id} onChange={()=>setSelectedFormat(f.id)} className="text-forest-700 focus:ring-forest-700 w-4 h-4" />
-                      <span className={selectedFormat===f.id?'font-bold text-ink-900':'text-ink-600'}>{f.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[14px] font-bold text-ink-800 mb-2">Service Location</label>
-                <select value={selectedLocation} onChange={(e)=>setSelectedLocation(e.target.value)} className="w-full text-[14px] min-h-[44px] rounded-control border border-ink-200 p-2.5 bg-white focus:ring-2 focus:ring-forest-700">
-                  {ugandanLocations.map(loc => <option key={loc.value} value={loc.value}>{loc.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <div className="flex justify-between items-center text-[14px] mb-2"><span className="font-bold text-ink-800">Max Hourly Rate</span><span className="font-bold text-forest-800">{formatUGX(maxPrice)}/hr</span></div>
-                <input type="range" min={25000} max={60000} step={5000} value={maxPrice} onChange={(e)=>setMaxPrice(Number(e.target.value))} className="w-full accent-forest-700 h-2" />
-                <div className="flex justify-between text-xs text-ink-500 mt-1"><span>UGX 25k</span><span>UGX 60k+</span></div>
-              </div>
-              <div>
-                <label className="block text-[14px] font-bold text-ink-800 mb-2">Minimum Rating</label>
-                <div className="grid grid-cols-3 gap-2 text-[14px]">
-                  {[{val:0,label:'Any'},{val:4.5,label:'4.5★+'},{val:4.8,label:'4.8★+'}].map(r => (
-                    <button key={r.val} type="button" onClick={()=>setMinRating(r.val)} className={`py-2.5 px-3 rounded-control border text-center min-h-[44px] font-semibold transition ${minRating===r.val?'bg-amber-50 border-amber-300 text-amber-900':'border-ink-200 text-ink-600 hover:bg-ink-50'}`}>{r.label}</button>
-                  ))}
-                </div>
-              </div>
+              {filterControls('mobile')}
             </div>
             <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex gap-3 pb-safe">
-              <button onClick={resetFilters} className="flex-1 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-[14px] font-bold text-ink-700 hover:bg-ink-50">Clear All</button>
-              <button onClick={()=>setMobileFiltersOpen(false)} className="flex-1 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-white text-[14px] font-bold hover:bg-forest-800 shadow-soft">Show {educators.length} Results</button>
+              <button onClick={resetFilters} className="flex-1 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-[14px] font-bold text-ink-700 hover:bg-ink-50">Clear all</button>
+              <button onClick={()=>setMobileFiltersOpen(false)} className="flex-1 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-white text-[14px] font-bold hover:bg-forest-800 shadow-soft">Show {educators.length} {educators.length === 1 ? 'educator' : 'educators'}</button>
             </div>
           </div>
         </div>
@@ -329,146 +385,39 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           <div className="flex items-center justify-between pb-3 border-b border-ink-100">
             <h3 className="font-bold text-xs uppercase tracking-wider text-ink-800 flex items-center gap-1.5">
               <SlidersHorizontal className="w-4 h-4 text-forest-700" />
-              <span>Filter Results</span>
+              <span>Filters</span>
             </h3>
-            {hasActiveFilters && (
-              <button
-                onClick={resetFilters}
-                className="text-[12px] text-forest-700 hover:text-forest-800 hover:underline font-bold min-h-[44px] px-2"
-              >
-                Clear all
-              </button>
-            )}
           </div>
 
-          <div>
-            <label className="block text-[14px] font-bold text-ink-800 mb-2">
-              Skill Category
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full text-[14px] rounded-control border-ink-200 border p-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
-            >
-              <option value="all">All Skill Categories</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-ink-800 mb-2">
-              Learning Format
-            </label>
-            <div className="space-y-1.5 text-[14px]">
-              {[
-                { id: 'all', label: 'All Formats' },
-                { id: 'in-person', label: 'In-Person Workshop' },
-                { id: 'hybrid', label: 'Hybrid (Theory + Bench)' },
-                { id: 'online', label: 'Online Live Mentoring' }
-              ].map(f => (
-                <label
-                  key={f.id}
-                  className="flex items-center gap-2 p-2.5 min-h-[44px] rounded-control hover:bg-ink-50 cursor-pointer border border-transparent has-[input:checked]:bg-forest-50 has-[input:checked]:border-forest-200 transition"
-                >
-                  <input
-                    type="radio"
-                    name="format"
-                    checked={selectedFormat === f.id}
-                    onChange={() => setSelectedFormat(f.id)}
-                    className="text-forest-700 focus:ring-forest-500 w-4 h-4"
-                  />
-                  <span className={selectedFormat === f.id ? 'font-bold text-ink-900' : 'text-ink-600'}>
-                    {f.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-ink-800 mb-2">
-              Service Location
-            </label>
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="w-full text-[14px] rounded-control border-ink-200 border p-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
-            >
-              {ugandanLocations.map(loc => (
-                <option key={loc.value} value={loc.value}>{loc.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <div className="flex justify-between items-center text-[14px] mb-1">
-              <span className="font-bold text-ink-800">Max Hourly Rate</span>
-              <span className="font-bold text-forest-800">{formatUGX(maxPrice)}/hr</span>
-            </div>
-            <input
-              type="range"
-              min={25000}
-              max={60000}
-              step={5000}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full accent-forest-700 h-2"
-            />
-            <div className="flex justify-between text-xs text-ink-500 mt-1">
-              <span>UGX 25k</span>
-              <span>UGX 60k+</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-ink-800 mb-2">
-              Minimum Rating
-            </label>
-            <div className="grid grid-cols-3 gap-2 text-[14px]">
-              {[
-                { val: 0, label: 'Any' },
-                { val: 4.5, label: '4.5★+' },
-                { val: 4.8, label: '4.8★+' }
-              ].map(r => (
-                <button
-                  key={r.val}
-                  type="button"
-                  onClick={() => setMinRating(r.val)}
-                  className={`py-2.5 px-3 rounded-control border text-center min-h-[44px] font-semibold transition ${
-                    minRating === r.val
-                      ? 'bg-amber-50 border-amber-300 text-amber-900'
-                      : 'border-ink-200 text-ink-600 hover:bg-ink-50'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {filterControls('desktop')}
 
           <div className="bg-forest-50/60 p-4 rounded-card border border-forest-200 space-y-2">
-            <h4 className="font-bold text-[14px] text-ink-900">Can't find a specific skill?</h4>
-            <p className="text-[12px] text-ink-700 leading-relaxed">
-              Post a custom request and our matching team will connect you with a verified practitioner.
+            <h4 className="font-bold text-sm text-ink-900">Can’t find what you need?</h4>
+            <p className="text-xs text-ink-700 leading-relaxed">
+              Tell us what you want to learn and your budget. We’ll look for someone and introduce you.
             </p>
             <button
               onClick={onOpenSkillRequest}
               className="w-full py-2.5 min-h-[44px] text-[14px] font-bold rounded-control bg-forest-700 text-white hover:bg-forest-800 transition"
             >
-              Post Skill Request
+              Tell us what you need
             </button>
           </div>
         </div>
 
         <div className="lg:col-span-3 space-y-4">
           <div className="flex items-center justify-between text-xs text-ink-500 px-1">
-            <span>Showing <span className="font-bold text-ink-900">{educators.length}</span> verified educators</span>
-            <span className="hidden sm:inline">All profiles screened and approved for safety</span>
+            <span aria-live="polite"><span className="font-bold text-ink-900">{educators.length}</span> {educators.length === 1 ? 'educator' : 'educators'}</span>
           </div>
 
-          {loading ? (
+          {loadError ? (
+            <Alert>
+              <span className="flex flex-wrap items-center justify-between gap-2">
+                Couldn’t load educators. {loadError}
+                <button onClick={fetchEducators} className="px-3 min-h-[36px] rounded-control bg-white border border-rose-200 text-rose-700 text-xs font-bold">Try again</button>
+              </span>
+            </Alert>
+          ) : loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.from({ length: 4 }).map((_, i) => <EducatorCardSkeleton key={i} />)}
             </div>
@@ -486,10 +435,10 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           ) : (
             <EmptyState
               icon={<Search className="w-6 h-6" />}
-              title={hasActiveFilters ? 'No educators matching selected filters' : 'Educator Onboarding in Progress'}
+              title={hasActiveFilters ? 'Nobody matches all of that yet' : 'No educators yet'}
               description={hasActiveFilters
-                ? 'Try broadening your search query, clearing filter criteria, or submit a custom skill request.'
-                : 'We are actively onboarding verified artisans, trade masters, and practitioners across Mbarara and Uganda. Post what you want to learn, and our team will connect you with a vetted instructor.'}
+                ? 'Try fewer filters — or tell us what you want to learn and we’ll look for someone for you.'
+                : 'We’re welcoming our first educators in Mbarara. Tell us what you want to learn and we’ll find someone for you.'}
               action={
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   {hasActiveFilters && (
@@ -497,14 +446,14 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
                       onClick={resetFilters}
                       className="px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] font-bold text-ink-700 hover:bg-ink-50 transition bg-white"
                     >
-                      Reset Filters
+                      Clear filters
                     </button>
                   )}
                   <button
                     onClick={onOpenSkillRequest}
                     className="px-5 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-[14px] font-bold text-white hover:bg-forest-800 shadow-soft transition"
                   >
-                    Post Custom Skill Request
+                    Tell us what you need
                   </button>
                 </div>
               }

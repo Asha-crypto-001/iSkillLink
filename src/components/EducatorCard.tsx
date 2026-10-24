@@ -95,10 +95,9 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
 
       <div className="px-5 py-3.5 bg-ink-50 border-t border-ink-100 flex items-center justify-between gap-3 pb-safe sm:pb-3.5">
         <div>
-          <span className="text-[12px] text-ink-600 uppercase font-bold tracking-wider block">Rate</span>
-          <span className="text-[15px] font-bold text-ink-900 font-display">
+          <span className="text-[12px] text-ink-600 font-semibold block">Per hour</span>
+          <span className="text-[15px] font-bold text-ink-900 font-display whitespace-nowrap">
             {formatUGX(educator.hourly_rate_ugx)}
-            <span className="text-xs text-ink-600 font-normal"> / hr</span>
           </span>
         </div>
 
@@ -110,17 +109,16 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
             className="min-h-[44px] px-4"
             aria-label={`View profile of ${name}`}
           >
-            View Profile
+            Profile
           </Button>
           <Button
             variant="primary"
             size="md"
             onClick={() => onRequestBooking(educator)}
-            rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
             className="min-h-[44px] px-4 shadow-soft"
             aria-label={`Book session with ${name}`}
           >
-            Learn
+            Book
           </Button>
         </div>
       </div>
