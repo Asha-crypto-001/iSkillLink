@@ -27,7 +27,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   onViewEducator
 }) => {
   const { user, learnerProfile } = useAuth();
-  const learnerId = learnerProfile?.id || (user?.role === 'learner' ? 'lrn-1' : 'lrn-1');
+  // The API already scopes results to the signed-in learner; the id only narrows admin views.
+  const learnerId: string | undefined = learnerProfile?.id;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -47,8 +48,9 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   const [reviews, setReviews] = useState<Review[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessageText, setNewMessageText] = useState('');
-  const [selectedRecipientId, setSelectedRecipientId] = useState('usr-edu-1');
+  const [selectedRecipientId, setSelectedRecipientId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   // Modal states
@@ -62,13 +64,15 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
         api.getLearnerRequests({ learner_id: learnerId }),
         api.getBookings({ learner_id: learnerId }),
         api.getPayments({ learner_id: learnerId }),
-        api.getMessages(user?.id || 'usr-learner-1')
+        user ? api.getMessages(user.id) : Promise.resolve([])
       ]);
 
       setRequests(reqs);
       setBookings(bks);
       setPayments(pays);
       setMessages(msgs);
+      // Default the message thread to the first instructor the learner has booked.
+      setSelectedRecipientId(prev => prev || bks.find(b => b.educator?.user?.id)?.educator?.user?.id || '');
     } catch (err) {
       console.error('Error loading learner dashboard data:', err);
     } finally {
@@ -82,25 +86,31 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessageText.trim() || !user) return;
+    if (!newMessageText.trim() || !user || !selectedRecipientId) return;
 
     try {
+      setActionError('');
       const msg = await api.sendMessage(user.id, selectedRecipientId, newMessageText);
       setMessages(prev => [...prev, msg]);
       setNewMessageText('');
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to send message:', e);
+      setActionError(e.message || 'Failed to send message. Please try again.');
     }
   };
 
   const handleMarkSessionComplete = async (bookingId: string) => {
     try {
+      setActionError('');
       await api.updateBookingStatus(bookingId, 'completed');
       loadLearnerData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error completing session:', e);
+      setActionError(e.message || 'Could not mark the session as completed. Please try again.');
     }
   };
+
+  const threadMessages = messages.filter(m => m.sender_id === selectedRecipientId || m.receiver_id === selectedRecipientId);
 
   const activeBookingsCount = bookings.filter(b => b.status === 'confirmed' || b.status === 'in_progress').length;
   const completedSessionsCount = bookings.filter(b => b.status === 'completed').length;
@@ -146,6 +156,13 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/learner' }, { label: activeTab }]}
         actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button><button onClick={onOpenSkillRequest} className="rounded-card bg-forest-700 px-4 py-2 text-xs font-bold text-white"><PlusCircle className="mr-2 inline h-4 w-4" />Request New Skill</button></>}
       />
+
+      {actionError && (
+        <div role="alert" className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
 
       {/* TAB CONTENT: OVERVIEW */}
       {activeTab === 'overview' && (
@@ -504,8 +521,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
               </div>
 
               <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                {messages.length > 0 ? (
-                  messages.map(m => {
+                {threadMessages.length > 0 ? (
+                  threadMessages.map(m => {
                     const isMe = m.sender_id === user?.id;
                     return (
                       <div
@@ -540,12 +557,15 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   type="text"
                   value={newMessageText}
                   onChange={(e) => setNewMessageText(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 text-xs p-2.5 rounded-lg border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700"
+                  placeholder={selectedRecipientId ? 'Type your message...' : 'Book a session to message an instructor'}
+                  disabled={!selectedRecipientId}
+                  className="flex-1 text-xs p-2.5 rounded-lg border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 disabled:bg-ink-50"
                 />
                 <button
                   type="submit"
-                  className="p-2.5 rounded-lg bg-forest-700 hover:bg-forest-800 text-white transition shrink-0"
+                  disabled={!selectedRecipientId}
+                  aria-label="Send message"
+                  className="p-2.5 rounded-lg bg-forest-700 hover:bg-forest-800 text-white transition shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-4 h-4" />
                 </button>

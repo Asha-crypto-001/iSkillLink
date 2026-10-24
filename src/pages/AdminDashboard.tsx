@@ -62,6 +62,7 @@ export const AdminDashboard: React.FC = () => {
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState<'all' | 'admin' | 'secondary_admin' | 'educator' | 'learner'>('all');
   const [assignActionMsg, setAssignActionMsg] = useState('');
+  const [actionError, setActionError] = useState('');
 
   // Matchmaker interactive state
   const [selectedRequest, setSelectedRequest] = useState<LearnerRequest | null>(null);
@@ -117,8 +118,9 @@ export const AdminDashboard: React.FC = () => {
       setAssignActionMsg(`Successfully assigned ${targetUser.name} as Secondary Administrator.`);
       setTimeout(() => setAssignActionMsg(''), 4000);
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error assigning secondary admin:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -131,8 +133,9 @@ export const AdminDashboard: React.FC = () => {
       setAssignActionMsg(`Revoked secondary administrator privileges for ${targetUser.name}.`);
       setTimeout(() => setAssignActionMsg(''), 4000);
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error revoking secondary admin:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -143,8 +146,9 @@ export const AdminDashboard: React.FC = () => {
     try {
       const res = await api.getMatchesForRequest(req.id);
       setEvaluatedMatches(res.matches);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error computing matches:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     } finally {
       setIsMatchingLoading(false);
     }
@@ -156,8 +160,9 @@ export const AdminDashboard: React.FC = () => {
       await api.assignMatch(selectedRequest.id, educatorId, 'Ashabahebwa Hassan (Admin & Founder)');
       setMatchSuccessMsg('Match successfully assigned! Learner and educator notified.');
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to assign match:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -170,8 +175,9 @@ export const AdminDashboard: React.FC = () => {
         admin_name: 'Ashabahebwa Hassan'
       });
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error updating verification step:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -179,8 +185,9 @@ export const AdminDashboard: React.FC = () => {
     try {
       await api.updateEducatorStatus(educatorId, 'active', 'Approved following complete verification & trade review', 'Ashabahebwa Hassan');
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error approving educator:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -188,8 +195,9 @@ export const AdminDashboard: React.FC = () => {
     try {
       await api.updateEducatorStatus(educatorId, 'suspended', 'Administrative hold pending inquiry', 'Ashabahebwa Hassan');
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error suspending educator:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -197,8 +205,9 @@ export const AdminDashboard: React.FC = () => {
     try {
       await api.releasePayout(paymentId, 'Ashabahebwa Hassan (Admin & Founder)');
       loadAdminData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error releasing payout:', e);
+      setActionError(e.message || 'The action could not be completed. Please try again.');
     }
   };
 
@@ -281,6 +290,13 @@ export const AdminDashboard: React.FC = () => {
         <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           <span>{assignActionMsg}</span>
+        </div>
+      )}
+
+      {actionError && (
+        <div role="alert" className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-2">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError('')} className="text-rose-700 hover:text-rose-900" aria-label="Dismiss error">×</button>
         </div>
       )}
 

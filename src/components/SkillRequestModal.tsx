@@ -60,13 +60,17 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setErrorMsg('Please sign in with a learner account to submit a skill request.');
+      return;
+    }
     setIsSubmitting(true);
     setErrorMsg('');
 
     try {
-      const learnerId = learnerProfile?.id || (user?.role === 'learner' ? 'lrn-1' : 'lrn-1');
+      // The API files the request for the signed-in learner; learner_id only matters for admins and demo mode.
       const result = await api.createLearnerRequest({
-        learner_id: learnerId,
+        learner_id: learnerProfile?.id,
         skill_name: skillName,
         skill_level: skillLevel,
         learning_goal: learningGoal,
