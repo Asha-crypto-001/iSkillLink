@@ -2,6 +2,7 @@ import React from 'react';
 import { Educator } from '../../types';
 import { formatUGX } from '../../utils/formatters';
 import { StatusBadge } from '../../components/ui/Badge';
+import { Avatar } from '../../components/ui/Avatar';
 
 interface AdminEducatorsTabProps {
   educators: Educator[];
@@ -21,11 +22,7 @@ export const AdminEducatorsTab: React.FC<AdminEducatorsTabProps> = ({ educators 
         {educators.map(edu => (
           <div key={edu.id} className="p-4 rounded-xl border border-ink-200 bg-ink-50/50 space-y-3">
             <div className="flex items-center gap-3">
-              <img
-                src={edu.user?.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'}
-                alt={edu.user?.name}
-                className="w-12 h-12 rounded-xl object-cover border border-ink-300"
-              />
+              <Avatar src={edu.user?.avatar_url} name={edu.user?.name} className="w-12 h-12 rounded-xl border border-ink-300" />
               <div>
                 <h3 className="font-bold text-xs text-ink-900">{edu.user?.name}</h3>
                 <div className="text-[12px] text-ink-500">{edu.title}</div>

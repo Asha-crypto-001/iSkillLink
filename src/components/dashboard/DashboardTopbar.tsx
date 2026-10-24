@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Bell, Menu, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { cn } from '../../utils/cn';
+import { Avatar } from '../ui/Avatar';
 
 interface DashboardTopbarProps {
   onMenuClick: () => void;
@@ -37,8 +37,7 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({ onMenuClick })
         </button>
         <div className="relative">
           <button type="button" onClick={() => setProfileOpen((value) => !value)} className="flex items-center gap-2 rounded-control p-1.5 hover:bg-ink-100" aria-expanded={profileOpen} aria-haspopup="menu">
-            <img src={user?.avatar_url || ''} alt="" className={cn('h-8 w-8 rounded-pill bg-forest-100 object-cover', !user?.avatar_url && 'hidden')} />
-            {!user?.avatar_url && <span className="grid h-8 w-8 place-items-center rounded-pill bg-forest-100 text-xs font-bold text-forest-800">{user?.name?.slice(0, 1).toUpperCase() || '?'}</span>}
+            <Avatar src={user?.avatar_url} name={user?.name} className="h-8 w-8 rounded-pill" />
             <span className="hidden max-w-32 truncate text-sm font-semibold text-ink-800 sm:block">{user?.name || 'Account'}</span>
             <ChevronDown className="h-4 w-4 text-ink-400" aria-hidden="true" />
           </button>

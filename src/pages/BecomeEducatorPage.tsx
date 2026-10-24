@@ -197,7 +197,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
           {
             title: portfolioTitle,
             description: portfolioDescription,
-            image_url: portfolioImageUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+            image_url: portfolioImageUrl || '',
             tag: primarySkill
           }
         ] : []

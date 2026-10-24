@@ -8,6 +8,7 @@ import {
 import { Modal } from './ui/Modal';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
+import { Avatar, isRealPhoto } from './ui/Avatar';
 
 interface EducatorProfileModalProps {
   educator: Educator | null;
@@ -24,7 +25,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
 
   const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'portfolio' | 'reviews'>('overview');
 
-  const avatar = educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';
+  const avatar = educator.user?.avatar_url;
   const name = educator.user?.name || 'Educator';
 
   const tabs: { id: typeof activeTab; label: string; count?: number }[] = [
@@ -48,11 +49,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
 
         <div className="flex items-center gap-4 sm:gap-6">
           <div className="relative">
-            <img
-              src={avatar}
-              alt={name}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-display object-cover border-2 border-ink-800 shadow-level-2"
-            />
+            <Avatar src={avatar} name={name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-display border-2 border-ink-800 shadow-level-2" />
             {educator.status === 'active' && (
               <span className="absolute -bottom-1.5 -right-1.5 bg-forest-600 text-white p-1 rounded-full ring-2 ring-ink-950 shadow-soft" aria-label="Verified">
                 <ShieldCheck className="w-4 h-4" />
@@ -248,16 +245,18 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
         {activeTab === 'portfolio' && (
           <div className="space-y-4" role="tabpanel">
             <p className="text-[14px] text-ink-700">
-              Real photos and verified projects produced by {name} and previous students.
+              Work samples shared by {name}.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {educator.portfolios?.map(p => (
                 <div key={p.id} className="rounded-card border border-ink-200 overflow-hidden bg-white group">
-                  <img
-                    src={p.image_url}
-                    alt={p.title}
-                    className="w-full aspect-[4/3] object-cover transition duration-300"
-                  />
+                  {isRealPhoto(p.image_url) && (
+                    <img
+                      src={p.image_url}
+                      alt={p.title}
+                      className="w-full aspect-[4/3] object-cover transition duration-300"
+                    />
+                  )}
                   <div className="p-4">
                     <Badge variant="success" size="sm" className="mb-1">{p.tag}</Badge>
                     <h5 className="font-bold text-ink-900 text-[15px] font-display">{p.title}</h5>
@@ -280,11 +279,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                   <div key={r.id} className="p-4 rounded-card border border-ink-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <img
-                          src={r.learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                          alt={r.learner_name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
+                        <Avatar src={r.learner_avatar} name={r.learner_name} className="w-8 h-8 rounded-full" />
                         <div>
                           <span className="font-semibold text-ink-900 text-[14px] block">{r.learner_name}</span>
                           <span className="text-xs text-ink-500">{formatShortDate(r.created_at)}</span>

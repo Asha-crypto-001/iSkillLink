@@ -9,6 +9,7 @@ import {
   ShieldCheck, Star, MapPin, Clock, Award, Globe, Wrench, CheckCircle2,
   Calendar, ArrowLeft, Share2, MessageCircle
 } from 'lucide-react';
+import { Avatar, isRealPhoto } from '../components/ui/Avatar';
 
 export const EducatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -88,7 +89,7 @@ export const EducatorProfilePage: React.FC = () => {
     );
   }
 
-  const avatar = educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';
+  const avatar = educator.user?.avatar_url;
   const name = educator.user?.name || 'Educator';
 
   return (
@@ -113,7 +114,7 @@ export const EducatorProfilePage: React.FC = () => {
         <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start justify-between gap-6">
           <div className="flex gap-5">
             <div className="relative shrink-0">
-              <img src={avatar} alt={name} className="w-24 h-24 rounded-card object-cover border-2 border-ink-700 shadow-md" />
+              <Avatar src={avatar} name={name} className="w-24 h-24 rounded-card border-2 border-ink-700 shadow-md" />
               {educator.status === 'active' && <span className="absolute -bottom-1.5 -right-1.5 bg-forest-600 text-white p-1 rounded-full ring-2 ring-ink-900"><ShieldCheck className="w-4 h-4" /></span>}
             </div>
             <div>
@@ -208,11 +209,11 @@ export const EducatorProfilePage: React.FC = () => {
 
         {activeTab === 'portfolio' && (
           <div className="space-y-4">
-            <div className="text-xs text-ink-800">Verified projects produced by {name} and apprentices.</div>
+            <div className="text-xs text-ink-800">Work samples shared by {name}.</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {educator.portfolios?.map(p => (
                 <div key={p.id} className="rounded-card border border-ink-200 overflow-hidden bg-white group">
-                  <img src={p.image_url} alt={p.title} className="w-full h-48 object-cover transition duration-300" />
+                  {isRealPhoto(p.image_url) && <img src={p.image_url} alt={p.title} className="w-full h-48 object-cover transition duration-300" />}
                   <div className="p-4"><span className="text-[12px] font-semibold uppercase text-forest-800 bg-forest-50 px-2 py-0.5 rounded">{p.tag}</span><h5 className="font-bold text-ink-900 text-sm mt-1">{p.title}</h5><p className="text-xs text-ink-800 mt-1">{p.description}</p></div>
                 </div>
               ))}
@@ -228,7 +229,7 @@ export const EducatorProfilePage: React.FC = () => {
                 {educator.reviews.map(r => (
                   <div key={r.id} className="p-4 rounded-card border border-ink-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5"><img src={r.learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={r.learner_name} className="w-8 h-8 rounded-full object-cover" /><div><span className="font-semibold text-ink-900 text-xs block">{r.learner_name}</span><span className="text-[12px] text-ink-700">{formatShortDate(r.created_at)}</span></div></div>
+                      <div className="flex items-center gap-2.5"><Avatar src={r.learner_avatar} name={r.learner_name} className="w-8 h-8 rounded-full" /><div><span className="font-semibold text-ink-900 text-xs block">{r.learner_name}</span><span className="text-[12px] text-ink-700">{formatShortDate(r.created_at)}</span></div></div>
                       <div className="flex items-center gap-1 text-amber-500 text-xs font-bold"><Star className="w-3.5 h-3.5 fill-amber-500" /><span>{r.rating}.0</span></div>
                     </div>
                     <p className="text-xs text-ink-800 leading-relaxed bg-ink-50 p-3 rounded-lg border border-ink-100">"{r.comment}"</p>

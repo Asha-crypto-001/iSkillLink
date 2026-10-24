@@ -140,6 +140,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // AUTHENTICATION & ACCESS CONTROL
 // ==========================================
 
+/** Photos sent at sign-up: an image data URL (cropped client-side, under ~1MB) or an https link. */
+function acceptableAvatar(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  if (value.startsWith('data:image/') && value.length < 1_000_000) return value;
+  if (value.startsWith('https://')) return value;
+  return '';
+}
+
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -280,7 +288,8 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     role,
     name: String(name).trim(),
     phone: phone || '+256 744 024 529',
-    avatar_url: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+    // Keep the photo chosen at sign-up (a data URL or https link); never substitute a stock face.
+    avatar_url: acceptableAvatar(req.body.avatar_url),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -542,7 +551,7 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
       role: 'educator',
       name: String(name).trim(),
       phone: phone || '+256 744 024 529',
-      avatar_url: req.body.avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+      avatar_url: acceptableAvatar(req.body.avatar_url),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -622,7 +631,7 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
         educator_id: educatorId,
         title: p.title || 'Work Sample',
         description: p.description || '',
-        image_url: p.image_url || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+        image_url: p.image_url || '',
         tag: p.tag || 'Practical Work'
       });
     });
@@ -1324,7 +1333,7 @@ app.post('/api/reviews', authenticateToken, requireRole('learner', 'admin'), (re
     educator_id,
     learner_id: effectiveLearnerId,
     learner_name: effectiveName,
-    learner_avatar: learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    learner_avatar: learner_avatar || db.findUserById(req.user!.id)?.avatar_url || '',
     rating: Number(rating),
     skill_rating: Number(skill_rating) || Number(rating),
     punctuality_rating: Number(punctuality_rating) || Number(rating),

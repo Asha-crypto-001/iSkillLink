@@ -22,6 +22,7 @@ import { AdminPaymentsTab } from './admin/AdminPaymentsTab';
 import { AdminAuditTab } from './admin/AdminAuditTab';
 import { DashboardHeader, DashboardShell } from '../components/dashboard';
 import { Alert } from '../components/ui/Alert';
+import { Avatar } from '../components/ui/Avatar';
 
 type AdminTab =
   | 'metrics'
@@ -228,11 +229,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-ink-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
           <div className="relative group">
-            <img
-              src={user?.avatar_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'}
-              alt={user?.name || 'Ashabahebwa Hassan'}
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-forest-600 shadow-sm"
-            />
+            <Avatar src={user?.avatar_url} name={user?.name || 'Ashabahebwa Hassan'} className="w-16 h-16 rounded-2xl border-2 border-forest-600 shadow-sm" />
             <button
               onClick={() => setShowPhotoModal(true)}
               className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-forest-700 text-white shadow hover:bg-forest-800 transition"

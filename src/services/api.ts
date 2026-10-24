@@ -467,7 +467,7 @@ export const api = {
           role: 'educator',
           name: data.name || 'New Educator',
           phone: data.phone || '+256 744 024 529',
-          avatar_url: data.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+          avatar_url: data.avatar_url || '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };

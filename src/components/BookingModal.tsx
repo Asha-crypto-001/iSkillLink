@@ -14,6 +14,7 @@ import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
 import { SignInPrompt } from './SignInPrompt';
 import { Alert } from './ui/Alert';
+import { Avatar } from './ui/Avatar';
 
 interface BookingModalProps {
   educator: Educator | null;
@@ -108,11 +109,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     <Modal isOpen={!!educator} onClose={onClose} titleId="booking-modal-title" title="Book Practical Learning Session" maxWidth="max-w-xl">
         <div id="booking-modal-title" className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
           <div className="flex items-center gap-3">
-            <img
-              src={educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-              alt={educator.user?.name}
-              className="w-10 h-10 rounded-card object-cover border border-ink-800"
-            />
+            <Avatar src={educator.user?.avatar_url} name={educator.user?.name} className="w-10 h-10 rounded-card border border-ink-800" />
             <div>
               <h3 className="font-bold text-[15px] text-white font-display">Book Practical Learning Session</h3>
               <p className="text-xs text-ink-300">With {educator.user?.name} — {educator.title}</p>

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ProfilePhotoUploadModal } from './ProfilePhotoUploadModal';
 import logoUrl from '../assets/logo.png';
+import { Avatar } from './ui/Avatar';
 
 interface NavbarProps {
   currentView: string;
@@ -166,7 +167,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }`}
                     >
                       <span className="relative">
-                        <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-ink-200" />
+                        <Avatar src={user.avatar_url} name={user.name} className="w-8 h-8 rounded-full border border-ink-200" />
                         {unreadNotificationCount > 0 && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" aria-hidden="true" />}
                       </span>
                       <span className="text-left leading-none hidden sm:block pr-1">
@@ -179,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {userDropdownOpen && (
                       <div role="menu" aria-label="User menu" onKeyDown={(e)=>{ if(e.key==='Escape') setUserDropdownOpen(false); }} className="absolute right-0 mt-3 w-80 bg-white rounded-card shadow-level-3 border border-ink-200 overflow-hidden z-50 animate-fadeIn">
                         <div className="p-4 bg-gradient-to-br from-ink-50 to-white border-b border-ink-100 flex items-center gap-3">
-                          <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-11 h-11 rounded-xl object-cover border border-ink-200 shadow-soft shrink-0" />
+                          <Avatar src={user.avatar_url} name={user.name} className="w-11 h-11 rounded-xl border border-ink-200 shadow-soft shrink-0" />
                           <div className="min-w-0">
                             <div className="font-bold text-sm text-ink-900 truncate">{user.name}</div>
                             <div className="text-xs text-ink-500 truncate">{user.email}</div>
@@ -256,7 +257,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex lg:hidden items-center gap-2">
                 {user && (
                   <button onClick={() => setShowPhotoModal(true)} className="p-0.5 rounded-full ring-2 ring-forest-200 hover:ring-forest-300 transition focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Update photo">
-                    <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+                    <Avatar src={user.avatar_url} name={user.name} className="w-8 h-8 rounded-full" />
                   </button>
                 )}
                 <button
@@ -292,7 +293,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {user && (
                   <div className="p-4 rounded-card bg-ink-50 border border-ink-200 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-10 h-10 rounded-xl object-cover border border-ink-200 shadow-sm" />
+                      <Avatar src={user.avatar_url} name={user.name} className="w-10 h-10 rounded-xl border border-ink-200 shadow-sm" />
                       <div>
                         <div className="font-bold text-sm text-ink-900">{user.name}</div>
                         <div className="text-xs font-bold text-forest-700 uppercase tracking-wide">{user.role} Portal</div>

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
+import { Avatar } from './ui/Avatar';
 import { Alert } from './ui/Alert';
 
 interface ProfilePhotoUploadModalProps {
@@ -15,16 +16,6 @@ interface ProfilePhotoUploadModalProps {
   onUpdated?: (newAvatarUrl: string) => void;
 }
 
-const PRESET_AVATARS = [
-  { id: 'p1', label: 'Artisan 1', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p2', label: 'Artisan 2', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p3', label: 'Professional 1', url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p4', label: 'Professional 2', url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p5', label: 'Trainer 1', url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p6', label: 'Trainer 2', url: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p7', label: 'Leader 1', url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80' },
-  { id: 'p8', label: 'Student 1', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' },
-];
 
 export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = ({
   isOpen,
@@ -35,7 +26,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
   const [selectedImage, setSelectedImage] = useState<string>(user?.avatar_url || '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [urlInput, setUrlInput] = useState<string>('');
-  const [tab, setTab] = useState<'upload' | 'url' | 'presets'>('upload');
+  const [tab, setTab] = useState<'upload' | 'url'>('upload');
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -166,11 +157,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="relative group">
               <div className="w-28 h-28 rounded-full ring-4 ring-forest-500/20 overflow-hidden shadow-inner bg-ink-100">
-                <img
-                  src={selectedImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                  alt="Avatar Preview"
-                  className="w-full h-full object-cover"
-                />
+                <Avatar src={selectedImage} name={user?.name} className="w-full h-full" />
               </div>
               <button
                 type="button"
@@ -203,15 +190,6 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
               }`}
             >
               Image URL
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('presets')}
-              className={`flex-1 py-1.5 rounded-lg transition ${
-                tab === 'presets' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800'
-              }`}
-            >
-              Presets
             </button>
           </div>
 
@@ -267,31 +245,6 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
             </div>
           )}
 
-          {/* Tab 3: Presets */}
-          {tab === 'presets' && (
-            <div className="space-y-2">
-              <p className="text-[12px] text-ink-500 font-medium">Select a verified professional portrait:</p>
-              <div className="grid grid-cols-4 gap-2">
-                {PRESET_AVATARS.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedImage(p.url)}
-                    className={`relative rounded-xl overflow-hidden aspect-square border-2 transition ${
-                      selectedImage === p.url ? 'border-forest-600 ring-2 ring-forest-500/30' : 'border-transparent hover:opacity-80'
-                    }`}
-                  >
-                    <img src={p.url} alt={p.label} className="w-full h-full object-cover" />
-                    {selectedImage === p.url && (
-                      <div className="absolute inset-0 bg-forest-600/30 flex items-center justify-center">
-                        <Check className="w-4 h-4 text-white drop-shadow-md" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer Actions — pinned + safe-area */}

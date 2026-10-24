@@ -4,6 +4,7 @@ import { formatUGX } from '../utils/formatters';
 import { ShieldCheck, Star, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
+import { Avatar } from './ui/Avatar';
 
 interface EducatorCardProps {
   educator: Educator;
@@ -16,7 +17,7 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
   onViewProfile,
   onRequestBooking
 }) => {
-  const avatar = educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';
+  const avatar = educator.user?.avatar_url;
   const name = educator.user?.name || 'Practitioner';
 
   return (
@@ -24,11 +25,7 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
       <div className="p-5 pb-4">
         <div className="flex items-start gap-3.5">
           <div className="relative shrink-0">
-            <img
-              src={avatar}
-              alt={name}
-              className="w-14 h-14 rounded-card object-cover border border-ink-200 shadow-soft"
-            />
+            <Avatar src={avatar} name={name} className="w-14 h-14 rounded-card border border-ink-200 shadow-soft" />
             {educator.status === 'active' && (
               <span
                 title="Verified Practitioner"

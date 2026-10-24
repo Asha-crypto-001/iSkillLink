@@ -16,6 +16,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
 import { DashboardHeader, DashboardShell, SectionHeader, StatRow } from '../components/dashboard';
 import { Alert } from '../components/ui/Alert';
+import { Avatar } from '../components/ui/Avatar';
 
 interface LearnerDashboardProps {
   onOpenSkillRequest: () => void;
@@ -665,11 +666,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
           <div className="flex items-center gap-4">
             <div className="relative">
-              <img
-                src={user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                alt={user?.name}
-                className="w-20 h-20 rounded-card object-cover border-2 border-forest-500 shadow-level-1"
-              />
+              <Avatar src={user?.avatar_url} name={user?.name} className="w-20 h-20 rounded-card border-2 border-forest-500 shadow-level-1" />
               <button
                 onClick={() => setShowPhotoModal(true)}
                 className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-forest-700 text-white shadow hover:bg-forest-800 transition"

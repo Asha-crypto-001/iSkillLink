@@ -3,6 +3,7 @@ import {
   Search, MapPin, Phone, MessageCircle, Mail,
   UserCheck, UserMinus, UserPlus
 } from 'lucide-react';
+import { Avatar } from '../../components/ui/Avatar';
 
 interface AdminUsersTabProps {
   users: any[];
@@ -121,11 +122,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                 {/* Top Identity Row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={u.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                      alt={u.name}
-                      className="w-12 h-12 rounded-xl object-cover border border-ink-300 shadow-xs"
-                    />
+                    <Avatar src={u.avatar_url} name={u.name} className="w-12 h-12 rounded-xl border border-ink-300 shadow-xs" />
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-ink-900">{u.name}</span>

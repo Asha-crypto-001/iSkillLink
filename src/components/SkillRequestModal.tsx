@@ -15,6 +15,7 @@ import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { SignInPrompt } from './SignInPrompt';
 import { Alert } from './ui/Alert';
+import { Avatar } from './ui/Avatar';
 
 interface SkillRequestModalProps {
   onClose: () => void;
@@ -308,11 +309,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={m.educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                          alt={m.educator.user?.name}
-                          className="w-12 h-12 rounded-card object-cover border border-ink-200"
-                        />
+                        <Avatar src={m.educator.user?.avatar_url} name={m.educator.user?.name} className="w-12 h-12 rounded-card border border-ink-200" />
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-bold text-ink-900 text-[15px] font-display">{m.educator.user?.name}</h4>

@@ -5,6 +5,7 @@ import { StatusBadge } from '../../components/ui/Badge';
 import { Check, ShieldCheck, UserCheck } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { VERIFICATION_STEPS, hasSubmittedNationalId, isStepPassed, verificationProgress } from '../../utils/verification';
+import { Avatar } from '../../components/ui/Avatar';
 
 interface AdminVerificationTabProps {
   verificationQueue: Educator[];
@@ -38,11 +39,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink-200 pb-4">
                   <div className="flex items-center gap-4">
-                    <img
-                      src={edu.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                      alt={edu.user?.name}
-                      className="w-14 h-14 rounded-xl object-cover border border-ink-300"
-                    />
+                    <Avatar src={edu.user?.avatar_url} name={edu.user?.name} className="w-14 h-14 rounded-xl border border-ink-300" />
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-ink-900 text-base">{edu.user?.name}</h3>

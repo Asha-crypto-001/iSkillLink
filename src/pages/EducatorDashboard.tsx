@@ -17,6 +17,7 @@ import {
   Camera, User
 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
+import { Avatar } from '../components/ui/Avatar';
 
 interface EducatorDashboardProps {
   onViewProfileModal?: (educator: Educator) => void;
@@ -601,11 +602,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
           <div className="flex items-center gap-4">
             <div className="relative">
-              <img
-                src={user?.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'}
-                alt={user?.name}
-                className="w-20 h-20 rounded-card object-cover border-2 border-forest-500 shadow-level-1"
-              />
+              <Avatar src={user?.avatar_url} name={user?.name} className="w-20 h-20 rounded-card border-2 border-forest-500 shadow-level-1" />
               <button
                 onClick={() => setShowPhotoModal(true)}
                 className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-forest-700 text-white shadow hover:bg-forest-800 transition"
@@ -616,7 +613,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             <div>
               <div className="text-sm font-bold text-ink-900">{user?.name}</div>
               <div className="text-xs text-ink-500">{educator?.title}</div>
-              <div className="text-[12px] text-forest-700 font-semibold mt-0.5">Verified Instructor • {educator?.location}</div>
+              <div className={`text-[12px] font-semibold mt-0.5 ${isLive ? 'text-forest-700' : 'text-ink-600'}`}>{isLive ? 'Verified educator' : 'Application in review'} · {educator?.location}</div>
             </div>
           </div>
 

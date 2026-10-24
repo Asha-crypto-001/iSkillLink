@@ -3,6 +3,7 @@ import { LearnerRequest, MatchEvaluation } from '../../types';
 import { formatUGX } from '../../utils/formatters';
 import { StatusBadge } from '../../components/ui/Badge';
 import { CheckCircle2 } from 'lucide-react';
+import { Avatar } from '../../components/ui/Avatar';
 
 interface AdminMatchmakerTabProps {
   learnerRequests: LearnerRequest[];
@@ -111,11 +112,7 @@ export const AdminMatchmakerTab: React.FC<AdminMatchmakerTabProps> = ({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={m.educator.user?.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'}
-                            alt={m.educator.user?.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-ink-300"
-                          />
+                          <Avatar src={m.educator.user?.avatar_url} name={m.educator.user?.name} className="w-12 h-12 rounded-xl border border-ink-300" />
                           <div>
                             <div className="font-bold text-ink-900 text-sm">{m.educator.user?.name}</div>
                             <div className="text-xs text-ink-600">{m.educator.title} • {m.educator.location}</div>
