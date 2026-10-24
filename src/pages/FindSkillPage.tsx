@@ -173,7 +173,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight font-display">
             Find a Verified Skill Educator
           </h1>
-          <p className="text-[13px] sm:text-body-sm text-ink-600 mt-1">
+          <p className="text-[14px] sm:text-body-sm text-ink-600 mt-1">
             Browse vetted master artisans, practical technicians, and trainers in Mbarara and across Uganda.
           </p>
         </div>
@@ -186,7 +186,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search skill, educator, keyword (e.g. Tailoring, Solar, React)..."
-              className="w-full text-[13px] sm:text-sm pl-10 pr-10 py-2.5 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 bg-white placeholder:text-ink-400"
+              className="w-full text-[14px] sm:text-sm pl-10 pr-10 py-2.5 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 bg-white placeholder:text-ink-400"
               aria-label="Search educators"
             />
             {search && (
@@ -216,7 +216,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
 
             <button
               onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-              className="lg:hidden inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-ink-800 text-[13px] font-bold shadow-soft hover:bg-ink-50 shrink-0"
+              className="lg:hidden inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-ink-800 text-[14px] font-bold shadow-soft hover:bg-ink-50 shrink-0"
               aria-expanded={mobileFiltersOpen}
               aria-haspopup="dialog"
               aria-label="Open filters"
@@ -228,7 +228,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
         </div>
 
         {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-ink-100 text-[13px]">
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-ink-100 text-[14px]">
             <span className="text-ink-500 font-semibold">Active:</span>
             {selectedCategory !== 'all' && (
               <span className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[32px] rounded-pill bg-forest-50 text-forest-800 border border-forest-200 text-xs font-semibold">
@@ -279,15 +279,15 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             </div>
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 overscroll-contain">
               <div>
-                <label className="block text-[13px] font-bold text-ink-800 mb-2">Skill Category</label>
-                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full text-[13px] min-h-[44px] rounded-control border border-ink-200 p-2.5 bg-white focus:ring-2 focus:ring-forest-700">
+                <label className="block text-[14px] font-bold text-ink-800 mb-2">Skill Category</label>
+                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full text-[14px] min-h-[44px] rounded-control border border-ink-200 p-2.5 bg-white focus:ring-2 focus:ring-forest-700">
                   <option value="all">All Skill Categories</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-[13px] font-bold text-ink-800 mb-2">Learning Format</label>
-                <div className="space-y-2 text-[13px]">
+                <label className="block text-[14px] font-bold text-ink-800 mb-2">Learning Format</label>
+                <div className="space-y-2 text-[14px]">
                   {[{id:'all',label:'All Formats'},{id:'in-person',label:'In-Person Workshop'},{id:'hybrid',label:'Hybrid'},{id:'online',label:'Online Live'}].map(f => (
                     <label key={f.id} className="flex items-center gap-3 p-3 rounded-control border hover:bg-ink-50 cursor-pointer min-h-[44px] transition">
                       <input type="radio" name="format-mobile" checked={selectedFormat===f.id} onChange={()=>setSelectedFormat(f.id)} className="text-forest-700 focus:ring-forest-700 w-4 h-4" />
@@ -297,19 +297,19 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
                 </div>
               </div>
               <div>
-                <label className="block text-[13px] font-bold text-ink-800 mb-2">Service Location</label>
-                <select value={selectedLocation} onChange={(e)=>setSelectedLocation(e.target.value)} className="w-full text-[13px] min-h-[44px] rounded-control border border-ink-200 p-2.5 bg-white focus:ring-2 focus:ring-forest-700">
+                <label className="block text-[14px] font-bold text-ink-800 mb-2">Service Location</label>
+                <select value={selectedLocation} onChange={(e)=>setSelectedLocation(e.target.value)} className="w-full text-[14px] min-h-[44px] rounded-control border border-ink-200 p-2.5 bg-white focus:ring-2 focus:ring-forest-700">
                   {ugandanLocations.map(loc => <option key={loc.value} value={loc.value}>{loc.label}</option>)}
                 </select>
               </div>
               <div>
-                <div className="flex justify-between items-center text-[13px] mb-2"><span className="font-bold text-ink-800">Max Hourly Rate</span><span className="font-bold text-forest-800">{formatUGX(maxPrice)}/hr</span></div>
+                <div className="flex justify-between items-center text-[14px] mb-2"><span className="font-bold text-ink-800">Max Hourly Rate</span><span className="font-bold text-forest-800">{formatUGX(maxPrice)}/hr</span></div>
                 <input type="range" min={25000} max={60000} step={5000} value={maxPrice} onChange={(e)=>setMaxPrice(Number(e.target.value))} className="w-full accent-forest-700 h-2" />
                 <div className="flex justify-between text-xs text-ink-500 mt-1"><span>UGX 25k</span><span>UGX 60k+</span></div>
               </div>
               <div>
-                <label className="block text-[13px] font-bold text-ink-800 mb-2">Minimum Rating</label>
-                <div className="grid grid-cols-3 gap-2 text-[13px]">
+                <label className="block text-[14px] font-bold text-ink-800 mb-2">Minimum Rating</label>
+                <div className="grid grid-cols-3 gap-2 text-[14px]">
                   {[{val:0,label:'Any'},{val:4.5,label:'4.5★+'},{val:4.8,label:'4.8★+'}].map(r => (
                     <button key={r.val} type="button" onClick={()=>setMinRating(r.val)} className={`py-2.5 px-3 rounded-control border text-center min-h-[44px] font-semibold transition ${minRating===r.val?'bg-amber-50 border-amber-300 text-amber-900':'border-ink-200 text-ink-600 hover:bg-ink-50'}`}>{r.label}</button>
                   ))}
@@ -317,8 +317,8 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
               </div>
             </div>
             <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex gap-3 pb-safe">
-              <button onClick={resetFilters} className="flex-1 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-[13px] font-bold text-ink-700 hover:bg-ink-50">Clear All</button>
-              <button onClick={()=>setMobileFiltersOpen(false)} className="flex-1 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-white text-[13px] font-bold hover:bg-forest-800 shadow-soft">Show {educators.length} Results</button>
+              <button onClick={resetFilters} className="flex-1 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white text-[14px] font-bold text-ink-700 hover:bg-ink-50">Clear All</button>
+              <button onClick={()=>setMobileFiltersOpen(false)} className="flex-1 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-white text-[14px] font-bold hover:bg-forest-800 shadow-soft">Show {educators.length} Results</button>
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
-                className="text-[11px] text-forest-700 hover:text-forest-800 hover:underline font-bold min-h-[44px] px-2"
+                className="text-[12px] text-forest-700 hover:text-forest-800 hover:underline font-bold min-h-[44px] px-2"
               >
                 Clear all
               </button>
@@ -342,13 +342,13 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-ink-800 mb-2">
+            <label className="block text-[14px] font-bold text-ink-800 mb-2">
               Skill Category
             </label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full text-[13px] rounded-control border-ink-200 border p-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+              className="w-full text-[14px] rounded-control border-ink-200 border p-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
             >
               <option value="all">All Skill Categories</option>
               {categories.map(c => (
@@ -358,10 +358,10 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-ink-800 mb-2">
+            <label className="block text-[14px] font-bold text-ink-800 mb-2">
               Learning Format
             </label>
-            <div className="space-y-1.5 text-[13px]">
+            <div className="space-y-1.5 text-[14px]">
               {[
                 { id: 'all', label: 'All Formats' },
                 { id: 'in-person', label: 'In-Person Workshop' },
@@ -388,13 +388,13 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-ink-800 mb-2">
+            <label className="block text-[14px] font-bold text-ink-800 mb-2">
               Service Location
             </label>
             <select
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
-              className="w-full text-[13px] rounded-control border-ink-200 border p-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+              className="w-full text-[14px] rounded-control border-ink-200 border p-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
             >
               {ugandanLocations.map(loc => (
                 <option key={loc.value} value={loc.value}>{loc.label}</option>
@@ -403,7 +403,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div>
-            <div className="flex justify-between items-center text-[13px] mb-1">
+            <div className="flex justify-between items-center text-[14px] mb-1">
               <span className="font-bold text-ink-800">Max Hourly Rate</span>
               <span className="font-bold text-forest-800">{formatUGX(maxPrice)}/hr</span>
             </div>
@@ -423,10 +423,10 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-ink-800 mb-2">
+            <label className="block text-[14px] font-bold text-ink-800 mb-2">
               Minimum Rating
             </label>
-            <div className="grid grid-cols-3 gap-2 text-[13px]">
+            <div className="grid grid-cols-3 gap-2 text-[14px]">
               {[
                 { val: 0, label: 'Any' },
                 { val: 4.5, label: '4.5★+' },
@@ -449,13 +449,13 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
           </div>
 
           <div className="bg-forest-50/60 p-4 rounded-card border border-forest-200 space-y-2">
-            <h4 className="font-bold text-[13px] text-ink-900">Can't find a specific skill?</h4>
-            <p className="text-[11px] text-ink-700 leading-relaxed">
+            <h4 className="font-bold text-[14px] text-ink-900">Can't find a specific skill?</h4>
+            <p className="text-[12px] text-ink-700 leading-relaxed">
               Post a custom request and our matching team will connect you with a verified practitioner.
             </p>
             <button
               onClick={onOpenSkillRequest}
-              className="w-full py-2.5 min-h-[44px] text-[13px] font-bold rounded-control bg-forest-700 text-white hover:bg-forest-800 transition"
+              className="w-full py-2.5 min-h-[44px] text-[14px] font-bold rounded-control bg-forest-700 text-white hover:bg-forest-800 transition"
             >
               Post Skill Request
             </button>
@@ -495,14 +495,14 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
                   {hasActiveFilters && (
                     <button
                       onClick={resetFilters}
-                      className="px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] font-bold text-ink-700 hover:bg-ink-50 transition bg-white"
+                      className="px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] font-bold text-ink-700 hover:bg-ink-50 transition bg-white"
                     >
                       Reset Filters
                     </button>
                   )}
                   <button
                     onClick={onOpenSkillRequest}
-                    className="px-5 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-[13px] font-bold text-white hover:bg-forest-800 shadow-soft transition"
+                    className="px-5 py-2.5 min-h-[44px] rounded-control bg-forest-700 text-[14px] font-bold text-white hover:bg-forest-800 shadow-soft transition"
                   >
                     Post Custom Skill Request
                   </button>

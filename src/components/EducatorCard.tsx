@@ -98,7 +98,7 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
 
       <div className="px-5 py-3.5 bg-ink-50 border-t border-ink-100 flex items-center justify-between gap-3 pb-safe sm:pb-3.5">
         <div>
-          <span className="text-[11px] text-ink-600 uppercase font-bold tracking-wider block">Rate</span>
+          <span className="text-[12px] text-ink-600 uppercase font-bold tracking-wider block">Rate</span>
           <span className="text-[15px] font-bold text-ink-900 font-display">
             {formatUGX(educator.hourly_rate_ugx)}
             <span className="text-xs text-ink-600 font-normal"> / hr</span>

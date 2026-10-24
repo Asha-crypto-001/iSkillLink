@@ -241,7 +241,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                           <span className="text-sm font-semibold text-ink-900">{step.label}</span>
                           <span className={`text-xs font-semibold ${passed ? 'text-forest-700' : isNext ? 'text-forest-800' : 'text-ink-500'}`}>{passed ? 'Done' : isNext ? 'Next' : 'Waiting'}</span>
                         </div>
-                        <p className="text-[13px] text-ink-600">{step.applicantDetail}</p>
+                        <p className="text-[14px] text-ink-600">{step.applicantDetail}</p>
                       </div>
                     </li>
                   );
@@ -277,7 +277,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-ink-900 text-sm">{b.skill_name}</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
+                        <span className="text-[12px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
                           Awaiting Your Approval
                         </span>
                       </div>
@@ -341,7 +341,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
                   <div className="text-right">
                     <div className="text-base font-bold text-ink-900">{formatUGX(b.educator_payout_ugx || b.total_amount_ugx * 0.9)}</div>
-                    <div className="text-[11px] text-ink-500">Net Educator Share (90%)</div>
+                    <div className="text-[12px] text-ink-500">Net Educator Share (90%)</div>
                   </div>
                 </div>
 
@@ -418,13 +418,13 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
-                      {matchesTrade(req) && <span className="text-[11px] font-semibold px-2 py-0.5 rounded-pill bg-forest-50 text-forest-800 border border-forest-200">Matches your trade</span>}
+                      {matchesTrade(req) && <span className="text-[12px] font-semibold px-2 py-0.5 rounded-pill bg-forest-50 text-forest-800 border border-forest-200">Matches your trade</span>}
                     </div>
                     <p className="text-xs text-ink-600 mt-1">{req.learning_goal}</p>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-bold text-forest-800">{formatUGX(req.budget_ugx)}</div>
-                    <div className="text-[11px] text-ink-500">Learner’s budget</div>
+                    <div className="text-[12px] text-ink-500">Learner’s budget</div>
                   </div>
                 </div>
 
@@ -462,12 +462,12 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
               <div className="text-xs text-ink-500 font-semibold">Held in escrow</div>
               <div className="text-xl font-bold text-ink-900 mt-1">{formatUGX(heldPayout)}</div>
-              <div className="text-[11px] text-ink-500 mt-0.5">Released after each session is done</div>
+              <div className="text-[12px] text-ink-500 mt-0.5">Released after each session is done</div>
             </div>
             <div className="p-4 rounded-card bg-forest-50 border border-forest-200">
               <div className="text-xs text-forest-800 font-semibold">Paid out to you</div>
               <div className="text-xl font-bold text-forest-900 mt-1">{formatUGX(paidOut)}</div>
-              <div className="text-[11px] text-forest-800 mt-0.5">Sent to your MoMo</div>
+              <div className="text-[12px] text-forest-800 mt-0.5">Sent to your MoMo</div>
             </div>
             <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
               <div className="text-xs text-ink-500 font-semibold">iSkillLink fee (10%)</div>
@@ -542,7 +542,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-bold text-ink-900 text-sm block">{r.learner_name}</span>
-                    <span className="text-[11px] text-ink-400">{formatShortDate(r.created_at)}</span>
+                    <span className="text-[12px] text-ink-400">{formatShortDate(r.created_at)}</span>
                   </div>
                   <div className="flex items-center gap-1 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                     <Star className="w-3.5 h-3.5 fill-amber-500" />
@@ -556,7 +556,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
                 {r.educator_reply ? (
                   <div className="ml-4 pl-3 border-l-2 border-forest-600 bg-forest-50/40 p-2.5 rounded-r-lg text-xs">
-                    <span className="font-semibold text-forest-950 block text-[11px]">Your Published Reply:</span>
+                    <span className="font-semibold text-forest-950 block text-[12px]">Your Published Reply:</span>
                     <p className="text-ink-700 mt-0.5">{r.educator_reply}</p>
                   </div>
                 ) : (
@@ -616,7 +616,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             <div>
               <div className="text-sm font-bold text-ink-900">{user?.name}</div>
               <div className="text-xs text-ink-500">{educator?.title}</div>
-              <div className="text-[11px] text-forest-700 font-semibold mt-0.5">Verified Instructor • {educator?.location}</div>
+              <div className="text-[12px] text-forest-700 font-semibold mt-0.5">Verified Instructor • {educator?.location}</div>
             </div>
           </div>
 

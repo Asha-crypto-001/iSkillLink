@@ -28,19 +28,19 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
         <div className="p-4 rounded-xl bg-forest-50/60 border border-forest-200 space-y-1">
           <span className="text-ink-600 font-semibold">Total Custom Learning Inquiries</span>
           <div className="text-2xl font-black text-forest-950">{demandData?.totalRequests || learnerRequests.length}</div>
-          <span className="text-[11px] text-forest-800 font-medium">Submitted by active learners</span>
+          <span className="text-[12px] text-forest-800 font-medium">Submitted by active learners</span>
         </div>
 
         <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1">
           <span className="text-ink-600 font-semibold">Open Matching Queue</span>
           <div className="text-2xl font-black text-amber-950">{demandData?.openRequestsCount || learnerRequests.filter(r => r.status === 'open').length}</div>
-          <span className="text-[11px] text-amber-800 font-medium">Awaiting educator match</span>
+          <span className="text-[12px] text-amber-800 font-medium">Awaiting educator match</span>
         </div>
 
         <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-1">
           <span className="text-ink-600 font-semibold">Matched & In-Training</span>
           <div className="text-2xl font-black text-blue-950">{demandData?.matchedRequestsCount || learnerRequests.filter(r => r.status === 'matched').length}</div>
-          <span className="text-[11px] text-blue-800 font-medium">Apprentices actively learning</span>
+          <span className="text-[12px] text-blue-800 font-medium">Apprentices actively learning</span>
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
               <div key={idx} className="p-4 rounded-xl border border-ink-200 bg-ink-50/50 space-y-2">
                 <div className="flex items-center justify-between font-bold text-ink-900 text-xs">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-md bg-forest-800 text-white flex items-center justify-center text-[10px] font-bold">
+                    <span className="w-5 h-5 rounded-md bg-forest-800 text-white flex items-center justify-center text-[12px] font-bold">
                       {idx + 1}
                     </span>
                     {item.trade}
@@ -64,7 +64,7 @@ export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
                   <span className="text-forest-800 font-black">{item.requestCount} inquiries</span>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-ink-600 pt-1 border-t border-ink-200/60">
+                <div className="flex items-center justify-between text-[12px] text-ink-600 pt-1 border-t border-ink-200/60">
                   <span>Avg Student Budget: <strong>{formatUGX(item.averageBudgetUgx)}</strong></span>
                   <span className="text-ink-500 truncate max-w-[150px]">
                     Areas: {item.topLocations?.join(', ') || 'Mbarara City'}

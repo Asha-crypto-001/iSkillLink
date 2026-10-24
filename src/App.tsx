@@ -174,7 +174,7 @@ const AppContent: React.FC = () => {
       {/* Single accessible toast region — Phase 5 polish: dismissible, pause on hover/focus, 44px target, no double announcement */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">{toastMessage}</div>
       {toastMessage && (
-        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 inset-x-4 sm:inset-x-auto sm:right-5 sm:max-w-sm z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[13px] font-semibold flex items-center gap-3 animate-fadeIn">
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 inset-x-4 sm:inset-x-auto sm:right-5 sm:max-w-sm z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[14px] font-semibold flex items-center gap-3 animate-fadeIn">
           <span className="w-2 h-2 rounded-full bg-forest-400 shrink-0" aria-hidden="true"></span>
           <span className="flex-1 leading-snug">{toastMessage}</span>
           <button

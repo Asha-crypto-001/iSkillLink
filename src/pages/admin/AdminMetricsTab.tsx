@@ -49,7 +49,7 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
               <div key={r.id} className="p-3.5 rounded-xl border border-ink-200 bg-ink-50 text-xs flex items-center justify-between">
                 <div>
                   <div className="font-bold text-ink-900">{r.skill_name}</div>
-                  <div className="text-ink-500 text-[11px]">{r.learner_name} • {r.location} • Budget: {formatUGX(r.budget_ugx)}</div>
+                  <div className="text-ink-500 text-[12px]">{r.learner_name} • {r.location} • Budget: {formatUGX(r.budget_ugx)}</div>
                 </div>
                 <StatusBadge status={r.status} />
               </div>
@@ -75,9 +75,9 @@ export const AdminMetricsTab: React.FC<AdminMetricsTabProps> = ({
               <div key={log.id} className="p-3.5 rounded-xl border border-ink-200 bg-ink-50 text-xs space-y-1">
                 <div className="flex items-center justify-between font-semibold text-ink-900">
                   <span>{log.action_type.replace(/_/g, ' ')}</span>
-                  <span className="text-[10px] text-ink-400">{formatShortDate(log.created_at)}</span>
+                  <span className="text-[12px] text-ink-400">{formatShortDate(log.created_at)}</span>
                 </div>
-                <p className="text-ink-600 text-[11px]">{log.details}</p>
+                <p className="text-ink-600 text-[12px]">{log.details}</p>
               </div>
             ))}
           </div>

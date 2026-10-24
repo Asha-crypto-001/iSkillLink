@@ -235,23 +235,23 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
             <div className="p-2.5 rounded-card bg-forest-50 text-forest-800 border border-forest-300 font-bold">
-              <span className="block text-[10px] text-forest-700">STEP 1</span>
+              <span className="block text-[12px] text-forest-700">STEP 1</span>
               Applied
             </div>
             <div className="p-2.5 rounded-card bg-amber-50 text-amber-800 border border-amber-300 font-bold">
-              <span className="block text-[10px] text-amber-600">STEP 2</span>
+              <span className="block text-[12px] text-amber-600">STEP 2</span>
               Under Review
             </div>
             <div className="p-2.5 rounded-card bg-ink-50 text-ink-500 border border-ink-200">
-              <span className="block text-[10px] text-ink-400">STEP 3</span>
+              <span className="block text-[12px] text-ink-400">STEP 3</span>
               Verification
             </div>
             <div className="p-2.5 rounded-card bg-ink-50 text-ink-500 border border-ink-200">
-              <span className="block text-[10px] text-ink-400">STEP 4</span>
+              <span className="block text-[12px] text-ink-400">STEP 4</span>
               Approved
             </div>
             <div className="p-2.5 rounded-card bg-ink-50 text-ink-500 border border-ink-200">
-              <span className="block text-[10px] text-ink-400">STEP 5</span>
+              <span className="block text-[12px] text-ink-400">STEP 5</span>
               Active
             </div>
           </div>
@@ -313,8 +313,8 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   : 'bg-ink-50 text-ink-400'
               }`}
             >
-              <div className="text-[10px] opacity-80">STEP {s.num}</div>
-              <div className="truncate hidden sm:block text-[11px]">{s.label}</div>
+              <div className="text-[12px] opacity-80">STEP {s.num}</div>
+              <div className="truncate hidden sm:block text-[12px]">{s.label}</div>
             </div>
           ))}
         </div>
@@ -420,7 +420,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                     />
                     <Lock className="w-3.5 h-3.5 text-ink-400 absolute left-2.5 top-3" />
                   </div>
-                  <span className="text-[10px] text-ink-400 mt-0.5 block">Used to sign in to your Educator Dashboard and manage practical sessions.</span>
+                  <span className="text-[12px] text-ink-400 mt-0.5 block">Used to sign in to your Educator Dashboard and manage practical sessions.</span>
                 </div>
               )}
 
@@ -447,7 +447,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                         className="hidden"
                       />
                     </label>
-                    <p className="text-[11px] text-ink-500 mt-1">Photo appears on your verified mentor card across Uganda.</p>
+                    <p className="text-[12px] text-ink-500 mt-1">Photo appears on your verified mentor card across Uganda.</p>
                   </div>
                 </div>
               </div>
@@ -489,7 +489,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                       }`}
                     >
                       <div className="font-bold text-xs">{t.label}</div>
-                      <div className="text-[10px] text-ink-600 mt-0.5">{t.desc}</div>
+                      <div className="text-[12px] text-ink-600 mt-0.5">{t.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -651,11 +651,11 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                         <span className="text-xs font-bold">{f.label}</span>
                         {teachingFormats.includes(f.id) && <CheckCircle2 className="w-4 h-4 text-forest-700" />}
                       </div>
-                      <p className="text-[10px] text-ink-500 mt-1">{f.desc}</p>
+                      <p className="text-[12px] text-ink-500 mt-1">{f.desc}</p>
                     </button>
                   ))}
                 </div>
-                {fieldErrors.teachingFormats && <span className="text-[11px] text-rose-600 mt-1 block">{fieldErrors.teachingFormats}</span>}
+                {fieldErrors.teachingFormats && <span className="text-[12px] text-rose-600 mt-1 block">{fieldErrors.teachingFormats}</span>}
               </div>
 
               <Field label="Service Area & Divisions Covered" htmlFor="be-service-area" required error={fieldErrors.serviceArea}>
@@ -709,7 +709,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-semibold text-ink-700 mb-0.5">Title / Trade Test</label>
+                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Title / Trade Test</label>
                   <input
                     type="text"
                     value={qualificationTitle}
@@ -719,7 +719,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-ink-700 mb-0.5">Year</label>
+                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Year</label>
                   <input
                     type="number"
                     value={qualificationYear}
@@ -728,7 +728,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <label className="block text-[11px] font-semibold text-ink-700 mb-0.5">Institution / Authority</label>
+                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Institution / Authority</label>
                   <input
                     type="text"
                     value={qualificationInstitution}
@@ -747,7 +747,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-ink-700 mb-0.5">Project Title</label>
+                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Project Title</label>
                   <input
                     type="text"
                     value={portfolioTitle}
@@ -757,7 +757,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-ink-700 mb-0.5">Image Link / Work Photo</label>
+                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Image Link / Work Photo</label>
                   <input
                     type="url"
                     value={portfolioImageUrl}
@@ -767,7 +767,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-semibold text-ink-700 mb-0.5">Work Description</label>
+                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Work Description</label>
                   <input
                     type="text"
                     value={portfolioDescription}
@@ -808,7 +808,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   className="mt-0.5 text-forest-700 rounded focus:ring-forest-700"
                   required
                 />
-                <span className="text-ink-700 text-[11px]">
+                <span className="text-ink-700 text-[12px]">
                   <strong>Professional Conduct Agreement:</strong> I agree to maintain safe workshop standards, provide respectful training, and adhere to agreed schedules.
                 </span>
               </label>
@@ -821,7 +821,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   className="mt-0.5 text-forest-700 rounded focus:ring-forest-700"
                   required
                 />
-                <span className="text-ink-700 text-[11px]">
+                <span className="text-ink-700 text-[12px]">
                   <strong>Verification Consent:</strong> I authorize iSkillLink to verify my National ID (NIN), inspect my workshop premises, and contact my trade references.
                 </span>
               </label>
@@ -834,7 +834,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
                   className="mt-0.5 text-forest-700 rounded focus:ring-forest-700"
                   required
                 />
-                <span className="text-ink-700 text-[11px]">
+                <span className="text-ink-700 text-[12px]">
                   <strong>Data Privacy:</strong> I understand iSkillLink does NOT store passwords, Mobile Money PINs, or bank access credentials.
                 </span>
               </label>

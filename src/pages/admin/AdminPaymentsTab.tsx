@@ -49,12 +49,12 @@ export const AdminPaymentsTab: React.FC<AdminPaymentsTabProps> = ({
                   {p.status === 'paid' ? (
                     <button
                       onClick={() => onReleasePayout(p.id)}
-                      className="px-3 py-1 bg-forest-700 hover:bg-forest-800 text-white font-bold rounded text-[11px]"
+                      className="px-3 py-1 bg-forest-700 hover:bg-forest-800 text-white font-bold rounded text-[12px]"
                     >
                       Release Payout
                     </button>
                   ) : (
-                    <span className="text-ink-400 text-[11px]">{p.status}</span>
+                    <span className="text-ink-400 text-[12px]">{p.status}</span>
                   )}
                 </td>
               </tr>

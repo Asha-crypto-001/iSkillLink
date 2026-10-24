@@ -29,7 +29,7 @@ export const Alert: React.FC<AlertProps> = ({ tone = 'error', children, onDismis
   return (
     <div
       role={tone === 'error' ? 'alert' : 'status'}
-      className={`flex items-start gap-2.5 px-3.5 py-3 rounded-control border text-[13px] leading-snug ${toneClasses[tone]} ${className}`}
+      className={`flex items-start gap-2.5 px-3.5 py-3 rounded-control border text-[14px] leading-snug ${toneClasses[tone]} ${className}`}
     >
       <Icon className="w-4 h-4 shrink-0 mt-px" aria-hidden="true" />
       <div className="flex-1 min-w-0">{children}</div>

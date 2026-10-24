@@ -108,7 +108,7 @@ export const ContactPage: React.FC = () => {
 
           <div className="bg-forest-50/70 p-5 rounded-2xl border border-forest-200 space-y-2 text-xs text-forest-950">
             <h4 className="font-bold text-forest-900">Direct WhatsApp Helpline</h4>
-            <p className="text-[11px] text-forest-800 leading-relaxed">
+            <p className="text-[12px] text-forest-800 leading-relaxed">
               For immediate assistance with bookings or verification, message us on WhatsApp at <a href="https://wa.me/256744024529" target="_blank" rel="noreferrer" className="underline font-bold">+256 744 024 529</a>.
             </p>
           </div>
@@ -121,8 +121,8 @@ export const ContactPage: React.FC = () => {
           {submitted ? (
             <div className="p-6 bg-forest-50 rounded-card border border-forest-200 text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-forest-600 mx-auto" />
-              <h4 className="font-bold text-forest-900 text-[13px]">Message Sent Successfully!</h4>
-              <p className="text-[13px] text-forest-800">
+              <h4 className="font-bold text-forest-900 text-[14px]">Message Sent Successfully!</h4>
+              <p className="text-[14px] text-forest-800">
                 Thank you, {name}. We’ve got your message and will reply by email or WhatsApp.
               </p>
             </div>

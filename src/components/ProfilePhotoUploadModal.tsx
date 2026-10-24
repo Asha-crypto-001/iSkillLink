@@ -134,7 +134,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
             </div>
             <div>
               <h3 id="photo-upload-title" className="text-sm font-bold text-ink-900 font-display">Update Profile Picture</h3>
-              <p className="text-[11px] text-ink-600">
+              <p className="text-[12px] text-ink-600">
                 {user?.name} ({user?.role?.toUpperCase()})
               </p>
             </div>
@@ -156,7 +156,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-control bg-forest-50 border border-forest-200 text-forest-800 text-[13px] flex items-center gap-2" role="status" aria-live="polite">
+            <div className="p-3 rounded-control bg-forest-50 border border-forest-200 text-forest-800 text-[14px] flex items-center gap-2" role="status" aria-live="polite">
               <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{successMsg}</span>
             </div>
@@ -181,7 +181,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
                 <Camera className="w-3.5 h-3.5" />
               </button>
             </div>
-            <p className="text-[11px] text-ink-500">Photo preview as displayed across iSkillLink</p>
+            <p className="text-[12px] text-ink-500">Photo preview as displayed across iSkillLink</p>
           </div>
 
           {/* Method Tabs */}
@@ -234,7 +234,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
                 </div>
                 <div>
                   <p className="text-xs font-bold text-ink-800">Click to choose image from phone or PC</p>
-                  <p className="text-[10px] text-ink-500 mt-0.5">Supports PNG, JPG, or WebP (automatically cropped)</p>
+                  <p className="text-[12px] text-ink-500 mt-0.5">Supports PNG, JPG, or WebP (automatically cropped)</p>
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           {tab === 'url' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-ink-700 mb-1">
+                <label className="block text-[12px] font-semibold text-ink-700 mb-1">
                   Direct Image Web Link
                 </label>
                 <div className="flex gap-2">
@@ -270,7 +270,7 @@ export const ProfilePhotoUploadModal: React.FC<ProfilePhotoUploadModalProps> = (
           {/* Tab 3: Presets */}
           {tab === 'presets' && (
             <div className="space-y-2">
-              <p className="text-[11px] text-ink-500 font-medium">Select a verified professional portrait:</p>
+              <p className="text-[12px] text-ink-500 font-medium">Select a verified professional portrait:</p>
               <div className="grid grid-cols-4 gap-2">
                 {PRESET_AVATARS.map((p) => (
                   <button

@@ -157,7 +157,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </Field>
 
           <div>
-            <label className="block text-[13px] font-semibold text-ink-700 mb-1.5">
+            <label className="block text-[14px] font-semibold text-ink-700 mb-1.5">
               Learning Format
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -167,7 +167,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   key={f}
                   onClick={() => setFormat(f)}
                   aria-pressed={format === f}
-                  className={`p-3 text-[13px] font-medium rounded-control border capitalize transition text-center min-h-[44px] ${
+                  className={`p-3 text-[14px] font-medium rounded-control border capitalize transition text-center min-h-[44px] ${
                     format === f
                       ? 'bg-forest-50 border-forest-600 text-forest-800 font-bold'
                       : 'border-ink-200 text-ink-600 hover:bg-ink-50'
@@ -240,7 +240,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             />
           </Field>
 
-          <div className="bg-forest-50/70 rounded-card p-4 border border-forest-200 text-[13px] space-y-2">
+          <div className="bg-forest-50/70 rounded-card p-4 border border-forest-200 text-[14px] space-y-2">
             <div className="flex justify-between items-center text-ink-700">
               <span>Hourly Rate:</span>
               <span className="font-semibold">{formatUGX(hourlyRate)} / hr</span>

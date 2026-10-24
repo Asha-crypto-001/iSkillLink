@@ -11,7 +11,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       <div className="relative">
         <select
           ref={ref}
-          className={`w-full min-h-[44px] appearance-none bg-white text-[13px] font-medium text-ink-900 rounded-control border pl-3.5 pr-9 py-2.5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 disabled:bg-ink-50 disabled:text-ink-500
+          className={`w-full min-h-[44px] appearance-none bg-white text-[14px] font-medium text-ink-900 rounded-control border pl-3.5 pr-9 py-2.5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 disabled:bg-ink-50 disabled:text-ink-500
           ${error ? 'border-rose-300 bg-rose-50/50 focus:ring-rose-500 focus:border-rose-500' : 'border-ink-200 hover:border-ink-300'}
           ${className}`}
           {...props}

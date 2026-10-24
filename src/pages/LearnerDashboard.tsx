@@ -216,9 +216,9 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       {b.status === 'pending' && (
                         <button
                           onClick={() => setPaymentModalBooking(b)}
-                          className="px-4 py-2.5 min-h-[44px] rounded-control bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-soft focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:bg-amber-800 disabled:opacity-50"
+                          className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-soft focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2"
                         >
-                          Deposit to Escrow
+                          Pay into escrow
                         </button>
                       )}
                       {b.status === 'confirmed' && (
@@ -290,7 +290,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
                         <StatusBadge status={req.status} />
-                        <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-ink-50 text-ink-600">
+                        <span className="text-[12px] uppercase font-semibold px-2 py-0.5 rounded bg-ink-50 text-ink-600">
                           {req.skill_level}
                         </span>
                       </div>
@@ -299,7 +299,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
                     <div className="text-right shrink-0">
                       <div className="text-sm font-bold text-ink-900">{formatUGX(req.budget_ugx)}</div>
-                      <div className="text-[11px] text-ink-500 font-medium">Budget Allocation</div>
+                      <div className="text-[12px] text-ink-500 font-medium">Budget Allocation</div>
                     </div>
                   </div>
 
@@ -378,7 +378,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                       className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-level-1"
                     >
                       <CreditCard className="w-3.5 h-3.5" />
-                      <span>Deposit via Mobile Money</span>
+                      <span>Pay into escrow</span>
                     </button>
                   )}
 
@@ -571,7 +571,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                     >
                       <div>
                         <div className="font-bold text-ink-900">{b.educator.user.name}</div>
-                        <div className="text-[11px] text-ink-500">{b.educator.title}</div>
+                        <div className="text-[12px] text-ink-500">{b.educator.title}</div>
                       </div>
                       {selectedRecipientId === userId && <span className="w-2 h-2 rounded-full bg-forest-600"></span>}
                     </button>
@@ -580,7 +580,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
               ) : (
                 <div className="p-4 rounded-card bg-ink-50 border border-ink-200 text-center text-xs text-ink-500">
                   <p className="font-medium text-ink-700 mb-1">No active educators yet</p>
-                  <p className="text-[11px]">Book a hands-on session or post a skill request to start a direct message thread.</p>
+                  <p className="text-[12px]">Book a hands-on session or post a skill request to start a direct message thread.</p>
                 </div>
               )}
             </div>
@@ -609,7 +609,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                         >
                           {m.content}
                         </div>
-                        <span className="text-[10px] text-ink-400 mt-0.5 px-1">
+                        <span className="text-[12px] text-ink-400 mt-0.5 px-1">
                           {formatShortDate(m.created_at)}
                         </span>
                       </div>
@@ -680,7 +680,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
             <div>
               <div className="text-sm font-bold text-ink-900">{user?.name}</div>
               <div className="text-xs text-ink-500">{user?.email}</div>
-              <div className="text-[11px] text-forest-700 font-semibold mt-0.5">Learner Account • Active</div>
+              <div className="text-[12px] text-forest-700 font-semibold mt-0.5">Learner Account • Active</div>
             </div>
           </div>
 

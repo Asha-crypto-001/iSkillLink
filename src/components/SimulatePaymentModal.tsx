@@ -60,7 +60,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
             <ShieldCheck className="w-5 h-5 text-forest-400" />
             <div>
               <h3 className="font-bold text-sm text-white font-display">iSkillLink Escrow Payment</h3>
-              <p className="text-[11px] text-ink-300">Protected Mobile Money Escrow for Uganda</p>
+              <p className="text-[12px] text-ink-300">Protected Mobile Money Escrow for Uganda</p>
             </div>
           </div>
           <button
@@ -79,7 +79,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
               <Alert>{errorMsg}</Alert>
             )}
 
-            <div className="bg-ink-50 rounded-card p-3.5 border border-ink-200 text-[13px] space-y-1.5">
+            <div className="bg-ink-50 rounded-card p-3.5 border border-ink-200 text-[14px] space-y-1.5">
               <div className="flex justify-between font-bold text-ink-900">
                 <span>{booking.skill_name}</span>
                 <span className="text-forest-800">{formatUGX(total)}</span>
@@ -91,7 +91,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-ink-800 mb-1.5">
+              <label className="block text-[14px] font-bold text-ink-800 mb-1.5">
                 Select Mobile Money Network
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -101,7 +101,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
                     setProvider('mtn_momo');
                     if (phoneNumber.startsWith('+256 70')) setPhoneNumber('+256 772 455 890');
                   }}
-                  className={`p-3 rounded-card border flex flex-col items-center justify-center gap-1.5 text-[13px] font-bold transition min-h-[88px] ${
+                  className={`p-3 rounded-card border flex flex-col items-center justify-center gap-1.5 text-[14px] font-bold transition min-h-[88px] ${
                     provider === 'mtn_momo'
                       ? 'bg-amber-50 border-amber-300 text-amber-900 ring-2 ring-amber-200'
                       : 'border-ink-200 text-ink-700 hover:bg-ink-50'
@@ -118,7 +118,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
                     setProvider('airtel_money');
                     if (phoneNumber.startsWith('+256 77') || phoneNumber.startsWith('+256 78')) setPhoneNumber('+256 701 455 890');
                   }}
-                  className={`p-3 rounded-card border flex flex-col items-center justify-center gap-1.5 text-[13px] font-bold transition min-h-[88px] ${
+                  className={`p-3 rounded-card border flex flex-col items-center justify-center gap-1.5 text-[14px] font-bold transition min-h-[88px] ${
                     provider === 'airtel_money'
                       ? 'bg-rose-50 border-rose-300 text-rose-900 ring-2 ring-rose-200'
                       : 'border-ink-200 text-ink-700 hover:bg-ink-50'
@@ -132,7 +132,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-ink-800 mb-1" htmlFor="momo-phone">
+              <label className="block text-[14px] font-bold text-ink-800 mb-1" htmlFor="momo-phone">
                 Registered Mobile Money Phone Number
               </label>
               <div className="relative">
@@ -142,14 +142,14 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+256 77X XXX XXX"
-                  className="w-full text-[13px] min-h-[44px] rounded-control border-ink-200 border pl-10 pr-3.5 py-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
+                  className="w-full text-[14px] min-h-[44px] rounded-control border-ink-200 border pl-10 pr-3.5 py-2.5 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
                   required
                 />
                 <Smartphone className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               </div>
             </div>
 
-            <div className="bg-ink-50 p-3.5 rounded-card border border-ink-200 text-[13px] space-y-1 text-ink-700">
+            <div className="bg-ink-50 p-3.5 rounded-card border border-ink-200 text-[14px] space-y-1 text-ink-700">
               <div className="flex justify-between">
                 <span>Session Cost:</span>
                 <span className="font-semibold">{formatUGX(total)}</span>
@@ -162,7 +162,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
                 <span>Net Educator Payout:</span>
                 <span>{formatUGX(educatorPayout)}</span>
               </div>
-              <div className="border-t border-ink-200 pt-2 flex justify-between font-bold text-ink-900 text-[13px]">
+              <div className="border-t border-ink-200 pt-2 flex justify-between font-bold text-ink-900 text-[14px]">
                 <span>Total Charged:</span>
                 <span className="text-forest-800">{formatUGX(total)}</span>
               </div>
@@ -192,7 +192,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
             </div>
             <div>
               <h4 className="font-bold text-ink-900 text-base font-display">Mobile Money Prompt Sent</h4>
-              <p className="text-[13px] text-ink-600 mt-1 max-w-xs mx-auto">
+              <p className="text-[14px] text-ink-600 mt-1 max-w-xs mx-auto">
                 Check <span className="font-semibold text-ink-900">{phoneNumber}</span> to approve <span className="font-bold text-forest-700">{formatUGX(total)}</span>.
               </p>
             </div>
@@ -210,7 +210,7 @@ export const SimulatePaymentModal: React.FC<SimulatePaymentModalProps> = ({
             </div>
             <div>
               <h4 className="font-bold text-ink-900 text-base font-display">Escrow Payment Confirmed!</h4>
-              <p className="text-[13px] text-ink-600 mt-1">
+              <p className="text-[14px] text-ink-600 mt-1">
                 Your payment of <span className="font-bold text-forest-700">{formatUGX(total)}</span> is secured in iSkillLink Escrow.
               </p>
             </div>

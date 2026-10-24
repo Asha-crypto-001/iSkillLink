@@ -101,7 +101,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
     <Modal isOpen={true} onClose={onClose} titleId="skill-request-title" title={step === 'form' ? 'Submit a Custom Skill Request' : 'Verified Educator Matches'} maxWidth="max-w-2xl">
         <div className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
           <div>
-            <span className="text-[11px] uppercase tracking-wider font-bold bg-forest-900/80 text-forest-300 px-2 py-0.5 rounded border border-forest-700">
+            <span className="text-[12px] uppercase tracking-wider font-bold bg-forest-900/80 text-forest-300 px-2 py-0.5 rounded border border-forest-700">
               Personalized Learning Match
             </span>
             <h3 id="skill-request-title" className="font-bold text-base text-white mt-1 font-display">
@@ -131,7 +131,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
               <Alert>{errorMsg}</Alert>
             )}
 
-            <div className="text-[13px] text-ink-600 bg-ink-50 p-3 rounded-card border border-ink-200">
+            <div className="text-[14px] text-ink-600 bg-ink-50 p-3 rounded-card border border-ink-200">
               Tell us what practical skill you want to learn. Our rule-based matchmaking will instantly evaluate verified educators across Mbarara, Ankole, and Uganda based on skill fit, location, budget, and format.
             </div>
 
@@ -292,8 +292,8 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                 <CheckCircle2 className="w-5 h-5 text-forest-700" />
               </div>
               <div>
-                <div className="font-bold text-forest-900 text-[13px]">Skill Request Submitted Successfully!</div>
-                <p className="text-[13px] text-forest-800 mt-1">
+                <div className="font-bold text-forest-900 text-[14px]">Skill Request Submitted Successfully!</div>
+                <p className="text-[14px] text-forest-800 mt-1">
                   Your request for <span className="font-bold">{skillName}</span> is now active in the matching pool. Here are verified educators matched via rule-based scoring:
                 </p>
               </div>
@@ -318,7 +318,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                             <h4 className="font-bold text-ink-900 text-[15px] font-display">{m.educator.user?.name}</h4>
                             <Badge variant="success" size="sm">{m.match_score}% MATCH</Badge>
                           </div>
-                          <p className="text-[13px] text-ink-600">{m.educator.title}</p>
+                          <p className="text-[14px] text-ink-600">{m.educator.title}</p>
                           <div className="text-xs text-ink-500 flex items-center gap-2 mt-0.5">
                             <span>{m.educator.location}</span>
                             <span>•</span>
@@ -340,7 +340,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                     </div>
 
                     <div className="bg-ink-50 p-3 rounded-control border border-ink-100 text-xs space-y-1.5">
-                      <span className="font-semibold text-ink-700 block text-[11px] uppercase tracking-wider">
+                      <span className="font-semibold text-ink-700 block text-[12px] uppercase tracking-wider">
                         Rule-Based Match Criteria:
                       </span>
                       {m.match_reasons.map((r, i) => (
@@ -354,7 +354,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center text-[13px] text-ink-600 bg-ink-50 rounded-card border border-ink-200">
+              <div className="p-6 text-center text-[14px] text-ink-600 bg-ink-50 rounded-card border border-ink-200">
                 Our operations team will review your request and match you with a verified educator within 24 hours.
               </div>
             )}

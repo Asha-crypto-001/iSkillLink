@@ -119,7 +119,7 @@ export const EducatorProfilePage: React.FC = () => {
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{name}</h1>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-forest-950 text-forest-300 border border-forest-800 px-2 py-0.5 rounded-md"><ShieldCheck className="w-3.5 h-3.5" /> Verified</span>
+                <span className="inline-flex items-center gap-1 text-[12px] font-semibold bg-forest-950 text-forest-300 border border-forest-800 px-2 py-0.5 rounded-md"><ShieldCheck className="w-3.5 h-3.5" /> Verified</span>
               </div>
               <p className="text-sm font-medium text-ink-300 mt-1">{educator.title}</p>
               <div className="flex flex-wrap items-center gap-4 text-xs text-ink-300 mt-2">
@@ -141,7 +141,7 @@ export const EducatorProfilePage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-ink-50 border-t border-ink-200 px-6 sm:px-8 flex space-x-6 text-[13px] font-semibold overflow-x-auto" role="tablist" aria-label="Educator profile sections">
+        <div className="bg-ink-50 border-t border-ink-200 px-6 sm:px-8 flex space-x-6 text-[14px] font-semibold overflow-x-auto" role="tablist" aria-label="Educator profile sections">
           {(['overview','skills','portfolio','reviews'] as const).map(tab => (
             <button key={tab} role="tab" aria-selected={activeTab===tab} onClick={() => setActiveTab(tab)} className={`py-3.5 border-b-2 whitespace-nowrap transition ${activeTab===tab ? 'border-forest-700 text-forest-800' : 'border-transparent text-ink-700 hover:text-ink-900'}`}>
               {tab === 'overview' ? 'Overview & Workshop' : tab === 'skills' ? `Skills & Pricing (${educator.skills?.length||0})` : tab === 'portfolio' ? `Work Samples (${educator.portfolios?.length||0})` : `Reviews (${educator.reviews?.length||0})`}
@@ -183,7 +183,7 @@ export const EducatorProfilePage: React.FC = () => {
                   {educator.qualifications.map(q => (
                     <div key={q.id} className="p-3 rounded-lg border border-ink-200 bg-white flex items-center justify-between text-xs">
                       <div className="flex items-start gap-2.5"><CheckCircle2 className="w-4 h-4 text-forest-700 shrink-0 mt-0.5" /><div><div className="font-semibold text-ink-900">{q.title}</div><div className="text-ink-700">{q.institution} ({q.year})</div></div></div>
-                      <span className="px-2 py-0.5 rounded bg-forest-50 text-forest-800 text-[10px] font-bold border border-forest-200">Verified</span>
+                      <span className="px-2 py-0.5 rounded bg-forest-50 text-forest-800 text-[12px] font-bold border border-forest-200">Verified</span>
                     </div>
                   ))}
                 </div>
@@ -198,7 +198,7 @@ export const EducatorProfilePage: React.FC = () => {
             <div className="space-y-3">
               {educator.skills?.map(s => (
                 <div key={s.id} className="p-4 rounded-card border border-ink-200 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div><div className="flex items-center gap-2"><span className="font-bold text-ink-900 text-sm">{s.skill_name}</span><span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-ink-50 text-ink-700">{s.proficiency_level}</span></div><p className="text-xs text-ink-800 mt-1">{s.description}</p></div>
+                  <div><div className="flex items-center gap-2"><span className="font-bold text-ink-900 text-sm">{s.skill_name}</span><span className="text-[12px] font-semibold uppercase px-2 py-0.5 rounded bg-ink-50 text-ink-700">{s.proficiency_level}</span></div><p className="text-xs text-ink-800 mt-1">{s.description}</p></div>
                   <div className="sm:text-right shrink-0"><div className="text-sm font-bold text-ink-900">{formatUGX(s.hourly_rate_ugx)}<span className="text-xs font-normal text-ink-700"> / hr</span></div></div>
                 </div>
               ))}
@@ -213,7 +213,7 @@ export const EducatorProfilePage: React.FC = () => {
               {educator.portfolios?.map(p => (
                 <div key={p.id} className="rounded-card border border-ink-200 overflow-hidden bg-white group">
                   <img src={p.image_url} alt={p.title} className="w-full h-48 object-cover transition duration-300" />
-                  <div className="p-4"><span className="text-[11px] font-semibold uppercase text-forest-800 bg-forest-50 px-2 py-0.5 rounded">{p.tag}</span><h5 className="font-bold text-ink-900 text-sm mt-1">{p.title}</h5><p className="text-xs text-ink-800 mt-1">{p.description}</p></div>
+                  <div className="p-4"><span className="text-[12px] font-semibold uppercase text-forest-800 bg-forest-50 px-2 py-0.5 rounded">{p.tag}</span><h5 className="font-bold text-ink-900 text-sm mt-1">{p.title}</h5><p className="text-xs text-ink-800 mt-1">{p.description}</p></div>
                 </div>
               ))}
               {(!educator.portfolios || educator.portfolios.length===0) && <div className="col-span-2 text-center text-xs text-ink-500 py-8">No work samples yet.</div>}
@@ -228,11 +228,11 @@ export const EducatorProfilePage: React.FC = () => {
                 {educator.reviews.map(r => (
                   <div key={r.id} className="p-4 rounded-card border border-ink-200 bg-white space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5"><img src={r.learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={r.learner_name} className="w-8 h-8 rounded-full object-cover" /><div><span className="font-semibold text-ink-900 text-xs block">{r.learner_name}</span><span className="text-[10px] text-ink-700">{formatShortDate(r.created_at)}</span></div></div>
+                      <div className="flex items-center gap-2.5"><img src={r.learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={r.learner_name} className="w-8 h-8 rounded-full object-cover" /><div><span className="font-semibold text-ink-900 text-xs block">{r.learner_name}</span><span className="text-[12px] text-ink-700">{formatShortDate(r.created_at)}</span></div></div>
                       <div className="flex items-center gap-1 text-amber-500 text-xs font-bold"><Star className="w-3.5 h-3.5 fill-amber-500" /><span>{r.rating}.0</span></div>
                     </div>
                     <p className="text-xs text-ink-800 leading-relaxed bg-ink-50 p-3 rounded-lg border border-ink-100">"{r.comment}"</p>
-                    {r.educator_reply && <div className="ml-4 pl-3 border-l-2 border-forest-600 text-xs bg-forest-50/50 p-2.5 rounded-r-lg"><span className="font-semibold text-forest-950 block text-[11px]">Educator Reply:</span><span className="text-ink-800 mt-0.5 block">{r.educator_reply}</span></div>}
+                    {r.educator_reply && <div className="ml-4 pl-3 border-l-2 border-forest-600 text-xs bg-forest-50/50 p-2.5 rounded-r-lg"><span className="font-semibold text-forest-950 block text-[12px]">Educator Reply:</span><span className="text-ink-800 mt-0.5 block">{r.educator_reply}</span></div>}
                   </div>
                 ))}
               </div>

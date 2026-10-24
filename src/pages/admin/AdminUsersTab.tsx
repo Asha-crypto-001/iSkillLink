@@ -130,24 +130,24 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-ink-900">{u.name}</span>
                         {isThisLeadAdmin ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-ink-900 text-amber-300">
+                          <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-ink-900 text-amber-300">
                             Lead Admin (Founder)
                           </span>
                         ) : isSecAdmin ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                             Secondary Admin
                           </span>
                         ) : u.role === 'educator' ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-forest-100 text-forest-900 border border-forest-300">
+                          <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-forest-100 text-forest-900 border border-forest-300">
                             Educator
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-300">
+                          <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-blue-100 text-blue-900 border border-blue-300">
                             Learner
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-ink-500 mt-0.5 flex items-center gap-1">
+                      <div className="text-[12px] text-ink-500 mt-0.5 flex items-center gap-1">
                         <MapPin className="w-3 h-3 text-ink-400" />
                         <span>{u.location || 'Mbarara, Uganda'}</span>
                       </div>
@@ -157,7 +157,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
                 {/* Direct Contact Information Box */}
                 <div className="p-3 bg-ink-50 rounded-xl border border-ink-100 space-y-2 text-xs">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
+                  <div className="text-[12px] font-bold uppercase tracking-wider text-ink-500">
                     Direct Contact Channels:
                   </div>
 
@@ -165,7 +165,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                     {/* Phone Call */}
                     <a
                       href={`tel:${u.phone}`}
-                      className="px-2.5 py-1 bg-white hover:bg-ink-100 border border-ink-300 rounded-lg text-ink-800 font-semibold text-[11px] flex items-center gap-1 transition"
+                      className="px-2.5 py-1 bg-white hover:bg-ink-100 border border-ink-300 rounded-lg text-ink-800 font-semibold text-[12px] flex items-center gap-1 transition"
                     >
                       <Phone className="w-3 h-3 text-forest-700" />
                       <span>{u.phone || 'No phone'}</span>
@@ -176,7 +176,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                       href={`https://wa.me/${waNumber}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-2.5 py-1 bg-forest-700 hover:bg-forest-800 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 transition shadow-xs"
+                      className="px-2.5 py-1 bg-forest-700 hover:bg-forest-800 text-white rounded-lg font-bold text-[12px] flex items-center gap-1 transition shadow-xs"
                     >
                       <MessageCircle className="w-3 h-3" />
                       <span>WhatsApp</span>
@@ -185,7 +185,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                     {/* Email */}
                     <a
                       href={`mailto:${u.email}`}
-                      className="px-2.5 py-1 bg-white hover:bg-ink-100 border border-ink-300 rounded-lg text-ink-700 font-medium text-[11px] flex items-center gap-1 transition truncate max-w-full"
+                      className="px-2.5 py-1 bg-white hover:bg-ink-100 border border-ink-300 rounded-lg text-ink-700 font-medium text-[12px] flex items-center gap-1 transition truncate max-w-full"
                     >
                       <Mail className="w-3 h-3 text-ink-400" />
                       <span className="truncate">{u.email}</span>
@@ -195,7 +195,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
                 {/* Interests & Demands Tag Area */}
                 <div className="space-y-1.5 text-xs">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
+                  <div className="text-[12px] font-bold uppercase tracking-wider text-ink-500">
                     What this user is interested in / offering:
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -203,13 +203,13 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                       u.interests.map((interest: string, idx: number) => (
                         <span
                           key={idx}
-                          className="px-2 py-0.5 rounded-md bg-ink-100 border border-ink-200 text-ink-800 text-[11px] font-medium"
+                          className="px-2 py-0.5 rounded-md bg-ink-100 border border-ink-200 text-ink-800 text-[12px] font-medium"
                         >
                           {interest}
                         </span>
                       ))
                     ) : (
-                      <span className="text-[11px] text-ink-400 italic">No specific trade tagged yet</span>
+                      <span className="text-[12px] text-ink-400 italic">No specific trade tagged yet</span>
                     )}
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                 {/* Admin Promotion / Delegation Controls */}
                 {isLeadAdmin && !isThisLeadAdmin && (
                   <div className="pt-2 border-t border-ink-100 flex items-center justify-between">
-                    <span className="text-[11px] text-ink-500 font-medium">
+                    <span className="text-[12px] text-ink-500 font-medium">
                       {isSecAdmin
                         ? `Assigned by: ${u.admin_assigned_by || 'Founder'}`
                         : 'Standard user access'}

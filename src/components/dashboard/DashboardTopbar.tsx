@@ -33,7 +33,7 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({ onMenuClick })
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => navigate('/dashboard/notifications')} className="relative rounded-control p-2.5 text-ink-600 hover:bg-ink-100" aria-label={unreadNotificationCount ? `${unreadNotificationCount} unread notifications` : 'Notifications'}>
           <Bell className="h-5 w-5" aria-hidden="true" />
-          {unreadNotificationCount > 0 && <span className="absolute right-1 top-1 grid min-h-4 min-w-4 place-items-center rounded-pill bg-forest-700 px-1 text-[10px] font-bold text-white">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
+          {unreadNotificationCount > 0 && <span className="absolute right-1 top-1 grid min-h-4 min-w-4 place-items-center rounded-pill bg-forest-700 px-1 text-[12px] font-bold text-white">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
         </button>
         <div className="relative">
           <button type="button" onClick={() => setProfileOpen((value) => !value)} className="flex items-center gap-2 rounded-control p-1.5 hover:bg-ink-100" aria-expanded={profileOpen} aria-haspopup="menu">

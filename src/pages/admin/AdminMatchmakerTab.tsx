@@ -54,10 +54,10 @@ export const AdminMatchmakerTab: React.FC<AdminMatchmakerTabProps> = ({
                   <span>{req.skill_name}</span>
                   <StatusBadge status={req.status} />
                 </div>
-                <div className="text-[11px] text-ink-600 mt-1">
+                <div className="text-[12px] text-ink-600 mt-1">
                   {req.learner_name} • {req.location}
                 </div>
-                <div className="text-[11px] text-forest-800 font-semibold mt-1">
+                <div className="text-[12px] text-forest-800 font-semibold mt-1">
                   Budget: {formatUGX(req.budget_ugx)} ({req.format_preference})
                 </div>
               </div>
@@ -119,7 +119,7 @@ export const AdminMatchmakerTab: React.FC<AdminMatchmakerTabProps> = ({
                           <div>
                             <div className="font-bold text-ink-900 text-sm">{m.educator.user?.name}</div>
                             <div className="text-xs text-ink-600">{m.educator.title} • {m.educator.location}</div>
-                            <div className="text-[11px] text-forest-800 font-bold mt-0.5">
+                            <div className="text-[12px] text-forest-800 font-bold mt-0.5">
                               Rate: {formatUGX(m.educator.hourly_rate_ugx)}/hr
                             </div>
                           </div>
@@ -127,15 +127,15 @@ export const AdminMatchmakerTab: React.FC<AdminMatchmakerTabProps> = ({
 
                         <div className="text-right">
                           <div className="text-lg font-black text-forest-700">{m.match_score}%</div>
-                          <span className="text-[10px] text-ink-500 font-semibold">Match Score</span>
+                          <span className="text-[12px] text-ink-500 font-semibold">Match Score</span>
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-ink-500 uppercase">Match Factors:</span>
+                        <span className="text-[12px] font-bold text-ink-500 uppercase">Match Factors:</span>
                         <div className="flex flex-wrap gap-1.5">
                           {m.match_reasons.map((r, idx) => (
-                            <span key={idx} className="text-[11px] px-2 py-0.5 rounded bg-forest-50 text-forest-900 border border-forest-200">
+                            <span key={idx} className="text-[12px] px-2 py-0.5 rounded bg-forest-50 text-forest-900 border border-forest-200">
                               {r}
                             </span>
                           ))}

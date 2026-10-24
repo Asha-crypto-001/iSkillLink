@@ -244,7 +244,7 @@ export const AdminDashboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-ink-900">{user?.name || 'Ashabahebwa Hassan'}</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-ink-900 text-white flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-ink-900 text-white flex items-center gap-1">
                 <UserCheck className="w-3 h-3 text-forest-400" />
                 {user?.role === 'admin' ? 'Founder & Primary Admin' : 'Secondary Administrator'}
               </span>

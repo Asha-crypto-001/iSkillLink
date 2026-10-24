@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 border-b border-ink-200/70">
           <div className="container-app">
             <div className="flex items-center justify-between gap-4 h-[64px] lg:h-[68px]">
-              {/* Brand — Google Sans, premium lockup */}
+              {/* Brand lockup */}
               <button
                 onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="flex items-center gap-3 text-left group shrink-0 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 rounded-control -ml-1 px-1 py-1"
@@ -114,12 +114,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <img src={logoUrl} alt="" className="w-full h-full object-contain rounded-lg" aria-hidden="true" />
                 </span>
                 <span className="leading-none">
-                  <span className="block text-[18px] lg:text-[20px] font-bold tracking-tight text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif", letterSpacing: '-0.02em' }}>iSkillLink</span>
-                  <span className="block text-[11px] font-medium tracking-tight text-ink-500 -mt-0.5" style={{ fontFamily: "'Google Sans', sans-serif" }}>Where Skills Meet Opportunity</span>
+                  <span className="block text-[18px] lg:text-[20px] font-bold tracking-tight text-ink-900">iSkillLink</span>
+                  <span className="block text-[12px] font-medium tracking-tight text-ink-500 -mt-0.5">Where Skills Meet Opportunity</span>
                 </span>
               </button>
 
-              {/* Center nav — pill, Google Sans medium */}
+              {/* Center nav */}
               <nav className="hidden lg:flex items-center gap-1 p-1 rounded-pill bg-ink-50 border border-ink-200/70" aria-label="Primary">
                 {navLinks.map(link => {
                   const isActive = currentView === link.id;
@@ -128,12 +128,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       key={link.id}
                       onClick={() => setCurrentView(link.id)}
                       aria-current={isActive ? 'page' : undefined}
-                      className={`px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap rounded-pill transition-all focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-1 ${
+                      className={`px-3.5 py-1.5 text-[14px] font-semibold whitespace-nowrap rounded-pill transition-all focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-1 ${
                         isActive
                           ? 'bg-white text-ink-900 shadow-soft border border-ink-200'
                           : 'text-ink-600 hover:text-ink-900 hover:bg-white/70 border border-transparent'
                       }`}
-                      style={{ fontFamily: "'Google Sans', sans-serif" }}
                     >
                       {link.label}
                     </button>
@@ -145,8 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="hidden sm:flex items-center gap-2">
                 <button
                   onClick={onOpenSkillRequest}
-                  className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[13px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
-                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                  className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[14px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-forest-600" aria-hidden="true" />
                   <span>Custom Request</span>
@@ -166,15 +164,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                           ? 'bg-ink-900 text-white border-ink-900 shadow-level-1'
                           : 'bg-white text-ink-800 border-ink-200 hover:border-ink-300 shadow-soft'
                       }`}
-                      style={{ fontFamily: "'Google Sans', sans-serif" }}
                     >
                       <span className="relative">
                         <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-ink-200" />
                         {unreadNotificationCount > 0 && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" aria-hidden="true" />}
                       </span>
                       <span className="text-left leading-none hidden sm:block pr-1">
-                        <span className="block text-[13px] font-bold max-w-[108px] truncate">{user.name.split(' ')[0]}</span>
-                        <span className={`block text-[10px] font-bold uppercase tracking-wider ${userDropdownOpen ? 'text-forest-300' : user.role === 'admin' ? 'text-amber-600' : user.role === 'educator' ? 'text-forest-700' : 'text-ink-500'}`}>{user.role}</span>
+                        <span className="block text-[14px] font-bold max-w-[108px] truncate">{user.name.split(' ')[0]}</span>
+                        <span className={`block text-[12px] font-bold uppercase tracking-wider ${userDropdownOpen ? 'text-forest-300' : user.role === 'admin' ? 'text-amber-600' : user.role === 'educator' ? 'text-forest-700' : 'text-ink-500'}`}>{user.role}</span>
                       </span>
                       <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform hidden sm:block ${userDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                     </button>
@@ -184,9 +181,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <div className="p-4 bg-gradient-to-br from-ink-50 to-white border-b border-ink-100 flex items-center gap-3">
                           <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-11 h-11 rounded-xl object-cover border border-ink-200 shadow-soft shrink-0" />
                           <div className="min-w-0">
-                            <div className="font-bold text-sm text-ink-900 truncate" style={{ fontFamily: "'Google Sans', sans-serif" }}>{user.name}</div>
+                            <div className="font-bold text-sm text-ink-900 truncate">{user.name}</div>
                             <div className="text-xs text-ink-500 truncate">{user.email}</div>
-                            <span className="inline-flex mt-1 px-2 py-0.5 rounded-pill bg-forest-50 border border-forest-200 text-forest-700 text-[10px] font-bold uppercase tracking-wider">{user.role}</span>
+                            <span className="inline-flex mt-1 px-2 py-0.5 rounded-pill bg-forest-50 border border-forest-200 text-forest-700 text-[12px] font-bold uppercase tracking-wider">{user.role}</span>
                           </div>
                           <button onClick={() => { setShowPhotoModal(true); setUserDropdownOpen(false); }} className="ml-auto p-2 rounded-xl bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Change photo">
                             <Camera className="w-4 h-4" />
@@ -199,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                               {user.role === 'admin' && <Settings className="w-4 h-4 text-amber-300" />}
                               {user.role === 'educator' && <GraduationCap className="w-4 h-4 text-forest-300" />}
                               {user.role === 'learner' && <User className="w-4 h-4 text-forest-300" />}
-                              <span style={{ fontFamily: "'Google Sans', sans-serif" }}>{getDashboardLabel()}</span>
+                              <span>{getDashboardLabel()}</span>
                             </span>
                             <ArrowRight className="w-4 h-4 opacity-70" />
                           </button>
@@ -216,8 +213,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         {notifications.length > 0 && (
                           <div className="px-3 py-3 bg-ink-50/70 border-t border-ink-100">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-[11px] font-bold text-ink-500 uppercase tracking-wider">Recent Activity</span>
-                              {unreadNotificationCount > 0 && <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-pill border border-rose-200">{unreadNotificationCount} new</span>}
+                              <span className="text-[12px] font-bold text-ink-500 uppercase tracking-wider">Recent Activity</span>
+                              {unreadNotificationCount > 0 && <span className="text-[12px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-pill border border-rose-200">{unreadNotificationCount} new</span>}
                             </div>
                             <div className="space-y-1.5 max-h-32 overflow-y-auto">
                               {notifications.slice(0, 2).map(n => (
@@ -244,10 +241,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[40px] whitespace-nowrap text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[40px] whitespace-nowrap text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700">
                       Sign In
                     </button>
-                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[40px] whitespace-nowrap text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[40px] whitespace-nowrap text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700">
                       <span>Get Started</span>
                       <ArrowRight className="w-4 h-4 text-white/90" aria-hidden="true" />
                     </button>
@@ -284,7 +281,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="sticky top-0 bg-white/90 backdrop-blur-xl border-b border-ink-100 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <img src={logoUrl} alt="" className="w-8 h-8 object-contain" aria-hidden="true" />
-                  <span className="font-bold text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif" }}>iSkillLink</span>
+                  <span className="font-bold text-ink-900">iSkillLink</span>
                 </div>
                 <button onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-xl bg-ink-50 border border-ink-200 text-ink-700 hover:bg-ink-100 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Close menu">
                   <X className="w-5 h-5" />
@@ -297,7 +294,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="flex items-center gap-3">
                       <img src={user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'} alt={user.name} className="w-10 h-10 rounded-xl object-cover border border-ink-200 shadow-sm" />
                       <div>
-                        <div className="font-bold text-sm text-ink-900" style={{ fontFamily: "'Google Sans', sans-serif" }}>{user.name}</div>
+                        <div className="font-bold text-sm text-ink-900">{user.name}</div>
                         <div className="text-xs font-bold text-forest-700 uppercase tracking-wide">{user.role} Portal</div>
                       </div>
                     </div>
@@ -319,7 +316,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                         className={`w-full text-left px-4 py-3.5 rounded-xl text-sm font-bold transition flex items-center justify-between min-h-[48px] focus-visible:ring-2 focus-visible:ring-forest-700 ${
                           isActive ? 'bg-forest-700 text-white shadow-soft' : 'text-ink-700 hover:bg-ink-50 border border-transparent'
                         }`}
-                        style={{ fontFamily: "'Google Sans', sans-serif" }}
                       >
                         <span>{link.label}</span>
                         {isActive && <span className="w-2 h-2 rounded-full bg-white" aria-hidden="true" />}

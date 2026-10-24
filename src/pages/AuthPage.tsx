@@ -210,7 +210,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-2 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 text-ink-700 font-semibold text-[11px] flex items-center gap-1.5"
+                    className="px-3 py-2 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 text-ink-700 font-semibold text-[12px] flex items-center gap-1.5"
                   >
                     <Camera className="w-3.5 h-3.5 text-forest-700" />
                     <span>{avatarUrl ? 'Change Photo' : 'Upload Photo'}</span>
@@ -219,7 +219,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     <button
                       type="button"
                       onClick={() => setAvatarUrl('')}
-                      className="text-ink-400 hover:text-rose-600 text-[11px]"
+                      className="text-ink-400 hover:text-rose-600 text-[12px]"
                     >
                       Remove
                     </button>

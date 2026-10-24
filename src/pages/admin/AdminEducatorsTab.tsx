@@ -28,7 +28,7 @@ export const AdminEducatorsTab: React.FC<AdminEducatorsTabProps> = ({ educators 
               />
               <div>
                 <h3 className="font-bold text-xs text-ink-900">{edu.user?.name}</h3>
-                <div className="text-[11px] text-ink-500">{edu.title}</div>
+                <div className="text-[12px] text-ink-500">{edu.title}</div>
                 <StatusBadge status={edu.status} />
               </div>
             </div>

@@ -101,18 +101,18 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                 </button>
               ))}
             </div>
-            <div className="text-[13px] font-bold text-forest-800">
+            <div className="text-[14px] font-bold text-forest-800">
               {rating === 5 ? 'Exceptional Mentor & Master' : rating === 4 ? 'Very Good Experience' : 'Standard'}
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 bg-ink-50 p-3 rounded-card border border-ink-200 text-xs">
             <div>
-              <span className="text-[11px] font-bold text-ink-600 block mb-1">Practical Skill</span>
+              <span className="text-[12px] font-bold text-ink-600 block mb-1">Practical Skill</span>
               <select
                 value={skillRating}
                 onChange={(e) => setSkillRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Master</option>
                 <option value={4}>4★ High</option>
@@ -120,11 +120,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </select>
             </div>
             <div>
-              <span className="text-[11px] font-bold text-ink-600 block mb-1">Punctuality</span>
+              <span className="text-[12px] font-bold text-ink-600 block mb-1">Punctuality</span>
               <select
                 value={punctualityRating}
                 onChange={(e) => setPunctualityRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ On Time</option>
                 <option value={4}>4★ Minor delay</option>
@@ -132,11 +132,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </select>
             </div>
             <div>
-              <span className="text-[11px] font-bold text-ink-600 block mb-1">Teaching Clarity</span>
+              <span className="text-[12px] font-bold text-ink-600 block mb-1">Teaching Clarity</span>
               <select
                 value={communicationRating}
                 onChange={(e) => setCommunicationRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Clear</option>
                 <option value={4}>4★ Good</option>
@@ -146,7 +146,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-ink-800 mb-1" htmlFor="review-comment">
+            <label className="block text-[14px] font-bold text-ink-800 mb-1" htmlFor="review-comment">
               Your Review for Future Learners <span className="text-rose-500">*</span>
             </label>
             <textarea
@@ -155,7 +155,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Describe what practical skills you practiced, how well the educator explained steps, and what you created..."
-              className="w-full text-[13px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
+              className="w-full text-[14px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
               required
             />
           </div>

@@ -51,7 +51,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                         </span>
                       </div>
                       <p className="text-xs text-ink-600 mt-0.5">{edu.title} • {edu.location}</p>
-                      <div className="text-[11px] text-ink-500 flex items-center gap-3 mt-1">
+                      <div className="text-[12px] text-ink-500 flex items-center gap-3 mt-1">
                         <span>Phone: {edu.user?.phone}</span>
                         <span>•</span>
                         <span>Rate: {formatUGX(edu.hourly_rate_ugx)}/hr</span>
@@ -62,7 +62,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                   <div className="flex flex-col sm:items-end gap-2">
                     <p className="text-xs text-ink-600" aria-live="polite">
                       <strong className="text-ink-900">{progress.passed} of {progress.total}</strong> checks passed
-                      <span className="block text-[11px] text-ink-500">Goes live automatically after the last check</span>
+                      <span className="block text-[12px] text-ink-500">Goes live automatically after the last check</span>
                     </p>
                     <button
                       onClick={() => onSuspendEducator(edu.id)}
@@ -79,23 +79,23 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                     const passed = isStepPassed(v, step);
                     return (
                       <li key={step.key} className={`p-3.5 rounded-xl border bg-white space-y-2 ${passed ? 'border-forest-200' : 'border-ink-200'}`}>
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="font-semibold text-ink-700">{index + 1}. {step.label}</span>
                           <StatusBadge status={v?.[step.field] || 'pending'} />
                         </div>
                         {step.key === 'national_id' ? (
-                          <div className="font-mono text-[11px] text-ink-600">{hasSubmittedNationalId(v) ? v!.national_id_number : 'Not submitted yet'}</div>
+                          <div className="font-mono text-[12px] text-ink-600">{hasSubmittedNationalId(v) ? v!.national_id_number : 'Not submitted yet'}</div>
                         ) : (
-                          <div className="text-[11px] text-ink-500">{step.adminDetail}</div>
+                          <div className="text-[12px] text-ink-500">{step.adminDetail}</div>
                         )}
                         {passed ? (
-                          <div className="flex items-center gap-1 py-1 text-[11px] font-semibold text-forest-800">
+                          <div className="flex items-center gap-1 py-1 text-[12px] font-semibold text-forest-800">
                             <Check className="w-3.5 h-3.5" aria-hidden="true" /> Passed
                           </div>
                         ) : (
                           <button
                             onClick={() => onVerifyStep(edu.id, step.key)}
-                            className="w-full py-1.5 text-[11px] font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded border border-forest-200 transition"
+                            className="w-full py-1.5 text-[12px] font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded border border-forest-200 transition"
                           >
                             {step.adminAction}
                           </button>

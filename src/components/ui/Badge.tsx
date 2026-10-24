@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'verified';
+export type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'verified' | 'held';
 export type BadgeSize = 'sm' | 'md';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -19,6 +19,8 @@ const variantClasses: Record<BadgeVariant, string> = {
   info: 'bg-blue-50 text-blue-700 border-blue-200',
   neutral: 'bg-ink-100 text-ink-700 border-ink-200',
   verified: 'bg-forest-50 text-forest-800 border-forest-200 font-bold',
+  // Money held in escrow — the clay accent is reserved for this.
+  held: 'bg-clay-50 text-clay-700 border-clay-200',
 };
 
 const dotClasses: Record<BadgeVariant, string> = {
@@ -28,10 +30,11 @@ const dotClasses: Record<BadgeVariant, string> = {
   info: 'bg-blue-500',
   neutral: 'bg-ink-400',
   verified: 'bg-forest-600',
+  held: 'bg-clay-600',
 };
 
 const sizeClasses: Record<BadgeSize, string> = {
-  sm: 'text-[11px] px-2 py-0.5',
+  sm: 'text-[12px] px-2 py-0.5',
   md: 'text-xs px-2.5 py-1',
 };
 
@@ -72,7 +75,7 @@ const PAYMENT_LABELS: Record<'learner' | 'educator', Record<string, [string, Bad
   learner: {
     pending: ['Not paid yet', 'warning'],
     payment_requested: ['Payment requested', 'warning'],
-    paid: ['Held in escrow', 'info'],
+    paid: ['Held in escrow', 'held'],
     completed: ['Released to educator', 'success'],
     refunded: ['Refunded to you', 'neutral'],
     failed: ['Payment failed', 'error']
@@ -80,7 +83,7 @@ const PAYMENT_LABELS: Record<'learner' | 'educator', Record<string, [string, Bad
   educator: {
     pending: ['Awaiting learner payment', 'neutral'],
     payment_requested: ['Awaiting learner payment', 'neutral'],
-    paid: ['Held in escrow', 'info'],
+    paid: ['Held in escrow', 'held'],
     completed: ['Paid out', 'success'],
     refunded: ['Refunded to learner', 'neutral'],
     failed: ['Payment failed', 'error']

@@ -71,7 +71,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
               )}
             </div>
 
-            <p className="text-[13px] font-medium text-ink-300 mt-1">{educator.title}</p>
+            <p className="text-[14px] font-medium text-ink-300 mt-1">{educator.title}</p>
 
             <div className="flex flex-wrap items-center gap-4 text-xs text-ink-300 mt-2">
               <span className="flex items-center gap-1">
@@ -93,7 +93,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
         </div>
 
         <div className="sm:text-right w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-t-0 border-ink-800">
-          <div className="text-[11px] text-ink-400 uppercase font-bold tracking-wider">Standard Rate</div>
+          <div className="text-[12px] text-ink-400 uppercase font-bold tracking-wider">Standard Rate</div>
           <div className="text-2xl font-bold text-white font-display">
             {formatUGX(educator.hourly_rate_ugx)}
             <span className="text-xs font-normal text-ink-400"> / hr</span>
@@ -102,7 +102,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
       </div>
 
       {/* Tab Navigation — accessible */}
-      <div className="shrink-0 border-b border-ink-200 px-6 sm:px-8 bg-ink-50 flex gap-6 text-[13px] font-semibold overflow-x-auto" role="tablist" aria-label="Educator profile sections">
+      <div className="shrink-0 border-b border-ink-200 px-6 sm:px-8 bg-ink-50 flex gap-6 text-[14px] font-semibold overflow-x-auto" role="tablist" aria-label="Educator profile sections">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -126,7 +126,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
               <h4 className="text-xs font-bold uppercase tracking-wider text-ink-700 mb-2">
                 Professional Background & Experience
               </h4>
-              <p className="text-[13px] text-ink-800 leading-relaxed bg-ink-50 p-4 rounded-card border border-ink-200">
+              <p className="text-[14px] text-ink-800 leading-relaxed bg-ink-50 p-4 rounded-card border border-ink-200">
                 {educator.bio}
               </p>
             </div>
@@ -137,7 +137,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                   <Wrench className="w-4 h-4 text-forest-700" />
                   <span>Workshop Tools & Equipment Provided</span>
                 </div>
-                <p className="text-[13px] text-ink-700 leading-relaxed">
+                <p className="text-[14px] text-ink-700 leading-relaxed">
                   {educator.equipment_provided || 'Full practical equipment available for hands-on apprenticeship.'}
                 </p>
               </div>
@@ -147,10 +147,10 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                   <MapPin className="w-4 h-4 text-forest-700" />
                   <span>Service Area & Locations</span>
                 </div>
-                <p className="text-[13px] text-ink-800">
+                <p className="text-[14px] text-ink-800">
                   <span className="font-semibold text-ink-900">Base: </span>{educator.location}
                 </p>
-                <p className="text-[13px] text-ink-800">
+                <p className="text-[14px] text-ink-800">
                   <span className="font-semibold text-ink-900">Covered: </span>{educator.service_area}
                 </p>
               </div>
@@ -211,7 +211,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
 
         {activeTab === 'skills' && (
           <div className="space-y-4" role="tabpanel">
-            <p className="text-[13px] text-ink-700">
+            <p className="text-[14px] text-ink-700">
               Each practical skill is taught hands-on with transparent hourly or package rates in Ugandan Shillings (UGX).
             </p>
             <div className="space-y-3">
@@ -225,7 +225,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                       <span className="font-bold text-ink-900 text-[15px] font-display">{s.skill_name}</span>
                       <Badge variant="neutral" size="sm">{s.proficiency_level}</Badge>
                     </div>
-                    <p className="text-[13px] text-ink-700 mt-1">{s.description}</p>
+                    <p className="text-[14px] text-ink-700 mt-1">{s.description}</p>
                   </div>
 
                   <div className="sm:text-right shrink-0">
@@ -247,7 +247,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
 
         {activeTab === 'portfolio' && (
           <div className="space-y-4" role="tabpanel">
-            <p className="text-[13px] text-ink-700">
+            <p className="text-[14px] text-ink-700">
               Real photos and verified projects produced by {name} and previous students.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -261,12 +261,12 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                   <div className="p-4">
                     <Badge variant="success" size="sm" className="mb-1">{p.tag}</Badge>
                     <h5 className="font-bold text-ink-900 text-[15px] font-display">{p.title}</h5>
-                    <p className="text-[13px] text-ink-700 mt-1">{p.description}</p>
+                    <p className="text-[14px] text-ink-700 mt-1">{p.description}</p>
                   </div>
                 </div>
               ))}
               {(!educator.portfolios || educator.portfolios.length === 0) && (
-                <div className="col-span-2 text-center py-8 text-ink-600 text-[13px]">No work samples yet.</div>
+                <div className="col-span-2 text-center py-8 text-ink-600 text-[14px]">No work samples yet.</div>
               )}
             </div>
           </div>
@@ -286,7 +286,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                           className="w-8 h-8 rounded-full object-cover"
                         />
                         <div>
-                          <span className="font-semibold text-ink-900 text-[13px] block">{r.learner_name}</span>
+                          <span className="font-semibold text-ink-900 text-[14px] block">{r.learner_name}</span>
                           <span className="text-xs text-ink-500">{formatShortDate(r.created_at)}</span>
                         </div>
                       </div>
@@ -297,12 +297,12 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                       </Badge>
                     </div>
 
-                    <p className="text-[13px] text-ink-800 leading-relaxed bg-ink-50 p-3 rounded-control border border-ink-100">
+                    <p className="text-[14px] text-ink-800 leading-relaxed bg-ink-50 p-3 rounded-control border border-ink-100">
                       "{r.comment}"
                     </p>
 
                     {r.educator_reply && (
-                      <div className="ml-4 pl-3 border-l-2 border-forest-600 text-[13px] bg-forest-50/50 p-2.5 rounded-r-control">
+                      <div className="ml-4 pl-3 border-l-2 border-forest-600 text-[14px] bg-forest-50/50 p-2.5 rounded-r-control">
                         <span className="font-semibold text-forest-900 block text-xs">Educator Reply:</span>
                         <span className="text-ink-700 mt-0.5 block">{r.educator_reply}</span>
                       </div>
@@ -311,7 +311,7 @@ export const EducatorProfileModal: React.FC<EducatorProfileModalProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-ink-600 text-[13px]">
+              <div className="text-center py-12 text-ink-600 text-[14px]">
                 No public reviews recorded yet. Be among the first to learn with this educator!
               </div>
             )}

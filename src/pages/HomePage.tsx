@@ -206,17 +206,17 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <ol className="mt-6 space-y-5 border-l border-dashed border-ink-300 pl-5">
                   <li className="relative">
-                    <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-amber-600 ring-4 ring-white" aria-hidden="true" />
+                    <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-clay-600 ring-4 ring-white" aria-hidden="true" />
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="text-sm font-semibold text-ink-900">You pay with MoMo</span>
                       <span className="font-mono text-sm tabular-nums text-ink-900">90,000</span>
                     </div>
-                    <p className="text-[13px] text-ink-600">Held by iSkillLink — not sent to anyone yet</p>
+                    <p className="text-[14px] text-ink-600">Held by iSkillLink — not sent to anyone yet</p>
                   </li>
                   <li className="relative">
                     <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-ink-300 ring-4 ring-white" aria-hidden="true" />
                     <span className="text-sm font-semibold text-ink-900">Session at the workbench</span>
-                    <p className="text-[13px] text-ink-600">You confirm it happened</p>
+                    <p className="text-[14px] text-ink-600">You confirm it happened</p>
                   </li>
                   <li className="relative">
                     <span className="absolute -left-[1.6rem] top-1 w-2.5 h-2.5 rounded-full bg-forest-700 ring-4 ring-white" aria-hidden="true" />
@@ -224,14 +224,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <span className="text-sm font-semibold text-ink-900">Educator is paid (90%)</span>
                       <span className="font-mono text-sm tabular-nums text-ink-900">81,000</span>
                     </div>
-                    <div className="mt-1 flex items-baseline justify-between gap-3 text-[13px] text-ink-600">
+                    <div className="mt-1 flex items-baseline justify-between gap-3 text-[14px] text-ink-600">
                       <span>iSkillLink fee (10%)</span>
                       <span className="font-mono tabular-nums">9,000</span>
                     </div>
                   </li>
                 </ol>
 
-                <p className="mt-6 pt-4 border-t border-dashed border-ink-300 text-[13px] text-ink-700 leading-relaxed">
+                <p className="mt-6 pt-4 border-t border-dashed border-ink-300 text-[14px] text-ink-700 leading-relaxed">
                   If the session doesn’t happen, our team refunds you in full.
                 </p>
               </div>
