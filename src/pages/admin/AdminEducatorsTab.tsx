@@ -52,13 +52,13 @@ export const AdminEducatorsTab: React.FC<AdminEducatorsTabProps> = ({ educators 
 
   return (
     <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-5">
-      <div className="flex p-1 bg-ink-100 rounded-control text-xs font-semibold w-full sm:w-auto sm:self-start overflow-x-auto" role="group" aria-label="Filter educators">
+      <div className="flex flex-wrap gap-1 p-1 bg-ink-100 rounded-control text-xs font-semibold w-full sm:w-auto sm:self-start" role="group" aria-label="Filter educators">
         {(Object.keys(GROUP_LABELS) as Group[]).map(id => (
           <button
             key={id}
             onClick={() => setGroup(id)}
             aria-pressed={group === id}
-            className={`px-3 min-h-[44px] md:min-h-[40px] rounded-[9px] whitespace-nowrap transition ${group === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+            className={`px-3 min-h-[44px] md:min-h-[40px] shrink-0 rounded-[9px] whitespace-nowrap transition ${group === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
           >
             {GROUP_LABELS[id]} <span className="text-ink-500">{counts[id]}</span>
           </button>

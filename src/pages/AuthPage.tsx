@@ -100,7 +100,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
   return (
     <div className="max-w-md mx-auto px-4 py-12 space-y-6">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-600 hover:text-ink-900 rounded-control">
+      <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm font-semibold text-ink-600 hover:text-ink-900 rounded-control">
         <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         Back to iSkillLink
       </Link>

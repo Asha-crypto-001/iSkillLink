@@ -141,7 +141,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <Alert>{errorMsg}</Alert>
           )}
 
-          <Field label="What do you want to learn?" htmlFor="booking-skill">
+          <Field label="What do you want to learn?" htmlFor="booking-skill" hint={`${formatUGX(hourlyRate)} an hour`}>
             <Select
               id="booking-skill"
               value={selectedSkill}
@@ -149,7 +149,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             >
               {educator.skills?.map(s => (
                 <option key={s.id} value={s.skill_name}>
-                  {s.skill_name} ({formatUGX(s.hourly_rate_ugx)}/hr)
+                  {s.skill_name}
                 </option>
               ))}
               <option value={educator.title}>Something else — I’ll describe it below</option>

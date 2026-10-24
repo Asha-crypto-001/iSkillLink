@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Brand lockup */}
               <button
                 onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className="flex items-center gap-3 text-left group shrink-0 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 rounded-control -ml-1 px-1 py-1"
+                className="flex items-center gap-3 text-left group shrink-0 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 rounded-control -ml-1 px-1 py-1 min-h-[44px]"
                 aria-label="iSkillLink home"
               >
                 <span className="relative flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 bg-white rounded-xl shadow-soft border border-ink-200 p-1 group-hover:border-forest-200 group-hover:shadow-level-1 transition">
@@ -256,7 +256,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Mobile */}
               <div className="flex lg:hidden items-center gap-2">
                 {user && (
-                  <button onClick={() => setShowPhotoModal(true)} className="p-0.5 rounded-full ring-2 ring-forest-200 hover:ring-forest-300 transition focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Update photo">
+                  <button onClick={() => setShowPhotoModal(true)} className="relative after:absolute after:-inset-1.5 after:content-[''] p-0.5 rounded-full ring-2 ring-forest-200 hover:ring-forest-300 transition focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Update photo">
                     <Avatar src={user.avatar_url} name={user.name} className="w-8 h-8 rounded-full" />
                   </button>
                 )}

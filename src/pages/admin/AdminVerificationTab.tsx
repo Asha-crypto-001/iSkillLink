@@ -25,14 +25,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
   onVerifyStep
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-ink-200 shadow-sm p-6 space-y-6">
-      <div>
-        <h2 className="text-base font-bold text-ink-900">Educator Verification & Vetting Queue</h2>
-        <p className="text-xs text-ink-500">
-          Review applicant identity, trade tests, workshop readiness, and references before approving active status.
-        </p>
-      </div>
-
+    <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
       <div className="space-y-6">
         {verificationQueue.length > 0 ? (
           verificationQueue.map(edu => {
@@ -70,7 +63,7 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                     </p>
                     <button
                       onClick={() => onSuspendEducator(edu.id)}
-                      className="px-3 py-2 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition"
+                      className="px-3 min-h-[44px] md:min-h-[36px] rounded-control border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition"
                     >
                       Put on hold
                     </button>
@@ -96,6 +89,9 @@ export const AdminVerificationTab: React.FC<AdminVerificationTabProps> = ({
                           <div className="flex items-center gap-1 py-1 text-[12px] font-semibold text-forest-800">
                             <Check className="w-3.5 h-3.5" aria-hidden="true" /> Passed
                           </div>
+                        ) : step.key === 'national_id' && !hasSubmittedNationalId(v) ? (
+                          // Nothing to check yet: the ID check can't pass without an ID number.
+                          <p className="py-1 text-xs text-ink-600">Waiting for their ID number. Ask them for it on WhatsApp.</p>
                         ) : (
                           <button
                             onClick={() => onVerifyStep(edu.id, step.key)}

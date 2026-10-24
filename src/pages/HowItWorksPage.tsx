@@ -128,7 +128,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
           ))}
         </ol>
         <p className="text-sm text-ink-700">
-          More questions? <button onClick={() => setCurrentView('contact')} className="font-semibold text-forest-700 underline underline-offset-2 hover:text-forest-800">Read the FAQ or message us</button>.
+          More questions? <button onClick={() => setCurrentView('contact')} className="font-semibold text-forest-700 underline underline-offset-2 hover:text-forest-800 relative after:absolute after:-inset-y-3 after:-inset-x-1 after:content-['']">Read the FAQ or message us</button>.
         </p>
       </section>
     </div>

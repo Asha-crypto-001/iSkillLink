@@ -85,7 +85,7 @@ export const ContactPage: React.FC = () => {
 
           <ul className="space-y-3 text-sm text-ink-700 px-1">
             <li className="flex items-start gap-3"><Phone className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><span>Call: +256 772 233 621</span></li>
-            <li className="flex items-start gap-3"><Mail className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><a href="mailto:iskilllink0@gmail.com" className="underline underline-offset-2 hover:text-ink-900">iskilllink0@gmail.com</a></li>
+            <li className="flex items-start gap-3"><Mail className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><a href="mailto:iskilllink0@gmail.com" className="underline underline-offset-2 hover:text-ink-900 relative after:absolute after:-inset-y-3 after:-inset-x-1 after:content-['']">iskilllink0@gmail.com</a></li>
             <li className="flex items-start gap-3"><MapPin className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><span>Mbarara City, Western Uganda</span></li>
           </ul>
         </div>

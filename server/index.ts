@@ -1535,6 +1535,12 @@ app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'
     notes: notes || verification.notes
   };
 
+  // The ID check can't pass without an ID number to check.
+  const nin = verification.national_id_number || '';
+  if (step === 'national_id' && status === 'verified' && (nin === '' || /^CM-(PENDING|APP-PENDING|NOT)/.test(nin))) {
+    return res.status(409).json({ error: 'This applicant has not submitted a National ID number yet.' });
+  }
+
   if (step === 'national_id') updates.national_id_status = status;
   if (step === 'background_check') updates.background_check_status = status;
   if (step === 'interview') updates.interview_status = status;

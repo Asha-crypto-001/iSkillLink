@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           <div className="col-span-2 md:col-span-5 space-y-4">
             <button
               onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="flex items-center gap-3 text-left rounded-control"
+              className="flex items-center gap-3 min-h-[44px] text-left rounded-control"
               aria-label="iSkillLink home"
             >
               <span className="w-10 h-10 bg-white rounded-control p-1.5 flex items-center justify-center shrink-0">

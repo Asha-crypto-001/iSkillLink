@@ -99,13 +99,13 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
           />
         </label>
 
-        <div className="flex p-1 bg-ink-100 rounded-control text-xs font-semibold w-full sm:w-auto overflow-x-auto" role="group" aria-label="Filter by role">
+        <div className="flex flex-wrap gap-1 p-1 bg-ink-100 rounded-control text-xs font-semibold w-full sm:w-auto" role="group" aria-label="Filter by role">
           {(['all', 'learner', 'educator', 'secondary_admin', 'admin'] as const).map(id => (
             <button
               key={id}
               onClick={() => setUserRoleFilter(id)}
               aria-pressed={userRoleFilter === id}
-              className={`px-3 min-h-[44px] md:min-h-[36px] rounded-[9px] whitespace-nowrap transition ${userRoleFilter === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+              className={`px-3 min-h-[44px] md:min-h-[36px] shrink-0 rounded-[9px] whitespace-nowrap transition ${userRoleFilter === id ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
             >
               {id === 'all' ? 'Everyone' : id === 'admin' ? 'Lead admin' : ROLE_LABELS[id] + 's'} <span className="text-ink-500">{counts[id]}</span>
             </button>
