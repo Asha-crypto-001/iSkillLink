@@ -4,10 +4,10 @@ import { Category, Educator, Review, Skill } from '../types';
 import { api } from '../services/api';
 import { EducatorCard } from '../components/EducatorCard';
 import { Alert } from '../components/ui/Alert';
-import { EducatorCardSkeleton, CategorySkeleton } from '../components/ui/Skeleton';
+import { EducatorCardSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import {
-  Search, ShieldCheck, ArrowRight, ArrowUpRight, Star, Quote,
+  Search, ShieldCheck, ArrowRight, Star, Quote,
   Award, Briefcase, Sparkles, BadgeCheck, Lock, Wallet, Smartphone,
   Scissors, Code, Utensils, Zap, Hammer,
   Wrench, Sprout, Camera, Palette, TrendingUp, ChevronRight,
@@ -38,10 +38,11 @@ const HERO_PHOTOS = {
   baking: { small: baking480, large: baking736, label: 'Baking', alt: 'Rolling out biscuit dough on a floured table' }
 };
 
-const WorkshopPhoto: React.FC<{ photo: typeof HERO_PHOTOS.carpentry; sizes: string; priority?: boolean; className?: string }> = ({
-  photo, sizes, priority = false, className = ''
+// className sets the frame (position, size, rounding); the photo always covers it.
+const WorkshopPhoto: React.FC<{ photo: typeof HERO_PHOTOS.carpentry; sizes: string; priority?: boolean; caption?: boolean; className?: string }> = ({
+  photo, sizes, priority = false, caption = true, className = ''
 }) => (
-  <figure className={`relative overflow-hidden rounded-card bg-forest-900 ring-1 ring-white/10 ${className}`}>
+  <figure className={`overflow-hidden bg-ink-200 ${className}`}>
     <img
       src={photo.large}
       srcSet={`${photo.small} 480w, ${photo.large} 736w`}
@@ -54,9 +55,11 @@ const WorkshopPhoto: React.FC<{ photo: typeof HERO_PHOTOS.carpentry; sizes: stri
       {...(priority ? { fetchpriority: 'high' } : {})}
       className="absolute inset-0 h-full w-full object-cover"
     />
-    <figcaption className="absolute left-3 top-3 rounded-pill bg-ink-950/60 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-white">
-      {photo.label}
-    </figcaption>
+    {caption && (
+      <figcaption className="absolute left-3 top-3 rounded-pill bg-ink-950/60 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-white">
+        {photo.label}
+      </figcaption>
+    )}
   </figure>
 );
 
@@ -66,6 +69,9 @@ const TRUST_POINTS = [
   { icon: Lock, title: 'Held until it’s done', text: 'Your payment is released only after the session.' },
   { icon: Hammer, title: 'Real tools, real jobs', text: 'Learn at a working bench, not from a video.' }
 ];
+
+// Icon tints for the trade cards, cycled so the grid isn't one flat colour.
+const CATEGORY_TINTS = ['bg-forest-50 text-forest-700', 'bg-sun-50 text-sun-700', 'bg-ink-100 text-ink-700'];
 
 const sectionEyebrow = 'text-xs font-bold uppercase tracking-[0.14em] text-forest-700';
 const sectionTitle = 'mt-2 text-[1.75rem] sm:text-4xl font-bold text-ink-900 tracking-[-0.02em] font-display leading-[1.1]';
@@ -160,137 +166,147 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="overflow-x-clip">
-      {/* ===== HERO — the promise and search on the left, real workshops on the right ===== */}
-      <section className="relative isolate overflow-hidden bg-forest-950 text-white">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-48 -right-40 -z-10 h-[40rem] w-[40rem] rounded-full bg-forest-500/20 blur-3xl" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 h-[30rem] w-[30rem] rounded-full bg-sun-400/10 blur-3xl" />
+      {/* ===== HERO — a light panel: the promise and search on the left, real workshops on the right ===== */}
+      <section className="px-2 pt-2 sm:px-4 sm:pt-4">
+        <div className="relative isolate overflow-hidden rounded-[28px] border border-ink-200/70 bg-gradient-to-br from-forest-50 via-[#f8f6ef] to-sun-50">
+          <div aria-hidden="true" className="pointer-events-none absolute -top-32 -left-24 -z-10 h-[28rem] w-[28rem] rounded-full bg-white/80 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 right-[20%] -z-10 h-[24rem] w-[24rem] rounded-full bg-forest-100/70 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute top-8 left-[44%] -z-10 hidden h-16 w-28 lg:block bg-[radial-gradient(theme(colors.ink.300)_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
+          <div aria-hidden="true" className="pointer-events-none absolute bottom-10 left-6 -z-10 h-14 w-24 bg-[radial-gradient(theme(colors.ink.300)_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
 
-        <div className="container-app pt-12 pb-20 sm:pt-16 lg:pt-20 lg:pb-28">
-          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-14 lg:gap-16 items-center">
-            <div className="space-y-8">
-              <p className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-forest-100">
-                <span className="h-2 w-2 rounded-full bg-sun-300" aria-hidden="true" />
-                Hands-on lessons in Mbarara and across Uganda
-              </p>
-
-              <div className="space-y-5">
-                <h1 className="font-display font-bold text-white text-[2.5rem] sm:text-[3.25rem] lg:text-[4rem] leading-[1.02] tracking-[-0.03em] max-w-[14ch]">
-                  Learn a trade at a{' '}
-                  <span className="relative whitespace-nowrap text-sun-300">
-                    real workbench
-                    <svg aria-hidden="true" viewBox="0 0 300 12" preserveAspectRatio="none" className="absolute -bottom-2 left-0 h-3 w-full text-sun-400/70">
-                      <path d="M3 9C60 3.5 170 1.5 297 6" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                  </span>.
-                </h1>
-                <p className="text-base sm:text-lg text-forest-100/85 leading-relaxed max-w-[34rem]">
-                  Book hands-on sessions with tailors, electricians, bakers and technicians who teach on their own bench.
-                  Pay with MTN or Airtel MoMo — we hold the money until your session is done.
+          <div className="container-app pt-10 pb-14 sm:pt-14 lg:pt-16 lg:pb-20">
+            <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-10 items-center">
+              <div className="space-y-8">
+                <p className="inline-flex items-center gap-2 rounded-pill border border-forest-200 bg-white/80 px-3.5 py-1.5 text-sm font-medium text-forest-800 shadow-soft">
+                  <span className="h-2 w-2 rounded-full bg-forest-500" aria-hidden="true" />
+                  Hands-on lessons in Mbarara and across Uganda
                 </p>
-              </div>
 
-              <form
-                onSubmit={handleHeroSearch}
-                className="bg-white p-2 rounded-display shadow-level-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-[36rem]"
-                role="search"
-                aria-label="Find a skill educator"
-              >
-                <label className="flex-1 flex items-center gap-3 px-3 min-h-[52px] text-ink-800">
-                  <Search className="w-5 h-5 text-ink-400 shrink-0" aria-hidden="true" />
-                  <span className="sr-only">What do you want to learn?</span>
-                  <input
-                    type="text"
-                    placeholder="What do you want to learn?"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full text-base text-ink-900 placeholder:text-ink-500 focus:outline-none bg-transparent"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="px-6 min-h-[52px] rounded-card bg-forest-700 hover:bg-forest-800 active:bg-forest-900 text-white font-bold text-sm transition flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2"
+                <div className="space-y-5">
+                  <h1 className="font-display font-bold text-ink-900 text-[2.5rem] sm:text-[3.25rem] lg:text-[4rem] leading-[1.02] tracking-[-0.03em] max-w-[14ch]">
+                    Learn a trade at a{' '}
+                    <span className="relative whitespace-nowrap text-forest-700">
+                      real workbench
+                      <svg aria-hidden="true" viewBox="0 0 300 12" preserveAspectRatio="none" className="absolute -bottom-2 left-0 h-3 w-full text-sun-400">
+                        <path d="M3 9C60 3.5 170 1.5 297 6" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                      </svg>
+                    </span>.
+                  </h1>
+                  <p className="text-base sm:text-lg text-ink-600 leading-relaxed max-w-[34rem]">
+                    Book hands-on sessions with tailors, electricians, bakers and technicians who teach on their own bench.
+                    Pay with MTN or Airtel MoMo — we hold the money until your session is done.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={handleHeroSearch}
+                  className="bg-white p-2 rounded-display shadow-level-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-[36rem]"
+                  role="search"
+                  aria-label="Find a skill educator"
                 >
-                  Find an educator
-                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </button>
-              </form>
+                  <label className="flex-1 flex items-center gap-3 px-3 min-h-[52px] text-ink-800">
+                    <Search className="w-5 h-5 text-ink-400 shrink-0" aria-hidden="true" />
+                    <span className="sr-only">What do you want to learn?</span>
+                    <input
+                      type="text"
+                      placeholder="What do you want to learn?"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full text-base text-ink-900 placeholder:text-ink-500 focus:outline-none bg-transparent"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    className="px-6 min-h-[52px] rounded-card bg-forest-700 hover:bg-forest-800 active:bg-forest-900 text-white font-bold text-sm transition flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2"
+                  >
+                    Find an educator
+                    <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </form>
 
-              {/* Start from the outcome, not the category name */}
-              <div className="space-y-3">
-                <p className="text-sm text-forest-100/75">Or start from what you want to make:</p>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { label: 'a wedding cake', search: 'cake' },
-                    { label: 'a kitenge dress', search: 'tailor' },
-                    { label: 'a home solar setup', search: 'solar' },
-                    { label: 'a fixed phone screen', search: 'phone' }
-                  ].map(outcome => (
-                    <button
-                      key={outcome.label}
-                      onClick={() => navigate(`/find-skill?search=${encodeURIComponent(outcome.search)}`)}
-                      className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 text-white text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-sun-300 focus-visible:ring-offset-forest-950"
-                    >
-                      {outcome.label}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={onOpenSkillRequest} className="min-h-[44px] text-left text-sm font-semibold text-sun-200 hover:text-sun-100 underline underline-offset-4 decoration-sun-200/40 hover:decoration-sun-100 focus-visible:ring-sun-300 focus-visible:ring-offset-forest-950">
-                  Can’t find it? Tell us what you want to learn
-                </button>
-              </div>
-
-              {!loading && activeEducators.length > 0 && (
-                <dl className="grid grid-cols-3 max-w-[30rem] border-t border-white/10 pt-6">
-                  {[
-                    { value: activeEducators.length, label: activeEducators.length === 1 ? 'educator teaching' : 'educators teaching' },
-                    { value: tradeCount, label: tradeCount === 1 ? 'trade to choose' : 'trades to choose' },
-                    { value: '90%', label: 'of every fee goes to the educator' }
-                  ].map((stat, index) => (
-                    <div key={stat.label} className={`flex flex-col-reverse ${index > 0 ? 'pl-4 sm:pl-6 border-l border-white/10' : 'pr-4'}`}>
-                      <dt className="mt-1 text-xs sm:text-sm text-forest-100/70 leading-snug">{stat.label}</dt>
-                      <dd className="font-display text-2xl sm:text-3xl font-bold text-white tabular-nums">{stat.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-            </div>
-
-            {/* Real workshops, with the two promises that matter pinned on top */}
-            <div className="relative mx-auto w-full max-w-[34rem] lg:max-w-none">
-              <div className="grid grid-cols-[1.2fr_1fr] grid-rows-2 gap-3 sm:gap-4 h-[24rem] sm:h-[32rem] lg:h-[36rem]">
-                <WorkshopPhoto photo={HERO_PHOTOS.carpentry} sizes="(min-width: 1024px) 22rem, 55vw" priority className="row-span-2" />
-                <WorkshopPhoto photo={HERO_PHOTOS.electronics} sizes="(min-width: 1024px) 18rem, 45vw" priority />
-                <WorkshopPhoto photo={HERO_PHOTOS.baking} sizes="(min-width: 1024px) 18rem, 45vw" />
-              </div>
-
-              <div className="absolute -bottom-8 left-3 sm:-left-6 w-[15rem] sm:w-[16.5rem] rounded-card bg-white p-4 text-ink-900 shadow-level-3" aria-labelledby="hero-escrow-title">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-clay-50 text-clay-700" aria-hidden="true">
-                    <ShieldCheck className="h-[18px] w-[18px]" />
-                  </span>
-                  <div className="leading-tight">
-                    <p className="text-caption uppercase tracking-[0.12em] text-clay-700">Example booking</p>
-                    <p id="hero-escrow-title" className="font-display text-lg font-bold tabular-nums">UGX 90,000 held</p>
+                {/* Start from the outcome, not the category name */}
+                <div className="space-y-3">
+                  <p className="text-sm text-ink-600">Or start from what you want to make:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: 'a wedding cake', search: 'cake' },
+                      { label: 'a kitenge dress', search: 'tailor' },
+                      { label: 'a home solar setup', search: 'solar' },
+                      { label: 'a fixed phone screen', search: 'phone' }
+                    ].map(outcome => (
+                      <button
+                        key={outcome.label}
+                        onClick={() => navigate(`/find-skill?search=${encodeURIComponent(outcome.search)}`)}
+                        className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill bg-white/80 hover:bg-white border border-ink-200 hover:border-forest-300 text-ink-800 text-sm font-medium shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                      >
+                        {outcome.label}
+                      </button>
+                    ))}
                   </div>
+                  <button onClick={onOpenSkillRequest} className="min-h-[44px] text-left text-sm font-semibold text-forest-700 hover:text-forest-800 underline underline-offset-4 decoration-forest-200 hover:decoration-forest-700">
+                    Can’t find it? Tell us what you want to learn
+                  </button>
                 </div>
-                <p className="mt-2.5 text-[13px] leading-snug text-ink-600">Released to the educator only after you confirm the session happened.</p>
+
+                {!loading && activeEducators.length > 0 && (
+                  <dl className="grid grid-cols-3 max-w-[30rem] border-t border-ink-200 pt-6">
+                    {[
+                      { value: activeEducators.length, label: activeEducators.length === 1 ? 'educator teaching' : 'educators teaching' },
+                      { value: tradeCount, label: tradeCount === 1 ? 'trade to choose' : 'trades to choose' },
+                      { value: '90%', label: 'of every fee goes to the educator' }
+                    ].map((stat, index) => (
+                      <div key={stat.label} className={`flex flex-col-reverse ${index > 0 ? 'pl-4 sm:pl-6 border-l border-ink-200' : 'pr-4'}`}>
+                        <dt className="mt-1 text-xs sm:text-sm text-ink-600 leading-snug">{stat.label}</dt>
+                        <dd className="font-display text-2xl sm:text-3xl font-bold text-ink-900 tabular-nums">{stat.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
               </div>
 
-              <p className="absolute top-1/2 -translate-y-1/2 -right-1 sm:-right-5 flex items-center gap-2 rounded-pill bg-white py-2 pl-2.5 pr-3.5 text-[13px] font-semibold text-ink-900 shadow-level-3">
-                <BadgeCheck className="h-[18px] w-[18px] text-forest-600" aria-hidden="true" />
-                ID checked · workshop visited
-              </p>
+              {/* Real workshops: a big photo on a colour block, a smaller one overlapping, and the two promises pinned on */}
+              <div className="relative mx-auto w-full max-w-[30rem] h-[26rem] sm:h-[32rem] lg:h-[35rem]">
+                <div aria-hidden="true" className="absolute right-0 top-12 bottom-14 w-[74%] rounded-[44px] bg-forest-600" />
+                <div aria-hidden="true" className="absolute right-0 top-0 h-20 w-20 rounded-[22px] bg-sun-300 rotate-12" />
+
+                <WorkshopPhoto photo={HERO_PHOTOS.carpentry} sizes="(min-width: 1024px) 19rem, 62vw" priority className="absolute right-[7%] top-0 h-[80%] w-[60%] rounded-[36px] shadow-level-3" />
+                <WorkshopPhoto photo={HERO_PHOTOS.electronics} sizes="(min-width: 1024px) 14rem, 46vw" priority className="absolute left-0 bottom-6 h-[44%] w-[46%] rounded-[28px] ring-[6px] ring-white shadow-level-3" />
+                <WorkshopPhoto photo={HERO_PHOTOS.baking} sizes="7rem" caption={false} className="absolute left-[6%] top-6 h-24 w-24 sm:h-28 sm:w-28 rounded-full ring-[5px] ring-white shadow-level-2" />
+
+                <span aria-hidden="true" className="absolute right-[-0.25rem] top-[46%] flex h-11 w-11 items-center justify-center rounded-full bg-white text-forest-700 shadow-level-2"><Scissors className="h-5 w-5" /></span>
+                <svg aria-hidden="true" viewBox="0 0 64 16" className="absolute left-[2%] top-[32%] h-4 w-16 text-forest-400">
+                  <path d="M2 8c5-6 9-6 14 0s9 6 14 0 9-6 14 0 9 6 14 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+
+                <p className="absolute left-[-0.25rem] sm:left-[-1rem] top-[40%] flex items-center gap-2 rounded-pill bg-white py-2 pl-2.5 pr-3.5 text-[13px] font-semibold text-ink-900 shadow-level-3">
+                  <BadgeCheck className="h-[18px] w-[18px] text-forest-600" aria-hidden="true" />
+                  ID checked · workshop visited
+                </p>
+
+                <div className="absolute right-0 sm:right-[-1rem] bottom-0 w-[12.5rem] sm:w-[15rem] rounded-card bg-white p-3.5 sm:p-4 text-ink-900 shadow-level-3" aria-labelledby="hero-escrow-title">
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-clay-50 text-clay-700" aria-hidden="true">
+                      <ShieldCheck className="h-[18px] w-[18px]" />
+                    </span>
+                    <div className="leading-tight">
+                      <p className="text-caption uppercase tracking-[0.12em] text-clay-700">Example booking</p>
+                      <p id="hero-escrow-title" className="font-display text-base sm:text-lg font-bold tabular-nums whitespace-nowrap">UGX 90,000 held</p>
+                    </div>
+                  </div>
+                  <p className="mt-2.5 hidden sm:block text-[13px] leading-snug text-ink-600">Released to the educator only after you confirm the session happened.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ===== TRUST — the four reasons it’s safe to book a stranger ===== */}
-      <section className="bg-white border-b border-ink-200" aria-label="Why learners trust iSkillLink">
-        <ul className="container-app grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 py-10">
+      <section aria-label="Why learners trust iSkillLink">
+        <ul className="container-app grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 pt-12 pb-4">
           {TRUST_POINTS.map(({ icon: Icon, title, text }) => (
             <li key={title} className="flex items-start gap-3.5">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-forest-50 text-forest-700" aria-hidden="true">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700" aria-hidden="true">
                 <Icon className="h-5 w-5" />
               </span>
               <div>
@@ -302,28 +318,19 @@ export const HomePage: React.FC<HomePageProps> = ({
         </ul>
       </section>
 
-      {/* ===== TRADES — bookable trades first ===== */}
+      {/* ===== TRADES — compact cards, bookable trades first ===== */}
       <section className="container-app py-16 lg:py-20" aria-labelledby="trades-heading">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <p className={sectionEyebrow}>Trades</p>
-            <h2 id="trades-heading" className={sectionTitle}>Trades you can learn</h2>
-            <p className="text-base text-ink-600 mt-2 max-w-xl">
-              Learn where the work happens. Trades with educators ready to teach are listed first.
-            </p>
-          </div>
-          <button
-            onClick={() => setCurrentView('find-skill')}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-4 min-h-[44px] rounded-control bg-white border border-ink-200 hover:border-ink-300 hover:bg-ink-50 text-ink-800 text-sm font-bold shadow-soft transition"
-          >
-            <span>{categories.length > 0 ? `All ${categories.length} trades` : 'All trades'}</span>
-            <ChevronRight className="w-4 h-4" aria-hidden="true" />
-          </button>
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <p className={sectionEyebrow}>Trades</p>
+          <h2 id="trades-heading" className={sectionTitle}>Trades you can learn</h2>
+          <p className="text-base text-ink-600 mt-2">
+            Learn where the work happens. Trades with educators ready to teach are listed first.
+          </p>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {Array.from({ length: 8 }).map((_, i) => <CategorySkeleton key={i} />)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-[4.5rem] rounded-card border border-ink-200 bg-white animate-pulse" />)}
           </div>
         ) : loadError ? (
           <Alert>
@@ -333,33 +340,39 @@ export const HomePage: React.FC<HomePageProps> = ({
             </span>
           </Alert>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {sortedCategories.slice(0, 8).map((cat) => {
-              const bookable = (educatorCountByCategory[cat.id] || 0) > 0;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => onSelectCategory(cat.id)}
-                  title={cat.description}
-                  className="group flex flex-col justify-between gap-4 sm:gap-6 p-4 sm:p-5 min-h-[8rem] sm:min-h-[9.5rem] rounded-card border border-ink-200 bg-white text-left transition hover:border-forest-300 hover:shadow-level-2 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-forest-700"
-                >
-                  <span className="flex items-start justify-between">
-                    <span
-                      className={`flex h-11 w-11 items-center justify-center rounded-control transition group-hover:bg-forest-700 group-hover:text-white ${bookable ? 'bg-forest-50 text-forest-700' : 'bg-ink-100 text-ink-500'}`}
-                      aria-hidden="true"
-                    >
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {sortedCategories.slice(0, 8).map((cat, index) => {
+                const bookable = (educatorCountByCategory[cat.id] || 0) > 0;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => onSelectCategory(cat.id)}
+                    title={cat.description}
+                    className="group flex items-center gap-3.5 p-3.5 sm:p-4 min-h-[4.5rem] rounded-card border border-ink-200 bg-white text-left shadow-soft transition hover:border-forest-300 hover:shadow-level-2 focus-visible:ring-2 focus-visible:ring-forest-700"
+                  >
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${CATEGORY_TINTS[index % CATEGORY_TINTS.length]}`} aria-hidden="true">
                       {renderCategoryIcon(cat.icon_name)}
                     </span>
-                    <ArrowUpRight className="h-5 w-5 text-ink-300 transition group-hover:text-forest-700" aria-hidden="true" />
-                  </span>
-                  <span>
-                    <span className="block font-display text-[15px] sm:text-base font-semibold text-ink-900 leading-snug">{cat.name}</span>
-                    <span className={`mt-1 block text-xs ${bookable ? 'font-semibold text-forest-700' : 'text-ink-500'}`}>{educatorCountLabel(cat.id)}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-ink-900 leading-snug">{cat.name}</span>
+                      <span className={`block text-xs ${bookable ? 'font-semibold text-forest-700' : 'text-ink-500'}`}>{educatorCountLabel(cat.id)}</span>
+                    </span>
+                    <ArrowRight className="h-5 w-5 shrink-0 text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-forest-700" aria-hidden="true" />
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setCurrentView('find-skill')}
+                className="inline-flex items-center gap-1.5 px-5 min-h-[48px] rounded-pill bg-white border border-ink-200 hover:border-forest-300 text-ink-800 text-sm font-bold shadow-soft transition"
+              >
+                <span>{categories.length > 0 ? `See all ${categories.length} trades` : 'See all trades'}</span>
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+          </>
         )}
       </section>
 
