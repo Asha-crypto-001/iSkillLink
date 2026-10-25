@@ -78,7 +78,7 @@ export function createRoleProfile(user: User, details: RoleProfileDetails = {}) 
       type: 'system_alert',
       title: 'New Educator Registered',
       message: `${user.name} has registered as an educator from ${details.location || 'Mbarara'}.`,
-      link: '/admin-dashboard',
+      link: '/dashboard/admin/verification',
       is_read: false,
       created_at: new Date().toISOString()
     });

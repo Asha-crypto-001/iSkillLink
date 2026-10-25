@@ -106,7 +106,7 @@ export const initialNotifications: Notification[] = [
     type: 'system_alert',
     title: 'iSkillLink Operations Active',
     message: 'Welcome Ashabahebwa Hassan. Platform operations and verification queue initialized for Mbarara & Uganda.',
-    link: '/admin-dashboard',
+    link: '/dashboard/admin',
     is_read: false,
     created_at: '2026-03-01T08:00:00Z'
   }

@@ -701,7 +701,7 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
     type: 'system_alert',
     title: 'New Educator Application Submitted',
     message: `${name} has applied as an educator for "${title}". Review in Verification Queue.`,
-    link: '/admin-dashboard',
+    link: '/dashboard/admin/verification',
     is_read: false,
     created_at: new Date().toISOString()
   });
@@ -874,7 +874,7 @@ app.post('/api/learner-requests', authenticateToken, requireRole('learner', 'adm
     type: 'match_found',
     title: 'New Skill Request Received',
     message: `${newRequest.learner_name} requested training for "${newRequest.skill_name}" (Budget: UGX ${newRequest.budget_ugx.toLocaleString()})`,
-    link: '/admin-dashboard',
+    link: '/dashboard/admin/matchmaker',
     is_read: false,
     created_at: new Date().toISOString()
   });
@@ -1085,7 +1085,7 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
       type: 'booking_request',
       title: 'New Booking Request',
       message: `You have received a new booking for "${newBooking.skill_name}" on ${scheduled_date}.`,
-      link: '/educator-dashboard/bookings',
+      link: '/dashboard/educator/bookings',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1268,7 +1268,7 @@ app.post('/api/payments/simulate-payment', authenticateToken, (req: Request, res
       type: 'payment_update',
       title: 'Payment Secured in Escrow',
       message: `Learner deposited UGX ${payment.amount_ugx.toLocaleString()} into iSkillLink Escrow. Funds will be disbursed upon session completion.`,
-      link: '/educator-dashboard/earnings',
+      link: '/dashboard/educator/earnings',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1400,7 +1400,7 @@ app.post('/api/reviews', authenticateToken, requireRole('learner', 'admin'), (re
       type: 'system_alert',
       title: 'New Student Review Received',
       message: `${newReview.learner_name} gave you a ${newReview.rating}-star review!`,
-      link: '/educator-dashboard/reviews',
+      link: '/dashboard/educator/reviews',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1480,13 +1480,20 @@ app.post('/api/messages', authenticateToken, (req: Request, res: Response) => {
 
   // Create notification for receiver
   const sender = db.findUserById(sender_id);
+  const receiver = db.findUserById(receiver_id);
+  // Only the learner dashboard has an inbox; other roles land on their dashboard.
+  const receiverLink = receiver?.role === 'educator'
+    ? '/dashboard/educator'
+    : receiver?.role === 'admin' || receiver?.role === 'secondary_admin'
+      ? '/dashboard/admin'
+      : '/dashboard/learner/messages';
   db.createNotification({
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     user_id: receiver_id,
     type: 'system_alert',
     title: `New message from ${sender?.name || 'User'}`,
     message: content.length > 60 ? `${content.substring(0, 60)}...` : content,
-    link: '/dashboard/messages',
+    link: receiverLink,
     is_read: false,
     created_at: new Date().toISOString()
   });
@@ -1661,7 +1668,7 @@ app.patch('/api/admin/educator-status', authenticateToken, requireRole('admin'),
       type: 'verification_update',
       title: `Application Status: ${status.toUpperCase()}`,
       message: `Your educator profile status has been updated to "${status}". ${notes ? `Note: ${notes}` : ''}`,
-      link: '/educator-dashboard',
+      link: '/dashboard/educator',
       is_read: false,
       created_at: new Date().toISOString()
     });

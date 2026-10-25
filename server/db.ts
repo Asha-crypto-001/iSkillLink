@@ -62,6 +62,21 @@ const STATE_COLLECTIONS: Array<keyof DatabaseState> = [
   'notifications', 'adminActions', 'inquiries', 'newsletterSubscribers'
 ];
 
+// Older notifications link to dashboard paths that no longer exist; map them onto the current routes.
+const LEGACY_NOTIFICATION_LINKS: Array<[string, string]> = [
+  ['/dashboard/messages', '/dashboard/learner/messages'],
+  ['/admin-dashboard', '/dashboard/admin'],
+  ['/educator-dashboard', '/dashboard/educator'],
+  ['/learner-dashboard', '/dashboard/learner']
+];
+
+function currentNotificationLink(link: string): string {
+  for (const [legacy, current] of LEGACY_NOTIFICATION_LINKS) {
+    if (link === legacy || link.startsWith(`${legacy}/`)) return current + link.slice(legacy.length);
+  }
+  return link;
+}
+
 /**
  * Brings a persisted state blob (JSON file or PostgreSQL row) into the current shape:
  * legacy snake_case collections are renamed and any missing collection becomes an empty array.
@@ -76,6 +91,9 @@ function normalizeState(raw: any): DatabaseState {
   }
   for (const key of STATE_COLLECTIONS) {
     if (!Array.isArray(state[key])) state[key] = [];
+  }
+  for (const notification of state.notifications as Notification[]) {
+    if (notification.link) notification.link = currentNotificationLink(notification.link);
   }
   return state as DatabaseState;
 }
@@ -371,7 +389,7 @@ class Database {
       type: 'system_alert',
       title: 'Administrator Access Granted',
       message: `You have been appointed as a Secondary Administrator by ${adminName}. You now have access to verification queues and oversight tools.`,
-      link: '/admin-dashboard',
+      link: '/dashboard/admin',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -408,7 +426,7 @@ class Database {
       type: 'system_alert',
       title: 'Administrator Privileges Updated',
       message: `Your Secondary Administrator privileges have been concluded by ${adminName}. Account role restored to ${user.role}.`,
-      link: user.role === 'educator' ? '/educator-dashboard' : '/learner-dashboard',
+      link: user.role === 'educator' ? '/dashboard/educator' : '/dashboard/learner',
       is_read: false,
       created_at: new Date().toISOString()
     });
