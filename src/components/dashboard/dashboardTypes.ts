@@ -10,6 +10,8 @@ export interface DashboardNavItem {
   icon: LucideIcon;
   badge?: string | number;
   end?: boolean;
+  /** Sidebar section heading; consecutive items with the same group sit together. */
+  group?: string;
 }
 
 export interface DashboardShellProps {

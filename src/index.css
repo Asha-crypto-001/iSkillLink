@@ -77,6 +77,11 @@
     @apply bg-white/70 backdrop-blur-xl backdrop-saturate-150 border border-ink-200/70 shadow-[0_8px_30px_rgba(15,23,42,0.06)];
   }
 
+  /* Dashboard surfaces — larger radius and a softer edge than .card, on the ink-50 canvas */
+  .dash-card {
+    @apply bg-white rounded-[24px] border border-ink-200/60 shadow-[0_1px_2px_rgba(31,28,24,0.04),0_8px_24px_rgba(31,28,24,0.04)];
+  }
+
   .glass-dark {
     @apply bg-white/10 backdrop-blur-xl border border-white/20;
   }
