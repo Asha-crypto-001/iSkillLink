@@ -8,13 +8,14 @@ import { SimulatePaymentModal } from '../components/SimulatePaymentModal';
 import { ReviewModal } from '../components/ReviewModal';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import {
-  BookOpen, Calendar, Clock, CreditCard, MessageSquare, Star, User, CheckCircle2, PlusCircle, ArrowRight,
-  Camera, Search, Sparkles, Wallet, MapPin, CalendarCheck, ShieldCheck
+  Calendar, Clock, CreditCard, MessageSquare, Star, CheckCircle2, PlusCircle, ArrowRight, Camera, Search, Sparkles,
+  Wallet, MapPin, ShieldCheck, LayoutGrid, ClipboardList, Settings, Circle
 } from 'lucide-react';
+import { skillPhoto } from '../utils/skillPhotos';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge, PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
 import {
-  BookingJourney, DashboardBanner, DashboardHeader, DashboardShell, DateTile, MessagesPanel, Panel, ProfileSummaryCard, StatRow, btn,
+  BookingJourney, DashboardBanner, DashboardHeader, DashboardShell, DateTile, MessagesPanel, Panel, PillArrow, ProfileSummaryCard, StatRow, btn,
   greetingForNow, lastMonths
 } from '../components/dashboard';
 import { CategoryIcon } from '../utils/categoryIcons';
@@ -173,7 +174,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
   // Skills the learner is working on: from bookings first (with the educator's category), then requests.
   const learningSkills = (() => {
-    const skills = new Map<string, { name: string; detail: string; iconName?: string; color: string }>();
+    const skills = new Map<string, { name: string; detail: string; iconName?: string; color: string; categoryId?: string }>();
     bookings.filter(b => b.status !== 'declined' && b.status !== 'cancelled').forEach(b => {
       const categoryId = b.educator?.skills?.find(s => s.skill_name === b.skill_name)?.category_id;
       const category = categories.find(c => c.id === categoryId);
@@ -183,6 +184,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           name: b.skill_name,
           detail: count > 0 ? `${count} ${count === 1 ? 'session' : 'sessions'} done` : 'Session booked',
           iconName: category?.icon_name,
+          categoryId,
           color: categoryId ? categoryColor(categoryId) : 'bg-forest-50 text-forest-700'
         });
       }
@@ -224,13 +226,13 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   };
 
   const navItems = [
-    { label: 'Overview', href: '/dashboard/learner', icon: BookOpen, end: true },
-    { label: 'My requests', href: '/dashboard/learner/requests', icon: Clock, badge: unbookedMatches.length || undefined },
+    { label: 'Dashboard', href: '/dashboard/learner', icon: LayoutGrid, end: true },
+    { label: 'Inbox', href: '/dashboard/learner/messages', icon: MessageSquare, badge: unreadCount || undefined },
     { label: 'Bookings', href: '/dashboard/learner/bookings', icon: Calendar, badge: toPay.length || undefined },
-    { label: 'Messages', href: '/dashboard/learner/messages', icon: MessageSquare, badge: unreadCount || undefined },
+    { label: 'My requests', href: '/dashboard/learner/requests', icon: ClipboardList, badge: unbookedMatches.length || undefined },
     { label: 'Payments', href: '/dashboard/learner/payments', icon: CreditCard },
     { label: 'Reviews', href: '/dashboard/learner/reviews', icon: Star, badge: awaitingReview.length || undefined },
-    { label: 'Profile', href: '/dashboard/learner/profile', icon: User }
+    { label: 'Profile', href: '/dashboard/learner/profile', icon: Settings, group: 'Settings' }
   ];
 
   const TAB_HEADERS: Record<Exclude<LearnerTab, 'overview'>, { title: string; description: string }> = {
@@ -246,7 +248,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
     return (
       <DashboardShell role="learner" navItems={navItems}>
         <div className="mx-auto max-w-6xl space-y-6" aria-busy="true" aria-live="polite">
-          <Skeleton className="h-48 w-full rounded-display" />
+          <Skeleton className="h-48 w-full rounded-[20px]" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-card" />)}
           </div>
@@ -263,64 +265,99 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
     if (toPay[0]) {
       const b = toPay[0];
       return {
-        description: <>{firstNameOf(b)} accepted your booking for <strong className="text-white">{b.skill_name}</strong>. Pay {formatUGX(b.total_amount_ugx)} into escrow to lock in {longDate(b.scheduled_date)}.</>,
-        actions: <><button onClick={() => setPaymentModalBooking(b)} className={btn.sun}><CreditCard className="h-4 w-4" aria-hidden="true" />Pay now</button><button onClick={() => navigate(messageLink(b))} className={btn.glass}><MessageSquare className="h-4 w-4" aria-hidden="true" />Message {firstNameOf(b)}</button></>
+        title: `${firstNameOf(b)} accepted your booking`,
+        description: <>Pay {formatUGX(b.total_amount_ugx)} into escrow to lock in {b.skill_name} on {longDate(b.scheduled_date)}. We hold it until the session is done.</>,
+        actions: <><button onClick={() => setPaymentModalBooking(b)} className={btn.sun}>Pay now<PillArrow /></button><button onClick={() => navigate(messageLink(b))} className={btn.glass}>Message {firstNameOf(b)}</button></>
       };
     }
     if (nextPaid) {
       return {
-        description: <>Your next session is <strong className="text-white">{nextPaid.skill_name}</strong> with {nextPaid.educator?.user?.name || 'your educator'} on {longDate(nextPaid.scheduled_date)} at {nextPaid.start_time}.</>,
-        actions: <><button onClick={() => navigate(messageLink(nextPaid))} className={btn.sun}><MessageSquare className="h-4 w-4" aria-hidden="true" />Message {firstNameOf(nextPaid)}</button><button onClick={() => goTo('bookings')} className={btn.glass}>See bookings</button></>
+        title: `Your next session is ${longDate(nextPaid.scheduled_date).split(' ')[0]}`,
+        description: <>{nextPaid.skill_name} with {nextPaid.educator?.user?.name || 'your educator'}, {longDate(nextPaid.scheduled_date)} at {nextPaid.start_time}.</>,
+        actions: <><button onClick={() => navigate(messageLink(nextPaid))} className={btn.sun}>Message {firstNameOf(nextPaid)}<PillArrow /></button><button onClick={() => goTo('bookings')} className={btn.glass}>See bookings</button></>
       };
     }
     if (awaitingReview[0]) {
       const b = awaitingReview[0];
       return {
-        description: <>How was <strong className="text-white">{b.skill_name}</strong> with {firstNameOf(b)}? A short review helps the next learner choose.</>,
-        actions: <><button onClick={() => setReviewModalBooking(b)} className={btn.sun}><Star className="h-4 w-4" aria-hidden="true" />Write a review</button><button onClick={() => navigate('/find-skill')} className={btn.glass}>Book another session</button></>
+        title: `How was ${b.skill_name}?`,
+        description: <>A short review of {b.educator?.user?.name || 'your educator'} helps the next learner choose.</>,
+        actions: <><button onClick={() => setReviewModalBooking(b)} className={btn.sun}>Write a review<PillArrow /></button><button onClick={() => navigate('/find-skill')} className={btn.glass}>Book another session</button></>
       };
     }
     if (nextBooking) {
       return {
-        description: <>Your request for <strong className="text-white">{nextBooking.skill_name}</strong> on {longDate(nextBooking.scheduled_date)} is with {firstNameOf(nextBooking)}. We’ll let you know as soon as they accept.</>,
-        actions: <><button onClick={() => goTo('bookings')} className={btn.sun}>See your booking</button><button onClick={() => navigate('/find-skill')} className={btn.glass}>Explore more skills</button></>
+        title: `Waiting for ${firstNameOf(nextBooking)} to accept`,
+        description: <>Your request for {nextBooking.skill_name} on {longDate(nextBooking.scheduled_date)} is with them. We’ll let you know as soon as they reply.</>,
+        actions: <><button onClick={() => goTo('bookings')} className={btn.sun}>See your booking<PillArrow /></button><button onClick={() => navigate('/find-skill')} className={btn.glass}>Explore skills</button></>
       };
     }
     if (unbookedMatches[0]) {
       const r = unbookedMatches[0];
       return {
-        description: <>We found <strong className="text-white">{r.matched_educator!.name}</strong> for your {r.skill_name} request. Have a look at their profile and book a time.</>,
-        actions: <><button onClick={() => navigate(`/educators/${r.matched_educator!.id}`)} className={btn.sun}>See {r.matched_educator!.name.split(' ')[0]}’s profile<ArrowRight className="h-4 w-4" aria-hidden="true" /></button><button onClick={() => goTo('requests')} className={btn.glass}>My requests</button></>
+        title: `We found ${r.matched_educator!.name.split(' ')[0]} for you`,
+        description: <>{r.matched_educator!.name} teaches {r.skill_name}. Have a look at their profile and book a time.</>,
+        actions: <><button onClick={() => navigate(`/educators/${r.matched_educator!.id}`)} className={btn.sun}>View profile<PillArrow /></button><button onClick={() => goTo('requests')} className={btn.glass}>My requests</button></>
       };
     }
     return {
-      description: 'Find someone near you who does the work, and learn at their bench. Or tell us what you want to learn and we’ll find them for you.',
-      actions: <><button onClick={() => navigate('/find-skill')} className={btn.sun}><Search className="h-4 w-4" aria-hidden="true" />Find an educator</button><button onClick={onOpenSkillRequest} className={btn.glass}>Tell us what you need</button></>
+      title: 'Learn a skill at a real workbench',
+      description: 'Book hands-on sessions with people who do the work every day, or tell us what you want to learn and we’ll find them.',
+      actions: <><button onClick={() => navigate('/find-skill')} className={btn.sun}>Find an educator<PillArrow /></button><button onClick={onOpenSkillRequest} className={btn.glass}>Tell us what you need</button></>
     };
   })();
 
   // The overview's to-do list: everything that is waiting on the learner.
   const todos = [
-    ...toPay.map(b => ({ key: `pay-${b.id}`, icon: CreditCard, tint: 'bg-clay-50 text-clay-700', title: `Pay for ${b.skill_name}`, detail: `${firstNameOf(b)} accepted · ${formatShortDate(b.scheduled_date)}`, action: <button onClick={() => setPaymentModalBooking(b)} className={cn(btn.primary, 'min-h-[36px] px-4 text-xs')}>Pay</button> })),
+    ...toPay.map(b => ({ key: `pay-${b.id}`, icon: CreditCard, tint: 'bg-orange-50 text-orange-500', title: `Pay for ${b.skill_name}`, detail: `${firstNameOf(b)} accepted · ${formatShortDate(b.scheduled_date)}`, action: <button onClick={() => setPaymentModalBooking(b)} className={cn(btn.primary, 'min-h-[36px] px-4 text-xs')}>Pay</button> })),
     ...unbookedMatches.map(r => ({ key: `match-${r.id}`, icon: Sparkles, tint: 'bg-amber-50 text-amber-600', title: `We found ${r.matched_educator!.name}`, detail: `For your ${r.skill_name} request`, action: <button onClick={() => navigate(`/educators/${r.matched_educator!.id}`)} className={cn(btn.outline, 'min-h-[36px] px-4 text-xs')}>View</button> })),
     ...(unreadCount > 0 ? [{ key: 'messages', icon: MessageSquare, tint: 'bg-violet-50 text-violet-600', title: `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`, detail: 'From your educators', action: <button onClick={() => goTo('messages')} className={cn(btn.outline, 'min-h-[36px] px-4 text-xs')}>Read</button> }] : []),
     ...awaitingReview.map(b => ({ key: `review-${b.id}`, icon: Star, tint: 'bg-amber-50 text-amber-600', title: `Review ${b.educator?.user?.name || 'your educator'}`, detail: b.skill_name, action: <button onClick={() => setReviewModalBooking(b)} className={cn(btn.outline, 'min-h-[36px] px-4 text-xs')}>Review</button> }))
   ];
 
+  const categoryOf = (b: Booking) => b.educator?.skills?.find(sk => sk.skill_name === b.skill_name)?.category_id;
+  const sessionCards = [...upcoming, ...pastBookings.filter(b => b.status === 'completed')].slice(0, 3);
+  const sessionCard = (b: Booking) => {
+    const stage = bookingStage(b, 'learner');
+    return (
+      <article key={b.id} className="dash-card flex flex-col p-3">
+        <img src={skillPhoto(categoryOf(b), b.skill_name)} alt="" className="h-36 w-full rounded-[14px] object-cover" loading="lazy" />
+        <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
+          <Badge variant={stage.variant} size="sm" dot className="self-start">{stage.label}</Badge>
+          <h3 className="mt-2 line-clamp-2 font-semibold leading-snug text-ink-900">{b.skill_name}</h3>
+          <p className="mt-0.5 text-xs text-ink-400">{formatShortDate(b.scheduled_date)} · {b.start_time} · {b.duration_hours} h</p>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#EEF0F5]" aria-hidden="true">
+            <div className="h-full rounded-full bg-forest-500" style={{ width: `${(stage.done / stage.steps.length) * 100}%` }} />
+          </div>
+          <div className="mt-auto flex items-center gap-2.5 border-t border-[#F0F1F5] pt-3 mt-3">
+            <Avatar src={b.educator?.user?.avatar_url} name={b.educator?.user?.name} className="h-8 w-8 rounded-full" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-ink-900">{b.educator?.user?.name || 'Your educator'}</p>
+              <p className="text-xs text-ink-400">Educator</p>
+            </div>
+            <button onClick={() => goTo('bookings')} className="grid h-8 w-8 place-items-center rounded-full border border-[#E3E5EC] text-ink-500 hover:text-ink-900" aria-label={`Open ${b.skill_name}`}>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  };
+
   const bookingCard = (b: Booking) => {
     const stage = bookingStage(b, 'learner');
     return (
-      <article key={b.id} className="rounded-card border border-ink-200/80 bg-white p-5 transition hover:border-ink-300">
+      <article key={b.id} className="rounded-card border border-[#ECEEF3] bg-white p-5 transition hover:border-ink-300">
         <div className="flex gap-4">
           <DateTile date={b.scheduled_date} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <h3 className="truncate font-display text-lg font-bold text-ink-900">{b.skill_name}</h3>
+                <h3 className="truncate text-lg font-bold text-ink-900">{b.skill_name}</h3>
                 <p className="mt-0.5 text-sm text-ink-600">with <span className="font-semibold text-ink-900">{b.educator?.user?.name || 'your educator'}</span>{b.educator?.title ? ` · ${b.educator.title}` : ''}</p>
               </div>
               <div className="shrink-0 sm:text-right">
-                <p className="font-display text-lg font-bold text-ink-900">{formatUGX(b.total_amount_ugx)}</p>
+                <p className="text-lg font-bold text-ink-900">{formatUGX(b.total_amount_ugx)}</p>
                 <Badge variant={stage.variant} size="sm" dot className="mt-1">{stage.label}</Badge>
               </div>
             </div>
@@ -335,10 +372,10 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
         {isBookingPaid(b) && b.status !== 'completed' && b.milestone_progress > 0 && (
           <div className="mt-4">
             <div className="flex justify-between text-xs text-ink-600"><span>{firstNameOf(b)}’s progress notes</span><span className="font-semibold text-ink-900">{b.milestone_progress}%</span></div>
-            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink-100"><div className="h-full rounded-full bg-forest-600" style={{ width: `${b.milestone_progress}%` }} /></div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#EEF0F5]"><div className="h-full rounded-full bg-forest-500" style={{ width: `${b.milestone_progress}%` }} /></div>
           </div>
         )}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 pt-4">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#F0F1F5] pt-4">
           {b.educator?.user && !stage.stopped
             ? <button onClick={() => navigate(messageLink(b))} className={btn.quiet}><MessageSquare className="h-4 w-4" aria-hidden="true" />Message {firstNameOf(b)}</button>
             : <span />}
@@ -349,8 +386,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   };
 
   return (
-    <DashboardShell role="learner" navItems={navItems}>
-      <div className="mx-auto max-w-6xl space-y-6">
+    <DashboardShell role="learner" navItems={navItems} sidebarPeople={{ title: 'Your educators', people: contacts.map(c => ({ ...c, subtitle: 'Educator', href: `/dashboard/learner/messages?with=${c.id}` })) }}>
+      <div className="mx-auto max-w-[78rem] space-y-6">
         {activeTab !== 'overview' && (
           <DashboardHeader
             eyebrow="Learner"
@@ -368,121 +405,180 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
         {/* ===== OVERVIEW ===== */}
         {activeTab === 'overview' && (
-          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="grid items-start gap-6 pt-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
             <div className="min-w-0 space-y-6">
-              <DashboardBanner
-                eyebrow="Your learning"
-                title={`Hi, ${firstName}`}
-                description={banner.description}
-                actions={banner.actions}
-                aside={(nextPaid || nextBooking) && (
-                  <div className="flex items-center gap-4 rounded-[20px] border border-white/15 bg-white/5 p-4 backdrop-blur">
-                    <DateTile date={(nextPaid || nextBooking)!.scheduled_date} tone="dark" />
-                    <div className="max-w-[12rem]">
-                      <p className="text-xs uppercase tracking-[0.12em] text-forest-100/70">Next session</p>
-                      <p className="mt-1 font-semibold leading-snug">{(nextPaid || nextBooking)!.skill_name}</p>
-                      <p className="text-sm text-forest-100/80">{(nextPaid || nextBooking)!.start_time} · {firstNameOf((nextPaid || nextBooking)!)}</p>
+              <DashboardBanner eyebrow={`Welcome back, ${firstName}`} title={banner.title} description={banner.description} actions={banner.actions} />
+
+              {/* Skills being learned, topped up with skills to explore so the row is always full */}
+              <ul className="grid gap-4 sm:grid-cols-3" aria-label="Your skills">
+                {learningSkills.slice(0, 3).map(skill => (
+                  <li key={skill.name} className="dash-card flex items-center gap-3 p-4">
+                    <span className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-full', skill.color)} aria-hidden="true">
+                      {skill.iconName ? <CategoryIcon iconName={skill.iconName} className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs text-ink-400">{skill.detail}</p>
+                      <p className="truncate font-semibold text-ink-900">{skill.name}</p>
                     </div>
+                  </li>
+                ))}
+                {[...categories]
+                  .filter(category => !learningSkills.some(skill => skill.categoryId === category.id))
+                  .sort((a, b) => a.sort_order - b.sort_order)
+                  .slice(0, Math.max(0, 3 - learningSkills.length))
+                  .map(category => (
+                    <li key={category.id}>
+                      <button onClick={() => navigate(`/find-skill?category=${category.id}`)} className="dash-card flex w-full items-center gap-3 p-4 text-left transition hover:border-forest-200">
+                        <span className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-full', categoryColor(category.id))} aria-hidden="true">
+                          <CategoryIcon iconName={category.icon_name} className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-xs text-ink-400">Explore</span>
+                          <span className="block truncate font-semibold text-ink-900">{category.name}</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+
+              {/* Sessions, as photo cards */}
+              <section aria-labelledby="sessions-heading">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 id="sessions-heading" className="text-lg font-bold text-ink-900">Your sessions</h2>
+                  {bookings.length > 0 && <button onClick={() => goTo('bookings')} className="text-sm font-semibold text-forest-600 hover:text-forest-700">See all</button>}
+                </div>
+                {sessionCards.length > 0 ? (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {sessionCards.map(sessionCard)}
+                    {sessionCards.length < 3 && (
+                      <button onClick={() => navigate('/find-skill')} className="flex min-h-[16rem] flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-[#DFE2EA] bg-white/50 p-6 text-center transition hover:border-forest-300 hover:bg-white">
+                        <span className="grid h-12 w-12 place-items-center rounded-full bg-forest-50 text-forest-600" aria-hidden="true"><PlusCircle className="h-5 w-5" /></span>
+                        <span className="mt-3 font-semibold text-ink-900">Book a session</span>
+                        <span className="mt-1 text-sm text-ink-500">Find someone who teaches what you want to learn.</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="dash-card flex flex-col items-center px-6 py-10 text-center">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-forest-50 text-forest-600" aria-hidden="true"><Calendar className="h-5 w-5" /></span>
+                    <p className="mt-3 font-semibold text-ink-900">Nothing booked yet</p>
+                    <p className="mt-1 max-w-sm text-sm text-ink-500">Find someone near you who teaches what you want to learn, or tell us and we’ll look for you.</p>
+                    <button onClick={() => navigate('/find-skill')} className={cn(btn.primary, 'mt-5')}>Find an educator</button>
                   </div>
                 )}
-              />
+              </section>
 
-              {learningSkills.length > 0 && (
-                <section aria-labelledby="skills-heading">
-                  <h2 id="skills-heading" className="sr-only">Skills you’re learning</h2>
-                  <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {learningSkills.slice(0, 3).map(skill => (
-                      <li key={skill.name} className="dash-card flex items-center gap-3 p-4">
-                        <span className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-[14px]', skill.color)} aria-hidden="true">
-                          {skill.iconName ? <CategoryIcon iconName={skill.iconName} className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[12px] text-ink-500">{skill.detail}</p>
-                          <p className="line-clamp-2 font-semibold leading-snug text-ink-900">{skill.name}</p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
+              {/* Requests, as a table */}
               <Panel
-                id="coming-up"
-                title="Coming up"
-                description={upcoming.length > 0 ? 'Your booked sessions and what each one needs next.' : undefined}
-                action={upcoming.length > 0 ? <button onClick={() => goTo('bookings')} className={btn.quiet}>All bookings<ArrowRight className="h-4 w-4" aria-hidden="true" /></button> : undefined}
-                bodyClassName="space-y-4"
+                id="requests-table"
+                title="Your requests"
+                action={<button onClick={() => requests.length > 0 ? goTo('requests') : onOpenSkillRequest()} className="text-sm font-semibold text-forest-600 hover:text-forest-700">{requests.length > 0 ? 'See all' : 'New request'}</button>}
+                bodyClassName="p-0 sm:p-0 pt-0 sm:pt-0"
               >
-                {upcoming.length > 0 ? upcoming.slice(0, 3).map(bookingCard) : (
-                  <EmptyState
-                    icon={<Calendar className="h-6 w-6" />}
-                    title="Nothing booked yet"
-                    description="Find someone near you who teaches what you want to learn, or tell us and we’ll look for you."
-                    action={<button onClick={() => navigate('/find-skill')} className={btn.primary}>Find an educator</button>}
-                    className="border-none"
-                  />
+                {requests.length > 0 ? (
+                  <div className="overflow-x-auto pb-2">
+                    <table className="w-full min-w-[36rem] text-left text-sm">
+                      <thead>
+                        <tr className="text-[11px] uppercase tracking-[0.12em] text-ink-400">
+                          <th className="px-6 py-3 font-semibold">Skill</th>
+                          <th className="px-3 py-3 font-semibold">Budget</th>
+                          <th className="px-3 py-3 font-semibold">Status</th>
+                          <th className="px-3 py-3 font-semibold">Matched with</th>
+                          <th className="px-6 py-3 text-right font-semibold">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#F0F1F5]">
+                        {requests.slice(0, 4).map(req => {
+                          const matched = req.matched_educator;
+                          const booked = matched && bookings.some(b => b.educator_id === matched.id);
+                          return (
+                            <tr key={req.id}>
+                              <td className="px-6 py-3.5">
+                                <p className="font-semibold text-ink-900">{req.skill_name}</p>
+                                <p className="text-xs text-ink-400">{formatShortDate(req.created_at)}</p>
+                              </td>
+                              <td className="px-3 py-3.5 text-ink-700">{formatUGX(req.budget_ugx)}</td>
+                              <td className="px-3 py-3.5"><StatusBadge status={booked ? 'booked' : req.status} /></td>
+                              <td className="px-3 py-3.5">
+                                {matched ? (
+                                  <span className="flex items-center gap-2">
+                                    <Avatar src={matched.avatar_url} name={matched.name} className="h-7 w-7 rounded-full" />
+                                    <span className="font-medium text-ink-800">{matched.name}</span>
+                                  </span>
+                                ) : <span className="text-ink-400">We’re looking…</span>}
+                              </td>
+                              <td className="px-6 py-3.5 text-right">
+                                <button
+                                  onClick={() => matched && !booked ? navigate(`/educators/${matched.id}`) : goTo(booked ? 'bookings' : 'requests')}
+                                  className="inline-grid h-8 w-8 place-items-center rounded-full border border-[#E3E5EC] text-ink-500 hover:border-forest-300 hover:text-forest-600"
+                                  aria-label={matched && !booked ? `Book ${matched.name}` : `Open ${req.skill_name}`}
+                                >
+                                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="px-6 pb-6 text-sm text-ink-500">Can’t find someone? Tell us what you want to learn and your budget, and we’ll look for you.</p>
                 )}
               </Panel>
             </div>
 
             <div className="space-y-6">
               <ProfileSummaryCard
+                title="Statistic"
                 name={user?.name}
                 avatarUrl={user?.avatar_url}
                 percent={bookedHours > 0 ? (learnedHours / bookedHours) * 100 : undefined}
                 percentLabel="of your booked hours done"
                 greeting={greetingForNow(firstName)}
-                subline="Keep going, every session builds the skill."
-                stats={[
-                  { label: 'Sessions', value: completedCount },
-                  { label: 'Hours', value: learnedHours },
-                  { label: 'In escrow', value: heldInEscrow > 0 ? `${Math.round(heldInEscrow / 1000)}k` : '0' }
-                ]}
+                subline="Keep learning to reach your goal."
                 chartTitle="Hours of learning"
                 bars={hoursByMonth}
                 formatValue={(v) => `${v} ${v === 1 ? 'hour' : 'hours'}`}
                 emptyChartText="Your learning hours show here after your first session."
               />
 
-              <Panel id="todo" title="To do" bodyClassName="p-2 sm:p-2">
+              <Panel id="todo" title="To do" bodyClassName="px-3 pb-3 sm:px-3 sm:pb-3">
                 {todos.length > 0 ? (
-                  <ul>
+                  <ul className="space-y-1">
                     {todos.map(({ key, icon: Icon, tint, title, detail, action }) => (
-                      <li key={key} className="flex items-center gap-3 rounded-[16px] px-3 py-3 hover:bg-ink-50/70">
+                      <li key={key} className="flex items-center gap-3 rounded-[14px] px-3 py-2.5 hover:bg-[#F7F8FB]">
                         <span className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-full', tint)} aria-hidden="true"><Icon className="h-[18px] w-[18px]" /></span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-ink-900">{title}</p>
-                          <p className="truncate text-xs text-ink-500">{detail}</p>
+                          <p className="truncate text-xs text-ink-400">{detail}</p>
                         </div>
                         {action}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="px-4 py-8 text-center">
-                    <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-forest-50 text-forest-700" aria-hidden="true"><CheckCircle2 className="h-5 w-5" /></span>
-                    <p className="mt-3 text-sm font-semibold text-ink-900">You’re all caught up</p>
-                    <p className="mt-0.5 text-xs text-ink-500">Payments, reviews and new matches show up here.</p>
-                  </div>
+                  <p className="flex items-center gap-2 px-3 py-2 text-sm text-ink-500"><CheckCircle2 className="h-4 w-4 text-forest-500" aria-hidden="true" />You’re all caught up.</p>
                 )}
               </Panel>
 
               {contacts.length > 0 && (
-                <Panel id="educators" title="Your educators" bodyClassName="p-2 sm:p-2">
-                  <ul>
+                <Panel id="educators" title="Your educators" bodyClassName="px-3 pb-4 sm:px-3 sm:pb-4">
+                  <ul className="space-y-1">
                     {contacts.slice(0, 4).map(person => (
-                      <li key={person.id} className="flex items-center gap-3 rounded-[16px] px-3 py-2.5 hover:bg-ink-50/70">
+                      <li key={person.id} className="flex items-center gap-3 rounded-[14px] px-3 py-2.5">
                         <Avatar src={person.avatar_url} name={person.name} className="h-10 w-10 rounded-full" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-ink-900">{person.name}</p>
-                          <p className="truncate text-xs text-ink-500">{person.subtitle}</p>
+                          <p className="truncate text-xs text-ink-400">Educator</p>
                         </div>
-                        <button onClick={() => navigate(`/dashboard/learner/messages?with=${person.id}`)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-pill border border-forest-200 px-3 text-xs font-semibold text-forest-800 hover:bg-forest-50">
+                        <button onClick={() => navigate(`/dashboard/learner/messages?with=${person.id}`)} className="inline-flex min-h-[34px] items-center gap-1.5 rounded-pill border border-forest-200 px-3 text-xs font-semibold text-forest-600 hover:bg-forest-50">
                           <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />Message
                         </button>
                       </li>
                     ))}
                   </ul>
+                  <button onClick={() => goTo('messages')} className="mx-3 mt-2 flex h-11 w-[calc(100%-1.5rem)] items-center justify-center rounded-pill bg-forest-50 text-sm font-semibold text-forest-700 hover:bg-forest-100">Open inbox</button>
                 </Panel>
               )}
             </div>
@@ -508,12 +604,12 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   <article key={req.id} className="dash-card flex flex-col p-5 sm:p-6">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h2 className="font-display text-lg font-bold text-ink-900">{req.skill_name}</h2>
+                        <h2 className="text-lg font-bold text-ink-900">{req.skill_name}</h2>
                         <p className="mt-1 text-sm leading-relaxed text-ink-600">{req.learning_goal}</p>
                       </div>
                       <StatusBadge status={req.status} />
                     </div>
-                    <dl className="mt-4 grid grid-cols-2 gap-3 rounded-control bg-ink-50/70 p-4 text-sm">
+                    <dl className="mt-4 grid grid-cols-2 gap-3 rounded-control bg-[#F7F8FB] p-4 text-sm">
                       <div><dt className="text-xs text-ink-500">Budget</dt><dd className="font-semibold text-ink-900">{formatUGX(req.budget_ugx)}</dd></div>
                       <div><dt className="text-xs text-ink-500">Level</dt><dd className="font-semibold capitalize text-ink-900">{req.skill_level}</dd></div>
                       <div><dt className="text-xs text-ink-500">How</dt><dd className="text-ink-800">{FORMAT_LABELS[req.format_preference] || req.format_preference}</dd></div>
@@ -522,7 +618,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                     <ol className="mt-5 grid grid-cols-3 gap-1.5" aria-label={`${done} of 3 steps done`}>
                       {steps.map((step, index) => (
                         <li key={step}>
-                          <span className={cn('block h-1.5 rounded-full', index < done ? 'bg-forest-600' : index === done ? 'bg-forest-200' : 'bg-ink-100')} aria-hidden="true" />
+                          <span className={cn('block h-1.5 rounded-full', index < done ? 'bg-forest-500' : index === done ? 'bg-forest-200' : 'bg-[#EEF0F5]')} aria-hidden="true" />
                           <span className={cn('mt-1.5 block truncate text-[12px]', index < done ? 'text-ink-700' : index === done ? 'font-semibold text-forest-800' : 'text-ink-400')}>{step}</span>
                         </li>
                       ))}
@@ -561,9 +657,9 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
             />
           ) : (
             <div className="space-y-5">
-              <div className="inline-flex rounded-pill border border-ink-200 bg-white p-1 text-sm font-semibold" role="tablist" aria-label="Show bookings">
+              <div className="inline-flex rounded-pill bg-[#EBEDF2] p-1 text-sm font-semibold" role="tablist" aria-label="Show bookings">
                 {([['upcoming', `Upcoming (${upcoming.length})`], ['past', `Past (${pastBookings.length})`]] as const).map(([key, label]) => (
-                  <button key={key} role="tab" aria-selected={bookingFilter === key} onClick={() => setBookingFilter(key)} className={cn('min-h-[40px] rounded-pill px-5 transition', bookingFilter === key ? 'bg-ink-900 text-white' : 'text-ink-600 hover:text-ink-900')}>
+                  <button key={key} role="tab" aria-selected={bookingFilter === key} onClick={() => setBookingFilter(key)} className={cn('min-h-[40px] rounded-pill px-5 transition', bookingFilter === key ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-500 hover:text-ink-900')}>
                     {label}
                   </button>
                 ))}
@@ -602,17 +698,17 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
                   className="m-5 border-none"
                 />
               ) : (
-                <ul className="divide-y divide-ink-100">
+                <ul className="divide-y divide-[#F0F1F5]">
                   {[...payments].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(p => (
                     <li key={p.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
-                      <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-full bg-ink-50 text-ink-500 sm:grid" aria-hidden="true"><Wallet className="h-[18px] w-[18px]" /></span>
+                      <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-full bg-[#F5F6FA] text-ink-500 sm:grid" aria-hidden="true"><Wallet className="h-[18px] w-[18px]" /></span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold text-ink-900">{bookingLabel(p.booking_id)}</p>
                         <p className="text-xs text-ink-500">{formatShortDate(p.created_at)} · {METHOD_LABELS[p.method] || p.method} · <span className="font-mono">{p.payment_reference}</span></p>
                       </div>
                       <div className="flex items-center justify-between gap-4 sm:justify-end">
                         <PaymentStatusBadge status={p.status} audience="learner" />
-                        <span className="font-display font-bold text-ink-900">{formatUGX(p.amount_ugx)}</span>
+                        <span className="font-bold text-ink-900">{formatUGX(p.amount_ugx)}</span>
                       </div>
                     </li>
                   ))}
@@ -665,7 +761,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
               {reviewedBookings.length > 0 && (
                 <Panel title="Reviews you’ve written" bodyClassName="grid gap-4 md:grid-cols-2">
                   {reviewedBookings.map(b => (
-                    <article key={b.id} className="rounded-card border border-ink-200/80 p-5">
+                    <article key={b.id} className="rounded-card border border-[#ECEEF3] p-5">
                       <div className="flex items-center gap-3">
                         <Avatar src={b.educator?.user?.avatar_url} name={b.educator?.user?.name} className="h-10 w-10 rounded-full" />
                         <div className="min-w-0 flex-1">
@@ -698,7 +794,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           <div className="grid items-start gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
             <section className="dash-card p-6 text-center" aria-label="Your photo">
               <Avatar src={user?.avatar_url} name={user?.name} className="mx-auto h-24 w-24 rounded-full" />
-              <p className="mt-4 font-display text-xl font-bold text-ink-900">{user?.name}</p>
+              <p className="mt-4 text-xl font-bold text-ink-900">{user?.name}</p>
               <p className="text-sm text-ink-500">{user?.email}</p>
               {user?.created_at && <p className="mt-1 text-xs text-ink-400">Learning on iSkillLink since {new Date(user.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>}
               <button type="button" onClick={() => setShowPhotoModal(true)} className={cn(btn.outline, 'mt-5')}>

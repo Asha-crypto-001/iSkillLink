@@ -79,7 +79,12 @@
 
   /* Dashboard surfaces — larger radius and a softer edge than .card, on the ink-50 canvas */
   .dash-card {
-    @apply bg-white rounded-[24px] border border-ink-200/60 shadow-[0_1px_2px_rgba(31,28,24,0.04),0_8px_24px_rgba(31,28,24,0.04)];
+    @apply bg-white rounded-[20px] border border-[#ECEEF3] shadow-[0_1px_2px_rgba(16,24,40,0.03)];
+  }
+
+  /* The cool light-grey page behind dashboard cards */
+  .dash-canvas {
+    @apply bg-[#F5F6FA];
   }
 
   .glass-dark {

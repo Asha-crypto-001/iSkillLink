@@ -14,3 +14,4 @@ export type { DashboardNavItem, DashboardRole, DashboardShellProps } from './das
 export type { StatItem } from './StatRow';
 export { DateTile } from './DateTile';
 export { ProfileSummaryCard, lastMonths, greetingForNow } from './ProfileSummaryCard';
+export { PillArrow } from './PillArrow';

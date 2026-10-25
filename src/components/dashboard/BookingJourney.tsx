@@ -16,7 +16,7 @@ export const BookingJourney: React.FC<{ stage: BookingStage; className?: string 
           const isNext = index === current && !finished;
           return (
             <li key={step} className="min-w-0">
-              <span className={cn('block h-1.5 rounded-full', finished ? 'bg-forest-600' : isNext ? 'bg-forest-200' : 'bg-ink-100')} aria-hidden="true" />
+              <span className={cn('block h-1.5 rounded-full', finished ? 'bg-forest-500' : isNext ? 'bg-forest-200' : 'bg-[#EEF0F5]')} aria-hidden="true" />
               <span className={cn('mt-1.5 hidden items-center gap-1 truncate text-[12px] leading-4 sm:flex', finished ? 'text-ink-700' : isNext ? 'font-semibold text-forest-800' : 'text-ink-400')}>
                 {finished && <Check className="h-3 w-3 shrink-0 text-forest-600" aria-hidden="true" />}
                 {step}

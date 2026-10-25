@@ -17,15 +17,15 @@ export const Panel: React.FC<PanelProps> = ({ title, description, action, childr
   return (
     <section className={cn('dash-card', className)} aria-labelledby={title ? headingId : undefined} id={id}>
       {(title || action) && (
-        <div className="flex flex-col gap-2 border-b border-ink-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="flex items-start justify-between gap-3 px-5 pt-5 sm:px-6">
           <div className="min-w-0">
-            {title && <h2 id={headingId} className="font-display text-lg font-bold tracking-[-0.01em] text-ink-950">{title}</h2>}
-            {description && <p className="mt-0.5 text-sm text-ink-600">{description}</p>}
+            {title && <h2 id={headingId} className="text-lg font-bold tracking-[-0.01em] text-ink-900">{title}</h2>}
+            {description && <p className="mt-0.5 text-sm text-ink-500">{description}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className={cn('p-5 sm:p-6', bodyClassName)}>{children}</div>
+      <div className={cn('p-5 sm:p-6', (title || action) && 'pt-4 sm:pt-4', bodyClassName)}>{children}</div>
     </section>
   );
 };

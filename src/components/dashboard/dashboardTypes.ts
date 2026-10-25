@@ -14,10 +14,17 @@ export interface DashboardNavItem {
   group?: string;
 }
 
+/** People listed in the sidebar under their own heading (a learner's educators, an educator's learners). */
+export interface SidebarPeople {
+  title: string;
+  people: Array<{ id: string; name: string; subtitle?: string; avatar_url?: string; href: string }>;
+}
+
 export interface DashboardShellProps {
   children: ReactNode;
   /** Override the role from AuthContext when rendering a preview or a shared route. */
   role?: DashboardRole;
   navItems?: DashboardNavItem[];
+  sidebarPeople?: SidebarPeople;
   className?: string;
 }

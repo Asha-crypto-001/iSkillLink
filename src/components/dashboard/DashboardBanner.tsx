@@ -5,27 +5,29 @@ interface DashboardBannerProps {
   title: string;
   description?: ReactNode;
   actions?: ReactNode;
-  /** Shown beside the text on wide screens (a date tile, a progress ring…). */
+  /** Shown beside the text on wide screens (a date tile, say). */
   aside?: ReactNode;
 }
 
 // A four-point sparkle, the decoration on the welcome band.
-const SPARKLE = 'M50 0C54 38 62 46 100 50C62 54 54 62 50 100C46 62 38 54 0 50C38 46 46 38 50 0Z';
+const SPARKLE = 'M50 0C53 40 60 47 100 50C60 53 53 60 50 100C47 60 40 53 0 50C40 47 47 40 50 0Z';
 
-/** The dark welcome band at the top of an overview: who you are, and the one thing to do next. */
+/** The bright welcome band at the top of an overview: a greeting and the one thing to do next. */
 export const DashboardBanner: React.FC<DashboardBannerProps> = ({ eyebrow, title, description, actions, aside }) => (
-  <section className="relative isolate overflow-hidden rounded-display bg-forest-950 px-6 py-8 text-white sm:px-9 sm:py-10">
-    <span aria-hidden="true" className="absolute -right-12 -top-16 -z-10 h-56 w-56 rounded-full border border-white/15 bg-white/5" />
-    <span aria-hidden="true" className="absolute bottom-[-4rem] right-40 -z-10 h-32 w-32 rounded-full border border-white/15 bg-white/5" />
-    <span aria-hidden="true" className="absolute left-[45%] -top-8 -z-10 h-16 w-16 rounded-full border border-white/10 bg-white/5" />
-    <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute right-[18%] top-6 -z-10 hidden h-24 w-24 text-white/10 sm:block"><path d={SPARKLE} fill="currentColor" /></svg>
-    <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute bottom-6 right-[12%] -z-10 h-8 w-8 text-sun-300/80"><path d={SPARKLE} fill="currentColor" /></svg>
-    <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-      <div className="max-w-2xl">
-        {eyebrow && <p className="text-xs font-bold uppercase tracking-[0.14em] text-sun-300">{eyebrow}</p>}
-        <h1 className="mt-2 font-display text-[1.9rem] font-bold leading-[1.1] tracking-[-0.02em] sm:text-[2.4rem]">{title}</h1>
-        {description && <div className="mt-3 text-base leading-relaxed text-forest-100/85">{description}</div>}
-        {actions && <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">{actions}</div>}
+  <section className="relative isolate overflow-hidden rounded-[20px] bg-forest-500 px-6 py-8 text-white sm:px-8">
+    {/* Soft rounded tiles and sparkles, like light catching the bench */}
+    <span aria-hidden="true" className="absolute -right-10 -top-10 -z-10 h-40 w-40 rotate-12 rounded-[36px] border border-white/15 bg-white/[0.06]" />
+    <span aria-hidden="true" className="absolute bottom-[-3.5rem] right-24 -z-10 h-32 w-32 -rotate-12 rounded-[32px] border border-white/15 bg-white/[0.06]" />
+    <span aria-hidden="true" className="absolute right-[34%] top-[-2.5rem] -z-10 h-24 w-24 rotate-45 rounded-[24px] border border-white/10" />
+    <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute right-[16%] top-1/2 -z-10 hidden h-32 w-32 -translate-y-1/2 text-white/25 sm:block"><path d={SPARKLE} fill="currentColor" /></svg>
+    <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute right-[9%] top-7 -z-10 h-10 w-10 text-white/30"><path d={SPARKLE} fill="currentColor" /></svg>
+    <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute bottom-6 right-[28%] -z-10 hidden h-6 w-6 text-white/30 sm:block"><path d={SPARKLE} fill="currentColor" /></svg>
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="max-w-xl">
+        {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{eyebrow}</p>}
+        <h1 className="mt-2 text-[1.75rem] font-bold leading-tight tracking-[-0.02em] sm:text-[2rem]">{title}</h1>
+        {description && <div className="mt-2 text-[15px] leading-relaxed text-white/90">{description}</div>}
+        {actions && <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">{actions}</div>}
       </div>
       {aside && <div className="shrink-0">{aside}</div>}
     </div>

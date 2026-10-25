@@ -21,6 +21,8 @@ interface ProfileSummaryCardProps {
   /** Formats a bar's value for its tooltip and screen readers. */
   formatValue?: (value: number) => string;
   emptyChartText?: string;
+  /** Card heading, like "Statistic" in the reference. */
+  title?: string;
 }
 
 /**
@@ -28,7 +30,7 @@ interface ProfileSummaryCardProps {
  * small bar chart (the latest bar in brand green, earlier ones tinted).
  */
 export const ProfileSummaryCard: React.FC<ProfileSummaryCardProps> = ({
-  name, avatarUrl, percent, percentLabel, greeting, subline, stats = [], chartTitle, bars = [], formatValue = String, emptyChartText
+  name, avatarUrl, percent, percentLabel, greeting, subline, stats = [], chartTitle, bars = [], formatValue = String, emptyChartText, title = 'Your progress'
 }) => {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
@@ -36,31 +38,32 @@ export const ProfileSummaryCard: React.FC<ProfileSummaryCardProps> = ({
   const max = Math.max(...bars.map(b => b.value), 0);
 
   return (
-    <section className="dash-card p-6" aria-label="Your summary">
-      <div className="relative mx-auto h-32 w-32">
+    <section className="dash-card p-6" aria-label={title}>
+      <p className="text-lg font-bold text-ink-900">{title}</p>
+      <div className="relative mx-auto mt-4 h-32 w-32">
         <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
-          <circle cx="60" cy="60" r={radius} fill="none" stroke="#efebe6" strokeWidth="6" />
+          <circle cx="60" cy="60" r={radius} fill="none" stroke="#EEF0F5" strokeWidth="6" />
           {percent !== undefined && (
-            <circle cx="60" cy="60" r={radius} fill="none" stroke="#11774f" strokeWidth="6" strokeLinecap="round"
+            <circle cx="60" cy="60" r={radius} fill="none" stroke="#168e60" strokeWidth="6" strokeLinecap="round"
               strokeDasharray={circumference} strokeDashoffset={circumference * (1 - clamped / 100)} className="transition-all duration-700" />
           )}
         </svg>
         <Avatar src={avatarUrl} name={name} className="absolute inset-[14px] h-[calc(100%-28px)] w-[calc(100%-28px)] rounded-full" />
         {percent !== undefined && (
-          <span className="absolute -right-1 top-3 rounded-pill bg-forest-700 px-2 py-0.5 text-[12px] font-bold text-white shadow-soft" title={percentLabel}>
+          <span className="absolute -right-1 top-3 rounded-pill bg-forest-500 px-2 py-0.5 text-[12px] font-bold text-white shadow-soft" title={percentLabel}>
             {Math.round(clamped)}%
             {percentLabel && <span className="sr-only"> {percentLabel}</span>}
           </span>
         )}
       </div>
-      <p className="mt-4 text-center font-display text-lg font-bold text-ink-950">{greeting}</p>
+      <p className="mt-4 text-center text-lg font-bold text-ink-900">{greeting}</p>
       {subline && <p className="mt-1 text-center text-sm text-ink-500">{subline}</p>}
 
       {stats.length > 0 && (
-        <dl className={cn('mt-5 grid divide-x divide-ink-100 rounded-[18px] bg-ink-50/70 py-3 text-center', stats.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
+        <dl className={cn('mt-5 grid divide-x divide-ink-100 rounded-[16px] bg-[#F7F8FB] py-3 text-center', stats.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
           {stats.map(stat => (
             <div key={stat.label} className="px-2">
-              <dd className="font-display text-base font-bold text-ink-950">{stat.value}</dd>
+              <dd className="text-base font-bold text-ink-900">{stat.value}</dd>
               <dt className="mt-0.5 text-[12px] text-ink-500">{stat.label}</dt>
             </div>
           ))}
@@ -68,16 +71,16 @@ export const ProfileSummaryCard: React.FC<ProfileSummaryCardProps> = ({
       )}
 
       {chartTitle && (
-        <div className="mt-6">
+        <div className="mt-6 rounded-[16px] bg-[#F7F8FB] p-4">
           <p className="text-sm font-semibold text-ink-900">{chartTitle}</p>
           {max === 0 ? (
-            <p className="mt-3 rounded-[18px] bg-ink-50/70 px-4 py-6 text-center text-xs text-ink-500">{emptyChartText}</p>
+            <p className="mt-3 px-2 py-6 text-center text-xs text-ink-500">{emptyChartText}</p>
           ) : (
             <ol className="mt-3 flex h-32 items-end gap-2" aria-label={chartTitle}>
               {bars.map((bar, index) => (
                 <li key={bar.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
                   <span
-                    className={cn('w-full rounded-t-[10px] rounded-b-[4px] transition-all', index === bars.length - 1 ? 'bg-forest-700' : 'bg-forest-100')}
+                    className={cn('w-full rounded-[8px] transition-all', bar.value === max ? 'bg-forest-500' : 'bg-forest-200/70')}
                     style={{ height: `${Math.max(bar.value > 0 ? 8 : 4, (bar.value / max) * 100)}%` }}
                     title={`${bar.label}: ${formatValue(bar.value)}`}
                   />

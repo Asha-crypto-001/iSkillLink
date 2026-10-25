@@ -140,7 +140,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-50 text-forest-700" aria-hidden="true">
           <MessageSquare className="h-6 w-6" />
         </span>
-        <h2 className="mt-5 font-display text-xl font-bold text-ink-900">{emptyTitle}</h2>
+        <h2 className="mt-5 text-xl font-bold text-ink-900">{emptyTitle}</h2>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-600">{emptyDescription}</p>
         {emptyAction && <div className="mt-6">{emptyAction}</div>}
       </div>
@@ -159,9 +159,9 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
   return (
     <div className="dash-card grid h-[min(46rem,calc(100vh-12rem))] min-h-[32rem] overflow-hidden md:grid-cols-[18rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)]">
       {/* People */}
-      <aside className={cn('flex min-h-0 flex-col border-ink-200/70 bg-ink-50/40 md:border-r', mobileThreadOpen && 'hidden md:flex')} aria-label="Conversations">
-        <div className="border-b border-ink-200/70 p-4">
-          <p className="mb-3 font-display text-lg font-bold text-ink-950">All messages</p>
+      <aside className={cn('flex min-h-0 flex-col border-[#ECEEF3] bg-white md:border-r', mobileThreadOpen && 'hidden md:flex')} aria-label="Conversations">
+        <div className="border-b border-[#ECEEF3] p-4">
+          <p className="mb-3 text-lg font-bold text-ink-900">All messages</p>
           <label htmlFor="chat-search" className="sr-only">Search conversations</label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
@@ -170,7 +170,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people"
-              className="w-full rounded-pill border border-ink-200 bg-ink-50/60 py-2.5 pl-9 pr-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100"
+              className="w-full rounded-pill border border-[#E3E5EC] bg-[#F5F6FA] py-2.5 pl-9 pr-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100"
             />
           </div>
         </div>
@@ -183,7 +183,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
                   type="button"
                   onClick={() => choose(person.id)}
                   aria-current={active ? 'true' : undefined}
-                  className={cn('flex w-full items-center gap-3 rounded-[18px] px-3 py-3 text-left transition', active ? 'bg-white shadow-soft' : 'hover:bg-white/70')}
+                  className={cn('flex w-full items-center gap-3 rounded-[18px] px-3 py-3 text-left transition', active ? 'bg-[#F5F6FA]' : 'hover:bg-[#F8F9FB]')}
                 >
                   <Avatar src={person.avatar_url} name={person.name} className="h-11 w-11 rounded-full" />
                   <span className="min-w-0 flex-1">
@@ -195,7 +195,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
                       <span className={cn('truncate text-xs', unread > 0 ? 'font-semibold text-ink-800' : 'text-ink-500')}>
                         {last ? `${last.sender_id === currentUserId ? 'You: ' : ''}${last.content}` : person.subtitle || 'Start a conversation'}
                       </span>
-                      {unread > 0 && <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-pill bg-forest-700 px-1.5 text-[12px] font-bold text-white">{unread}</span>}
+                      {unread > 0 && <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-pill bg-forest-500 px-1.5 text-[11px] font-bold text-white">{unread}</span>}
                     </span>
                   </span>
                 </button>
@@ -209,8 +209,8 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
       {/* Conversation */}
       {selected && (
         <section className={cn('flex min-h-0 flex-col bg-white', !mobileThreadOpen && 'hidden md:flex')} aria-label={`Conversation with ${selected.person.name}`}>
-          <header className="flex items-center gap-3 border-b border-ink-200/70 bg-white px-4 py-3">
-            <button type="button" onClick={() => setMobileThreadOpen(false)} className="-ml-1 rounded-full p-2.5 text-ink-600 hover:bg-ink-100 md:hidden" aria-label="Back to conversations">
+          <header className="flex items-center gap-3 border-b border-[#ECEEF3] bg-white px-4 py-3">
+            <button type="button" onClick={() => setMobileThreadOpen(false)} className="-ml-1 rounded-full p-2.5 text-ink-600 hover:bg-[#EEF0F5] md:hidden" aria-label="Back to conversations">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <Avatar src={selected.person.avatar_url} name={selected.person.name} className="h-10 w-10 rounded-full" />
@@ -223,7 +223,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
                 href={`https://wa.me/${whatsappNumber(selected.person.phone)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-pill border border-ink-200 bg-white px-3.5 text-xs font-semibold text-ink-700 hover:bg-ink-50"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-pill border border-[#E3E5EC] bg-white px-3.5 text-xs font-semibold text-ink-700 hover:bg-[#F5F6FA]"
               >
                 <MessageCircle className="h-4 w-4 text-forest-700" aria-hidden="true" />
                 <span className="hidden sm:inline">WhatsApp</span>
@@ -240,7 +240,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
                 {suggestions.length > 0 && (
                   <div className="mt-5 flex max-w-md flex-wrap justify-center gap-2">
                     {suggestions.map(text => (
-                      <button key={text} type="button" onClick={() => submit(text)} className="rounded-pill border border-ink-200 bg-white px-3.5 py-2 text-xs font-medium text-ink-700 hover:border-forest-300 hover:text-forest-800">
+                      <button key={text} type="button" onClick={() => submit(text)} className="rounded-pill border border-[#E3E5EC] bg-white px-3.5 py-2 text-xs font-medium text-ink-700 hover:border-forest-300 hover:text-forest-800">
                         {text}
                       </button>
                     ))}
@@ -259,7 +259,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
                         <div key={m.id} className={cn('flex flex-col', mine ? 'items-end' : 'items-start')}>
                           <p className={cn(
                             'max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed sm:max-w-[70%]',
-                            mine ? 'bg-forest-700 text-white' : 'bg-forest-50 text-ink-800',
+                            mine ? 'bg-forest-500 text-white' : 'bg-[#F1F3F8] text-ink-800',
                             mine && !nextFromSame && 'rounded-br-md',
                             !mine && !nextFromSame && 'rounded-bl-md'
                           )}>
@@ -280,7 +280,7 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
             )}
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="border-t border-ink-200/70 bg-white p-3 sm:p-4">
+          <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="border-t border-[#ECEEF3] bg-white p-3 sm:p-4">
             {sendError && <p className="mb-2 text-xs font-medium text-rose-700" role="alert">{sendError}</p>}
             <div className="flex items-end gap-2">
               <label htmlFor="chat-composer" className="sr-only">Message {selected.person.name}</label>
@@ -292,13 +292,13 @@ export const MessagesPanel: React.FC<MessagesPanelProps> = ({
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
                 placeholder={`Message ${firstName}…`}
-                className="max-h-32 min-h-[48px] flex-1 resize-none rounded-3xl border border-ink-200 bg-ink-50/60 px-4 py-3 text-base text-ink-900 placeholder:text-ink-400 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100 sm:text-sm"
+                className="max-h-32 min-h-[48px] flex-1 resize-none rounded-3xl border border-[#E3E5EC] bg-[#F5F6FA] px-4 py-3 text-base text-ink-900 placeholder:text-ink-400 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100 sm:text-sm"
               />
               <button
                 type="submit"
                 disabled={!draft.trim() || sending}
                 aria-label="Send message"
-                className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-forest-700 text-white transition hover:bg-forest-800 disabled:cursor-not-allowed disabled:bg-ink-200 disabled:text-ink-400"
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-forest-500 text-white transition hover:bg-forest-500 disabled:cursor-not-allowed disabled:bg-[#E8EAF0] disabled:text-ink-400"
               >
                 <Send className="h-5 w-5" aria-hidden="true" />
               </button>

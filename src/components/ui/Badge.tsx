@@ -62,7 +62,7 @@ export default Badge;
 // Phase 5 polish: single status taxonomy — maps any backend status to a single Badge variant (not color-only)
 export function statusToBadgeVariant(status: string): BadgeVariant {
   const s = status?.toLowerCase() ?? '';
-  if (['active','approved','completed','paid','verified','success'].includes(s)) return 'success';
+  if (['active','approved','completed','paid','verified','success','booked'].includes(s)) return 'success';
   if (['in_progress','confirmed','payment_requested','matched','scheduled','info'].includes(s)) return 'info';
   if (['pending','applied','under_review','verification','open','suggested','warning'].includes(s)) return 'warning';
   if (['declined','failed','refunded','cancelled','rejected','suspended','error'].includes(s)) return 'error';

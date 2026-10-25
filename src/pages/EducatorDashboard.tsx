@@ -11,13 +11,14 @@ import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import {
-  BookingJourney, DashboardBanner, DashboardHeader, DashboardShell, DateTile, MessagesPanel, Panel, ProfileSummaryCard, StatRow, btn,
+  BookingJourney, DashboardBanner, DashboardHeader, DashboardShell, DateTile, MessagesPanel, Panel, PillArrow, ProfileSummaryCard, StatRow, btn,
   greetingForNow, lastMonths
 } from '../components/dashboard';
 import {
   GraduationCap, Calendar, Clock, Star, MessageSquare, Settings, CheckCircle2, ArrowRight, Users, Wallet,
-  Camera, User, Eye, MapPin, Inbox, ShieldCheck, Circle, Sparkles
+  Camera, User, Eye, MapPin, Inbox, ShieldCheck, Circle, Sparkles, LayoutGrid
 } from 'lucide-react';
+import { skillPhoto } from '../utils/skillPhotos';
 import { Alert } from '../components/ui/Alert';
 import { Field } from '../components/ui/Field';
 import { Input } from '../components/ui/Input';
@@ -220,13 +221,13 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   }));
 
   const navItems = [
-    { label: 'Overview', href: '/dashboard/educator', icon: GraduationCap, end: true, group: 'Teaching' },
-    { label: 'Bookings', href: '/dashboard/educator/bookings', icon: Calendar, group: 'Teaching', badge: pendingBookings.length || undefined },
-    { label: 'Leads', href: '/dashboard/educator/leads', icon: Users, group: 'Teaching' },
-    { label: 'Messages', href: '/dashboard/educator/messages', icon: MessageSquare, group: 'Teaching', badge: unreadCount || undefined },
-    { label: 'Earnings', href: '/dashboard/educator/earnings', icon: Wallet, group: 'Account' },
-    { label: 'Reviews', href: '/dashboard/educator/reviews', icon: Star, group: 'Account', badge: unrepliedReviews.length || undefined },
-    { label: 'Profile', href: '/dashboard/educator/profile', icon: Settings, group: 'Account' }
+    { label: 'Dashboard', href: '/dashboard/educator', icon: LayoutGrid, end: true },
+    { label: 'Inbox', href: '/dashboard/educator/messages', icon: MessageSquare, badge: unreadCount || undefined },
+    { label: 'Bookings', href: '/dashboard/educator/bookings', icon: Calendar, badge: pendingBookings.length || undefined },
+    { label: 'Leads', href: '/dashboard/educator/leads', icon: Users },
+    { label: 'Earnings', href: '/dashboard/educator/earnings', icon: Wallet },
+    { label: 'Reviews', href: '/dashboard/educator/reviews', icon: Star, badge: unrepliedReviews.length || undefined },
+    { label: 'Profile', href: '/dashboard/educator/profile', icon: Settings, group: 'Settings' }
   ];
 
   const TAB_HEADERS: Record<Exclude<EducatorTab, 'overview'>, { title: string; description: string }> = {
@@ -242,7 +243,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     return (
       <DashboardShell role="educator" navItems={navItems}>
         <div className="mx-auto max-w-7xl space-y-6" aria-busy="true" aria-live="polite">
-          <Skeleton className="h-48 w-full rounded-display" />
+          <Skeleton className="h-48 w-full rounded-[20px]" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-card" />)}
           </div>
@@ -260,7 +261,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             eyebrow="Teach on iSkillLink"
             title={`Welcome, ${firstName}`}
             description="Complete the educator application so our team can check your skills and list you for learners."
-            actions={<button onClick={() => navigate(APPLY_PATH)} className={btn.sun}>Start your application<ArrowRight className="h-4 w-4" aria-hidden="true" /></button>}
+            actions={<button onClick={() => navigate(APPLY_PATH)} className={btn.sun}>Start your application<PillArrow /></button>}
           />
         </div>
       </DashboardShell>
@@ -292,10 +293,10 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     const stage = bookingStage(b, 'educator');
     const muted = stage.stopped;
     return (
-      <article key={b.id} className={cn('rounded-[20px] border border-ink-200/70 bg-white p-4 shadow-soft', muted && 'opacity-70')}>
+      <article key={b.id} className={cn('rounded-[20px] border border-[#ECEEF3] bg-white p-4 shadow-soft', muted && 'opacity-70')}>
         <div className="flex flex-wrap gap-1.5">
           <span className="rounded-pill bg-sky-50 px-2.5 py-0.5 text-[12px] font-semibold text-sky-700">{b.skill_name}</span>
-          <span className="rounded-pill bg-ink-100 px-2.5 py-0.5 text-[12px] font-semibold text-ink-600">{FORMAT_LABELS[b.format] || b.format}</span>
+          <span className="rounded-pill bg-[#EEF0F5] px-2.5 py-0.5 text-[12px] font-semibold text-ink-600">{FORMAT_LABELS[b.format] || b.format}</span>
         </div>
         <div className="mt-3 flex items-center gap-3">
           <Avatar src={b.learnerUser?.avatar_url} name={b.learnerUser?.name} className="h-10 w-10 rounded-full" />
@@ -304,9 +305,9 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             <p className="truncate text-xs text-ink-500">{formatShortDate(b.scheduled_date)} · {b.start_time} · {b.duration_hours} h</p>
           </div>
         </div>
-        {b.notes && <p className="mt-3 rounded-[14px] bg-ink-50/80 px-3 py-2 text-sm leading-relaxed text-ink-700">“{b.notes}”</p>}
+        {b.notes && <p className="mt-3 rounded-[14px] bg-[#F7F8FB] px-3 py-2 text-sm leading-relaxed text-ink-700">“{b.notes}”</p>}
         <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="font-display font-bold text-ink-900">{formatUGX(b.educator_payout_ugx)}</span>
+          <span className="font-bold text-ink-900">{formatUGX(b.educator_payout_ugx)}</span>
           <Badge variant={stage.variant} size="sm" dot>{stage.label}</Badge>
         </div>
         {(b.status === 'confirmed' || b.status === 'in_progress') && isBookingPaid(b) && (
@@ -315,7 +316,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
             <div className="mt-1.5 grid grid-cols-5 gap-1" role="group" aria-label="Session progress">
               {[0, 25, 50, 75, 100].map(pct => (
                 <button key={pct} onClick={() => handleUpdateProgress(b.id, pct)} aria-pressed={b.milestone_progress === pct}
-                  className={cn('min-h-[36px] rounded-pill text-[12px] font-semibold transition', b.milestone_progress === pct ? 'bg-ink-900 text-white' : 'bg-ink-50 text-ink-600 hover:bg-ink-100')}>
+                  className={cn('min-h-[36px] rounded-pill text-[12px] font-semibold transition', b.milestone_progress === pct ? 'bg-forest-500 text-white' : 'bg-[#F1F2F6] text-ink-600 hover:bg-[#E8EAF0]')}>
                   {pct}%
                 </button>
               ))}
@@ -343,54 +344,54 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   const banner = (() => {
     if (educator?.status === 'suspended') {
       return {
-        eyebrow: 'Profile on hold',
+        title: 'Your profile is on hold',
         description: <>Learners can’t book you right now. {educator.verification_notes ? `Reason: ${educator.verification_notes}. ` : ''}Message us on WhatsApp to sort it out.</>,
-        actions: <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className={btn.sun}>WhatsApp iSkillLink</a>
+        actions: <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className={btn.sun}>WhatsApp iSkillLink<PillArrow /></a>
       };
     }
     if (applicationNotSent) {
       return {
-        eyebrow: 'Finish your application',
+        title: 'Finish your application to start teaching',
         description: 'Tell us about your craft, what you teach and your workshop. It takes about ten minutes, then we arrange your checks on WhatsApp.',
-        actions: <button onClick={() => navigate(APPLY_PATH)} className={btn.sun}>Continue your application<ArrowRight className="h-4 w-4" aria-hidden="true" /></button>
+        actions: <button onClick={() => navigate(APPLY_PATH)} className={btn.sun}>Continue your application<PillArrow /></button>
       };
     }
     if (!isLive) {
       return {
-        eyebrow: 'Application in review',
-        description: <>{progress.passed} of {progress.total} checks done. Learners can book you as soon as all four pass. We’ll contact you on WhatsApp to arrange each one.</>,
-        actions: <button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.sun}><Eye className="h-4 w-4" aria-hidden="true" />Preview your profile</button>
+        title: `${progress.passed} of ${progress.total} checks done`,
+        description: 'Learners can book you as soon as all four pass. We’ll contact you on WhatsApp to arrange each one.',
+        actions: <button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.sun}>Preview your profile<PillArrow /></button>
       };
     }
     if (pendingBookings.length > 0) {
       const b = pendingBookings[0];
       return {
-        eyebrow: 'Teaching',
+        title: pendingBookings.length === 1 ? `${b.learnerUser?.name?.split(' ')[0] || 'A learner'} wants to book you` : `${pendingBookings.length} learners want to book you`,
         description: pendingBookings.length === 1
-          ? <><strong className="text-white">{b.learnerUser?.name || 'A learner'}</strong> wants to book {b.skill_name} on {longDate(b.scheduled_date)}. Accept it so they can pay and lock in the time.</>
-          : <><strong className="text-white">{pendingBookings.length} learners</strong> want to book you. Accept the ones that suit you so they can pay and lock in the time.</>,
-        actions: <><button onClick={() => goTo('bookings')} className={btn.sun}>Review requests<ArrowRight className="h-4 w-4" aria-hidden="true" /></button><button onClick={() => navigate(messageLink(b))} className={btn.glass}><MessageSquare className="h-4 w-4" aria-hidden="true" />Message {learnerFirst(b)}</button></>
+          ? <>{b.skill_name} on {longDate(b.scheduled_date)} at {b.start_time}. Accept it so they can pay and lock in the time.</>
+          : 'Accept the ones that suit you so learners can pay and lock in the time.',
+        actions: <><button onClick={() => goTo('bookings')} className={btn.sun}>Review requests<PillArrow /></button><button onClick={() => navigate(messageLink(b))} className={btn.glass}>Message {learnerFirst(b)}</button></>
       };
     }
     if (paidUpcoming[0]) {
       const b = paidUpcoming[0];
       return {
-        eyebrow: 'Teaching',
-        description: <>Next up: <strong className="text-white">{b.skill_name}</strong> with {b.learnerUser?.name || 'your learner'} on {longDate(b.scheduled_date)} at {b.start_time}. They’ve paid, so the money is held for you.</>,
-        actions: <><button onClick={() => navigate(messageLink(b))} className={btn.sun}><MessageSquare className="h-4 w-4" aria-hidden="true" />Message {learnerFirst(b)}</button><button onClick={() => goTo('bookings')} className={btn.glass}>See bookings</button></>
+        title: `Next up: ${b.skill_name}`,
+        description: <>With {b.learnerUser?.name || 'your learner'} on {longDate(b.scheduled_date)} at {b.start_time}. They’ve paid, so the money is held for you.</>,
+        actions: <><button onClick={() => navigate(messageLink(b))} className={btn.sun}>Message {learnerFirst(b)}<PillArrow /></button><button onClick={() => goTo('bookings')} className={btn.glass}>See bookings</button></>
       };
     }
     return {
-      eyebrow: 'Teaching',
+      title: 'Teach your skill, grow your name',
       description: 'Your profile is live. Share it with people who want to learn your skill, or look at open requests from learners.',
-      actions: <><button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.sun}><Eye className="h-4 w-4" aria-hidden="true" />View your profile</button><button onClick={() => goTo('leads')} className={btn.glass}>See leads</button></>
+      actions: <><button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.sun}>View your profile<PillArrow /></button><button onClick={() => goTo('leads')} className={btn.glass}>See leads</button></>
     };
   })();
   const nextSession = paidUpcoming[0] || pendingBookings[0];
 
   return (
-    <DashboardShell role="educator" navItems={navItems}>
-      <div className="mx-auto max-w-7xl space-y-6">
+    <DashboardShell role="educator" navItems={navItems} sidebarPeople={{ title: 'Your learners', people: contacts.map(c => ({ ...c, subtitle: c.subtitle, href: `/dashboard/educator/messages?with=${c.id}` })) }}>
+      <div className="mx-auto max-w-[78rem] space-y-6">
         {activeTab !== 'overview' && (
           <DashboardHeader
             eyebrow={isLive ? 'Educator' : 'Application in review'}
@@ -406,28 +407,13 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
         {/* ===== OVERVIEW ===== */}
         {activeTab === 'overview' && (
-          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="grid items-start gap-6 pt-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
             <div className="min-w-0 space-y-6">
-              <DashboardBanner
-                eyebrow={banner.eyebrow}
-                title={`Hi, ${firstName}`}
-                description={banner.description}
-                actions={banner.actions}
-                aside={isLive && nextSession && (
-                  <div className="flex items-center gap-4 rounded-[20px] border border-white/15 bg-white/5 p-4 backdrop-blur">
-                    <DateTile date={nextSession.scheduled_date} tone="dark" />
-                    <div className="max-w-[12rem]">
-                      <p className="text-xs uppercase tracking-[0.12em] text-forest-100/70">{isBookingPaid(nextSession) ? 'Next session' : 'Waiting for you'}</p>
-                      <p className="mt-1 font-semibold leading-snug">{nextSession.skill_name}</p>
-                      <p className="text-sm text-forest-100/80">{nextSession.start_time} · {learnerFirst(nextSession)}</p>
-                    </div>
-                  </div>
-                )}
-              />
+              <DashboardBanner eyebrow={`Welcome back, ${firstName}`} title={banner.title} description={banner.description} actions={banner.actions} />
 
               {isLive ? (
                 <>
-                  <StatRow className="xl:grid-cols-2 2xl:grid-cols-4" stats={[
+                  <StatRow className="sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4" stats={[
                     { label: 'Learners taught', value: educator?.total_students ?? 0, detail: 'With a finished session', icon: Users, accent: 'sky' },
                     { label: 'Coming up', value: paidUpcoming.length + awaitingPayment.length, detail: `${pendingBookings.length} waiting for your reply`, icon: Calendar, accent: 'violet' },
                     { label: 'Paid out', value: formatUGX(paidOut), detail: heldPayout > 0 ? `${formatUGX(heldPayout)} held for you` : 'Sent to your MoMo', icon: Wallet, accent: 'forest' },
@@ -458,29 +444,80 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     )}
                   </Panel>
 
-                  <Panel id="upcoming" title="Upcoming sessions" bodyClassName="p-0 sm:p-0">
+                  <section aria-labelledby="upcoming-heading">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h2 id="upcoming-heading" className="text-lg font-bold text-ink-900">Upcoming sessions</h2>
+                      <button onClick={() => goTo('bookings')} className="text-sm font-semibold text-forest-600 hover:text-forest-700">See all</button>
+                    </div>
                     {[...awaitingPayment, ...paidUpcoming].length > 0 ? (
-                      <ul className="divide-y divide-ink-100">
-                        {upcomingBookings([...awaitingPayment, ...paidUpcoming]).map(b => {
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {upcomingBookings([...awaitingPayment, ...paidUpcoming]).slice(0, 3).map(b => {
                           const stage = bookingStage(b, 'educator');
+                          const categoryId = educator?.skills?.find(sk => sk.skill_name === b.skill_name)?.category_id;
                           return (
-                            <li key={b.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
-                              <DateTile date={b.scheduled_date} />
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-semibold text-ink-900">{b.skill_name}</p>
-                                <p className="truncate text-sm text-ink-600">with {b.learnerUser?.name || 'a learner'} · {b.start_time} · {b.duration_hours} h</p>
-                                <BookingJourney stage={stage} className="mt-3 max-w-md" />
+                            <article key={b.id} className="dash-card flex flex-col p-3">
+                              <img src={skillPhoto(categoryId, b.skill_name)} alt="" className="h-32 w-full rounded-[14px] object-cover" loading="lazy" />
+                              <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
+                                <Badge variant={stage.variant} size="sm" dot className="self-start">{stage.label}</Badge>
+                                <h3 className="mt-2 line-clamp-2 font-semibold leading-snug text-ink-900">{b.skill_name}</h3>
+                                <p className="mt-0.5 text-xs text-ink-400">{formatShortDate(b.scheduled_date)} · {b.start_time} · {b.duration_hours} h</p>
+                                <div className="mt-3 flex items-center gap-2.5 border-t border-[#F0F1F5] pt-3">
+                                  <Avatar src={b.learnerUser?.avatar_url} name={b.learnerUser?.name} className="h-8 w-8 rounded-full" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-semibold text-ink-900">{b.learnerUser?.name || 'A learner'}</p>
+                                    <p className="text-xs text-ink-400">Learner</p>
+                                  </div>
+                                  <button onClick={() => navigate(messageLink(b))} className="grid h-8 w-8 place-items-center rounded-full border border-[#E3E5EC] text-ink-500 hover:text-forest-600" aria-label={`Message ${b.learnerUser?.name || 'the learner'}`}>
+                                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                                <Badge variant={stage.variant} size="sm" dot>{stage.label}</Badge>
-                                <button onClick={() => navigate(messageLink(b))} className={btn.quiet}><MessageSquare className="h-4 w-4" aria-hidden="true" />Message</button>
-                              </div>
-                            </li>
+                            </article>
                           );
                         })}
-                      </ul>
+                      </div>
                     ) : (
-                      <p className="px-6 py-6 text-sm text-ink-500">No sessions booked yet. Accepted bookings show up here.</p>
+                      <div className="dash-card px-6 py-8 text-center text-sm text-ink-500">No sessions booked yet. Accepted bookings show up here.</div>
+                    )}
+                  </section>
+
+                  <Panel id="payouts-table" title="Recent payouts" action={<button onClick={() => goTo('earnings')} className="text-sm font-semibold text-forest-600 hover:text-forest-700">See all</button>} bodyClassName="p-0 sm:p-0 pt-0 sm:pt-0">
+                    {payments.length > 0 ? (
+                      <div className="overflow-x-auto pb-2">
+                        <table className="w-full min-w-[34rem] text-left text-sm">
+                          <thead>
+                            <tr className="text-[11px] uppercase tracking-[0.12em] text-ink-400">
+                              <th className="px-6 py-3 font-semibold">Learner</th>
+                              <th className="px-3 py-3 font-semibold">Session</th>
+                              <th className="px-3 py-3 font-semibold">Status</th>
+                              <th className="px-6 py-3 text-right font-semibold">You get</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#F0F1F5]">
+                            {[...payments].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 4).map(p => {
+                              const booking = bookings.find(b => b.id === p.booking_id);
+                              return (
+                                <tr key={p.id}>
+                                  <td className="px-6 py-3.5">
+                                    <span className="flex items-center gap-2.5">
+                                      <Avatar src={booking?.learnerUser?.avatar_url} name={booking?.learnerUser?.name} className="h-8 w-8 rounded-full" />
+                                      <span>
+                                        <span className="block font-semibold text-ink-900">{booking?.learnerUser?.name || 'A learner'}</span>
+                                        <span className="block text-xs text-ink-400">{formatShortDate(p.created_at)}</span>
+                                      </span>
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-3.5"><span className="rounded-pill bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-600">{booking?.skill_name || 'Session'}</span></td>
+                                  <td className="px-3 py-3.5"><PaymentStatusBadge status={p.status} audience="educator" /></td>
+                                  <td className="px-6 py-3.5 text-right font-semibold text-ink-900">{formatUGX(p.payout_amount_ugx)}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="px-6 pb-6 text-sm text-ink-500">No payments yet. They show up here when a learner pays for a session.</p>
                     )}
                   </Panel>
                 </>
@@ -490,7 +527,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     const passed = isStepPassed(educator?.verification, step);
                     const isNext = index === nextStepIndex;
                     return (
-                      <div key={step.key} className={cn('flex items-start gap-4 rounded-[20px] border p-4', passed ? 'border-forest-200 bg-forest-50/50' : isNext ? 'border-ink-300 bg-white shadow-soft' : 'border-ink-200/70 bg-white')}>
+                      <div key={step.key} className={cn('flex items-start gap-4 rounded-[20px] border p-4', passed ? 'border-forest-200 bg-forest-50/50' : isNext ? 'border-ink-300 bg-white shadow-soft' : 'border-[#ECEEF3] bg-white')}>
                         {passed
                           ? <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-forest-600" aria-hidden="true" />
                           : <Circle className={cn('mt-0.5 h-6 w-6 shrink-0', isNext ? 'text-forest-700' : 'text-ink-300')} aria-hidden="true" />}
@@ -510,6 +547,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
             <div className="space-y-6">
               <ProfileSummaryCard
+                title="Statistic"
                 name={user?.name}
                 avatarUrl={user?.avatar_url}
                 percent={isLive ? (educator?.rating ? educator.rating * 20 : undefined) : (progress.passed / progress.total) * 100}
@@ -532,7 +570,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <ol className="relative space-y-5 before:absolute before:bottom-2 before:left-[15px] before:top-2 before:w-px before:bg-ink-200">
                     {notifications.slice(0, 5).map(n => (
                       <li key={n.id} className="relative flex gap-3">
-                        <span className={cn('relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full ring-4 ring-white', n.is_read ? 'bg-ink-100 text-ink-500' : 'bg-forest-700 text-white')} aria-hidden="true">
+                        <span className={cn('relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full ring-4 ring-white', n.is_read ? 'bg-[#EEF0F5] text-ink-500' : 'bg-forest-700 text-white')} aria-hidden="true">
                           {n.title.startsWith('New message') ? <MessageSquare className="h-3.5 w-3.5" /> : n.type === 'payment_update' ? <Wallet className="h-3.5 w-3.5" /> : n.type === 'booking_request' ? <Calendar className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
                         </span>
                         <button type="button" onClick={() => n.link && navigate(n.link)} className="min-w-0 flex-1 text-left">
@@ -552,7 +590,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                 <Panel id="learners" title="Your learners" bodyClassName="p-2 sm:p-2">
                   <ul>
                     {contacts.slice(0, 4).map(person => (
-                      <li key={person.id} className="flex items-center gap-3 rounded-[16px] px-3 py-2.5 hover:bg-ink-50/70">
+                      <li key={person.id} className="flex items-center gap-3 rounded-[16px] px-3 py-2.5 hover:bg-[#F7F8FB]">
                         <Avatar src={person.avatar_url} name={person.name} className="h-10 w-10 rounded-full" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-ink-900">{person.name}</p>
@@ -581,7 +619,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           ) : (
             <div className="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-4">
               {BOARD.map(column => (
-                <section key={column.key} className="rounded-[24px] bg-ink-100/60 p-3" aria-labelledby={`col-${column.key}`}>
+                <section key={column.key} className="rounded-[20px] bg-[#EBEDF2]/70 p-3" aria-labelledby={`col-${column.key}`}>
                   <h2 id={`col-${column.key}`} className="flex items-center gap-2 px-2 pb-3 pt-1 text-sm font-semibold text-ink-800">
                     <span className={cn('h-2 w-2 rounded-full', column.dot)} aria-hidden="true" />
                     {column.title}
@@ -589,7 +627,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   </h2>
                   <div className="space-y-3">
                     {column.items.length > 0 ? column.items.map(boardCard) : (
-                      <p className="rounded-[18px] border border-dashed border-ink-300 px-4 py-6 text-center text-xs text-ink-500">{column.empty}</p>
+                      <p className="rounded-[16px] border border-dashed border-[#D8DBE4] px-4 py-6 text-center text-xs text-ink-500">{column.empty}</p>
                     )}
                   </div>
                 </section>
@@ -609,17 +647,17 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="font-display text-lg font-bold text-ink-900">{req.skill_name}</h2>
+                        <h2 className="text-lg font-bold text-ink-900">{req.skill_name}</h2>
                         {matchesTrade(req) && <Badge variant="success" size="sm">Matches your skill</Badge>}
                       </div>
                       <p className="mt-1 text-sm leading-relaxed text-ink-600">{req.learning_goal}</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="font-display font-bold text-forest-800">{formatUGX(req.budget_ugx)}</p>
+                      <p className="font-bold text-forest-800">{formatUGX(req.budget_ugx)}</p>
                       <p className="text-[12px] text-ink-500">Budget</p>
                     </div>
                   </div>
-                  <dl className="mt-4 grid grid-cols-2 gap-3 rounded-[18px] bg-ink-50/70 p-4 text-sm">
+                  <dl className="mt-4 grid grid-cols-2 gap-3 rounded-[18px] bg-[#F7F8FB] p-4 text-sm">
                     <div><dt className="text-xs text-ink-500">Learner</dt><dd className="text-ink-800">{req.learner_name}</dd></div>
                     <div><dt className="text-xs text-ink-500">Where</dt><dd className="text-ink-800">{req.location}</dd></div>
                     <div><dt className="text-xs text-ink-500">How</dt><dd className="text-ink-800">{FORMAT_LABELS[req.format_preference]?.replace('your', 'a') || req.format_preference}</dd></div>
@@ -661,7 +699,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
               {payments.length === 0 ? (
                 <p className="px-6 py-8 text-center text-sm text-ink-500">No payments yet. They show up here when a learner pays for a session.</p>
               ) : (
-                <ul className="divide-y divide-ink-100">
+                <ul className="divide-y divide-[#F0F1F5]">
                   {[...payments].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(p => {
                     const booking = bookings.find(b => b.id === p.booking_id);
                     return (
@@ -673,7 +711,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                         </div>
                         <div className="flex items-center justify-between gap-4 sm:justify-end">
                           <PaymentStatusBadge status={p.status} audience="educator" />
-                          <span className="font-display font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</span>
+                          <span className="font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</span>
                         </div>
                       </li>
                     );
@@ -691,7 +729,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           ) : (
             <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
               <section className="dash-card p-6 text-center" aria-label="Rating summary">
-                <p className="font-display text-5xl font-bold text-ink-950">{(educator?.rating || 0).toFixed(1)}</p>
+                <p className="text-5xl font-bold text-ink-950">{(educator?.rating || 0).toFixed(1)}</p>
                 <div className="mt-2 flex justify-center gap-0.5" aria-hidden="true">
                   {Array.from({ length: 5 }).map((_, i) => <Star key={i} className={cn('h-5 w-5', i < Math.round(educator?.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-ink-200')} />)}
                 </div>
@@ -702,7 +740,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                     return (
                       <li key={stars} className="flex items-center gap-2 text-xs text-ink-600">
                         <span className="w-6">{stars}★</span>
-                        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100"><span className="block h-full rounded-full bg-amber-400" style={{ width: `${(count / reviews.length) * 100}%` }} /></span>
+                        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#EEF0F5]"><span className="block h-full rounded-full bg-amber-400" style={{ width: `${(count / reviews.length) * 100}%` }} /></span>
                         <span className="w-4 text-right">{count}</span>
                       </li>
                     );
@@ -738,7 +776,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                           onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
                           onKeyDown={(e) => { if (e.key === 'Enter') handleReplyReview(r.id); }}
                           placeholder="Reply publicly: thank them, or answer a concern"
-                          className="min-h-[44px] flex-1 rounded-pill border border-ink-200 bg-ink-50/60 px-4 text-base text-ink-900 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100 sm:text-sm"
+                          className="min-h-[44px] flex-1 rounded-pill border border-[#E3E5EC] bg-[#F7F8FB] px-4 text-base text-ink-900 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100 sm:text-sm"
                         />
                         <button onClick={() => handleReplyReview(r.id)} disabled={!replyText[r.id]?.trim()} className={btn.primary}>Reply</button>
                       </div>
@@ -755,7 +793,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           <div className="grid items-start gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
             <section className="dash-card p-6 text-center" aria-label="Your photo">
               <Avatar src={user?.avatar_url} name={user?.name} className="mx-auto h-24 w-24 rounded-full" />
-              <p className="mt-4 font-display text-xl font-bold text-ink-900">{user?.name}</p>
+              <p className="mt-4 text-xl font-bold text-ink-900">{user?.name}</p>
               <p className="text-sm text-ink-500">{educator?.title}</p>
               <div className="mt-3 flex justify-center">{educator?.status && <StatusBadge status={educator.status} />}</div>
               <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-500"><MapPin className="h-3.5 w-3.5" aria-hidden="true" />{educator?.location}</p>
