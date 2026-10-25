@@ -767,6 +767,13 @@ export const api = {
     );
   },
 
+  async markConversationRead(conversationId: string) {
+    return withLocalFallback(
+      () => apiRequest<{ success: boolean }>('/messages/read', jsonRequest('POST', { conversation_id: conversationId })),
+      () => ({ success: true })
+    );
+  },
+
   async sendMessage(senderId: string, receiverId: string, content: string) {
     return withLocalFallback(
       () => apiRequest<Message>('/messages', jsonRequest('POST', { sender_id: senderId, receiver_id: receiverId, content })),

@@ -148,6 +148,8 @@ export interface LearnerRequest {
   budget_ugx: number;
   additional_notes?: string;
   status: 'open' | 'matched' | 'in_progress' | 'fulfilled' | 'cancelled';
+  /** The educator our team matched this request with (only on the learner's own requests). */
+  matched_educator?: { id: string; name: string; title: string; hourly_rate_ugx: number; avatar_url: string };
   contact_phone: string;
   learner_name: string;
   learner_email: string;

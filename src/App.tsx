@@ -17,6 +17,7 @@ import { AuthPage } from './pages/AuthPage';
 import { BookingModal } from './components/BookingModal';
 import { SkillRequestModal } from './components/SkillRequestModal';
 import { RequireAuth } from './components/RequireAuth';
+import { announceDataChanged } from './hooks/useAutoRefresh';
 import { Educator } from './types';
 
 const viewToPath: Record<string, string> = {
@@ -129,11 +130,13 @@ const AppContent: React.FC = () => {
 
   const handleBookingSuccess = () => {
     setSelectedEducatorForBooking(null);
+    announceDataChanged();
     showToast('Booking request sent. Once the educator confirms, pay into escrow from your dashboard.');
     navigate('/dashboard/learner');
   };
 
   const handleSkillRequestSuccess = () => {
+    announceDataChanged();
     showToast('Request sent. We’ll look for someone and get back to you.');
   };
 
