@@ -35,3 +35,6 @@ public/uploads/
 *.db
 *.sqlite
 *.sqlite3
+
+# Runtime API state (written by server/db.ts; seeded from server/seedData.ts)
+server/data/

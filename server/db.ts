@@ -9,7 +9,7 @@ import {
   Message, Notification, AdminAction, Inquiry, NewsletterSubscriber
 } from './types.js';
 import {
-  initialCategories, initialSkills, initialUsers, initialLearners,
+  initialCategories, initialSkills, createInitialUsers, initialLearners,
   initialEducators, initialEducatorSkills, initialQualifications,
   initialPortfolios, initialVerifications, initialLearnerRequests,
   initialMatches, initialBookings, initialPayments, initialTransactions,
@@ -46,6 +46,40 @@ export interface DatabaseState {
   newsletterSubscribers: NewsletterSubscriber[];
 }
 
+// Older persisted files used snake_case collection names; map them onto the current keys.
+const LEGACY_STATE_KEYS: Record<string, keyof DatabaseState> = {
+  educator_skills: 'educatorSkills',
+  learner_requests: 'learnerRequests',
+  availabilities: 'availability',
+  admin_actions: 'adminActions',
+  newsletter_subscribers: 'newsletterSubscribers'
+};
+
+const STATE_COLLECTIONS: Array<keyof DatabaseState> = [
+  'users', 'learners', 'educators', 'categories', 'skills', 'educatorSkills',
+  'qualifications', 'portfolios', 'verifications', 'learnerRequests', 'matches',
+  'bookings', 'availability', 'payments', 'transactions', 'reviews', 'messages',
+  'notifications', 'adminActions', 'inquiries', 'newsletterSubscribers'
+];
+
+/**
+ * Brings a persisted state blob (JSON file or PostgreSQL row) into the current shape:
+ * legacy snake_case collections are renamed and any missing collection becomes an empty array.
+ */
+function normalizeState(raw: any): DatabaseState {
+  const state: any = { ...raw };
+  for (const [legacyKey, currentKey] of Object.entries(LEGACY_STATE_KEYS)) {
+    if (Array.isArray(state[legacyKey])) {
+      if (!Array.isArray(state[currentKey])) state[currentKey] = state[legacyKey];
+      delete state[legacyKey];
+    }
+  }
+  for (const key of STATE_COLLECTIONS) {
+    if (!Array.isArray(state[key])) state[key] = [];
+  }
+  return state as DatabaseState;
+}
+
 class Database {
   private data: DatabaseState;
   private postgresPool: Pool | null = process.env.DATABASE_URL
@@ -71,7 +105,7 @@ class Database {
       'SELECT state FROM app_state WHERE id = 1'
     );
     if (result.rows[0]?.state) {
-      this.data = result.rows[0].state;
+      this.data = normalizeState(result.rows[0].state);
       this.ensurePasswordsHashed();
       return;
     }
@@ -101,13 +135,11 @@ class Database {
     try {
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
+        const parsed = normalizeState(JSON.parse(raw));
         // Ensure founder Ashabahebwa Hassan is always present in users
         if (!parsed.users.some((u: User) => u.email === 'ashabahebwahassan665@gmail.com')) {
           return this.resetToDefault();
         }
-        if (!parsed.inquiries) parsed.inquiries = [];
-        if (!parsed.newsletterSubscribers) parsed.newsletterSubscribers = [];
         return parsed;
       }
     } catch (err) {
@@ -148,8 +180,10 @@ class Database {
   }
 
   public resetToDefault() {
-    this.data = {
-      users: initialUsers.map(u => ({
+    // Deep-copy the seed collections so runtime writes never mutate the seed module itself
+    // (otherwise a later reset would bring back previously written records).
+    this.data = structuredClone({
+      users: createInitialUsers().map(u => ({
         ...u,
         password_hash: u.password_hash.startsWith('$2') ? u.password_hash : hashPasswordSync(u.password_hash)
       })),
@@ -173,7 +207,7 @@ class Database {
       adminActions: initialAdminActions,
       inquiries: [],
       newsletterSubscribers: []
-    };
+    });
     this.saveData();
     return this.data;
   }
@@ -211,6 +245,10 @@ class Database {
 
   public findUserByGoogleSub(googleSub: string) {
     return this.data.users.find(u => u.google_sub === googleSub);
+  }
+
+  public findUserBySupabaseId(supabaseId: string) {
+    return this.data.users.find(u => u.supabase_id === supabaseId);
   }
 
   public createUser(user: User) {

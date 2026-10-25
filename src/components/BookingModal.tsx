@@ -55,6 +55,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setDateError('');
+    if (!user) {
+      setErrorMsg('Please sign in with a learner account to book a session.');
+      return;
+    }
     const today = new Date().toISOString().split('T')[0];
     if (scheduledDate < today) {
       setDateError('Cannot book a past date. Please select today or a future date.');
@@ -77,9 +81,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setErrorMsg('');
 
     try {
-      const learnerId = learnerProfile?.id || (user?.role === 'learner' ? 'lrn-1' : 'lrn-1');
+      // The API books for the signed-in learner; learner_id only matters for admins and demo mode.
       await api.createBooking({
-        learner_id: learnerId,
+        learner_id: learnerProfile?.id,
         educator_id: educator.id,
         skill_name: selectedSkill,
         format,

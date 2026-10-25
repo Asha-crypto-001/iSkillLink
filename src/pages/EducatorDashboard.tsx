@@ -13,7 +13,7 @@ import {
   GraduationCap, Calendar, Clock, DollarSign, Star,
   MessageSquare, Settings, ShieldCheck, CheckCircle2,
   XCircle, ArrowRight, UserCheck, Wrench, FileText, Send, Sparkles,
-  Camera, User
+  Camera, User, AlertCircle
 } from 'lucide-react';
 
 interface EducatorDashboardProps {
@@ -22,7 +22,7 @@ interface EducatorDashboardProps {
 
 export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   const { user, educatorProfile } = useAuth();
-  const educatorId = educatorProfile?.id || 'edu-1';
+  const educatorId: string | undefined = educatorProfile?.id;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -45,8 +45,14 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   const [replyText, setReplyText] = useState<{ [reviewId: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const loadDashboardData = async () => {
+    // Accounts without an educator profile have nothing to load; they are prompted to apply instead.
+    if (!educatorId) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [edu, bks, revs, reqs, pays] = await Promise.all([
@@ -75,10 +81,12 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
   const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
     try {
+      setActionError('');
       await api.updateBookingStatus(bookingId, status);
       loadDashboardData();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to update booking status:', e);
+      setActionError(e.message || 'Could not update the booking. Please try again.');
     }
   };
 
@@ -87,10 +95,12 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current);
     progressTimeoutRef.current = setTimeout(async () => {
       try {
+        setActionError('');
         await api.updateBookingProgress(bookingId, progress);
         loadDashboardData();
-      } catch (e) {
+      } catch (e: any) {
         console.error('Failed to update progress:', e);
+        setActionError(e.message || 'Could not save milestone progress. Please try again.');
       }
     }, 300);
   }, []);
@@ -99,13 +109,17 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     const text = replyText[reviewId];
     if (!text) return;
     try {
+      setActionError('');
       await api.replyToReview(reviewId, text);
       loadDashboardData();
       setReplyText(prev => ({ ...prev, [reviewId]: '' }));
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error submitting reply:', e);
+      setActionError(e.message || 'Could not post your reply. Please try again.');
     }
   };
+
+  const ratingLabel = educator?.rating ? `${educator.rating}★` : 'No ratings yet';
 
   const totalEarningsGross = payments
     .filter(p => p.status === 'paid' || p.status === 'completed')
@@ -135,6 +149,26 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     );
   }
 
+  if (!educatorId) {
+    return (
+      <DashboardShell role="educator">
+      <div className="container-app space-y-6">
+        <DashboardHeader
+          eyebrow="Educator portal"
+          title={`Welcome, ${user?.name || 'Educator'}`}
+          breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard' }]}
+        />
+        <EmptyState
+          icon={<GraduationCap className="w-6 h-6" />}
+          title="No educator profile yet"
+          description="Complete the educator application so the iSkillLink team can verify your trade credentials and list you for learners."
+          action={<button onClick={() => navigate('/become-educator')} className="rounded-card bg-forest-700 px-4 py-2 text-xs font-bold text-white">Apply to teach</button>}
+        />
+      </div>
+      </DashboardShell>
+    );
+  }
+
   return (
     <DashboardShell role="educator" navItems={[
       { label: 'Overview', href: '/dashboard/educator', icon: GraduationCap, end: true },
@@ -148,19 +182,26 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       <DashboardHeader
         eyebrow="Verified educator portal"
         title={`${user?.name || 'Educator'}${educator?.title ? ` (${educator.title})` : ''}`}
-        description={`${educator?.years_experience || 0} years craft experience • ${educator?.rating || 4.9}★ from ${educator?.total_reviews || 0} reviews • ${formatUGX(educator?.hourly_rate_ugx || 35000)}/hr`}
+        description={`${educator?.years_experience || 0} years craft experience • ${ratingLabel} from ${educator?.total_reviews || 0} reviews • ${formatUGX(educator?.hourly_rate_ugx || 35000)}/hr`}
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: activeTab }]}
         actions={<><button onClick={() => setShowPhotoModal(true)} className="rounded-card border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700"><Camera className="mr-2 inline h-4 w-4" />Update Photo</button><span className="rounded-card bg-forest-50 px-3 py-2 text-xs font-bold text-forest-700">Status: {educator?.status?.toUpperCase()}</span></>}
       />
+
+      {actionError && (
+        <div role="alert" className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
 
       {/* OVERVIEW TAB */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
           <StatRow stats={[
-            { label: 'Total Students Mentored', value: educator?.total_students || 31, detail: 'Hands-on apprentices', icon: User },
+            { label: 'Total Students Mentored', value: educator?.total_students ?? 0, detail: 'Hands-on apprentices', icon: User },
             { label: 'Active Bookings', value: bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length, detail: 'Upcoming training sessions', icon: Calendar },
             { label: 'Net Payouts (UGX)', value: formatUGX(totalNetPayout), detail: 'Direct Mobile Money disbursal', icon: DollarSign },
-            { label: 'Average Rating', value: `${educator?.rating || 4.9}★`, detail: `From ${reviews.length} reviews`, icon: Star, accent: 'amber' }
+            { label: 'Average Rating', value: ratingLabel, detail: `From ${reviews.length} reviews`, icon: Star, accent: 'amber' }
           ]} />
 
           {/* Pending Bookings to Accept */}
