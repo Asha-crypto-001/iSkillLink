@@ -51,23 +51,39 @@ export const initialSkills: Skill[] = [
   { id: 'skill-beauty-1', category_id: 'cat-beauty', name: 'Bridal Makeup Artistry & Skin Preparation', slug: 'bridal-makeup-artistry', description: 'Color matching for African skin tones, high-definition bridal prep, setting techniques.', level_options: ['beginner', 'intermediate', 'advanced'], typical_duration_hours: 16, popular: true }
 ];
 
+import crypto from 'crypto';
 import { hashPasswordSync } from './utils/security.js';
 
-export const initialUsers: Array<User & { password_hash: string }> = [
-  {
-    id: 'usr-admin-ashabahebwa',
-    email: 'ashabahebwahassan665@gmail.com',
-    password_hash: hashPasswordSync('Ash@0001$'),
-    role: 'admin',
-    is_primary_admin: true,
-    name: 'Ashabahebwa Hassan',
-    phone: '+256 744 024 529',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    location: 'Mbarara City, Uganda',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  }
-];
+/**
+ * The founder account's password comes from ADMIN_PASSWORD (see .env.example) and is only
+ * used when seeding a fresh database. Without it, the account gets an unguessable random
+ * password so no credential ever lives in source control.
+ */
+function seedAdminPasswordHash(): string {
+  const configured = process.env.ADMIN_PASSWORD;
+  if (configured && configured.length >= 8) return hashPasswordSync(configured);
+  console.warn('[Security Warning] ADMIN_PASSWORD is not set (or shorter than 8 characters). The seeded admin account will not be able to sign in with a password until it is set and the database is re-seeded.');
+  return hashPasswordSync(crypto.randomBytes(32).toString('hex'));
+}
+
+// Built on demand so the password is only hashed (and the warning only shown) when seeding.
+export function createInitialUsers(): Array<User & { password_hash: string }> {
+  return [
+    {
+      id: 'usr-admin-ashabahebwa',
+      email: 'ashabahebwahassan665@gmail.com',
+      password_hash: seedAdminPasswordHash(),
+      role: 'admin',
+      is_primary_admin: true,
+      name: 'Ashabahebwa Hassan',
+      phone: '+256 744 024 529',
+      avatar_url: '',
+      location: 'Mbarara City, Uganda',
+      created_at: '2026-01-01T08:00:00Z',
+      updated_at: '2026-01-01T08:00:00Z'
+    }
+  ];
+}
 
 export const initialEducators: Educator[] = [];
 export const initialLearners: Learner[] = [];

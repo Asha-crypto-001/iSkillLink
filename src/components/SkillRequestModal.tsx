@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TeachingFormat, SkillLevel, MatchEvaluation } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatUGX } from '../utils/formatters';
 import {
-  X, CheckCircle2, ArrowRight, AlertCircle, ShieldCheck
+  X, CheckCircle2, ArrowRight, ShieldCheck
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Field } from './ui/Field';
@@ -13,6 +14,9 @@ import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
+import { SignInPrompt } from './SignInPrompt';
+import { Alert } from './ui/Alert';
+import { Avatar } from './ui/Avatar';
 
 interface SkillRequestModalProps {
   onClose: () => void;
@@ -26,6 +30,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
   onSelectEducator
 }) => {
   const { user, learnerProfile } = useAuth();
+  const navigate = useNavigate();
 
   const [step, setStep] = useState<'form' | 'matches'>('form');
   const [skillName, setSkillName] = useState('');
@@ -60,13 +65,17 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setErrorMsg('Please sign in with a learner account to submit a skill request.');
+      return;
+    }
     setIsSubmitting(true);
     setErrorMsg('');
 
     try {
-      const learnerId = learnerProfile?.id || (user?.role === 'learner' ? 'lrn-1' : 'lrn-1');
+      // The API files the request for the signed-in learner; learner_id only matters for admins and demo mode.
       const result = await api.createLearnerRequest({
-        learner_id: learnerId,
+        learner_id: learnerProfile?.id,
         skill_name: skillName,
         skill_level: skillLevel,
         learning_goal: learningGoal,
@@ -92,47 +101,45 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} titleId="skill-request-title" title={step === 'form' ? 'Submit a Custom Skill Request' : 'Verified Educator Matches'} maxWidth="max-w-2xl">
-        <div className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
+    <Modal isOpen={true} onClose={onClose} titleId="skill-request-title" title={step === 'form' ? 'Tell us what you want to learn' : 'People who could teach you'} maxWidth="max-w-2xl">
+        <div className="shrink-0 bg-white px-5 py-4 flex items-center justify-between gap-3 border-b border-ink-200">
           <div>
-            <span className="text-[11px] uppercase tracking-wider font-bold bg-forest-900/80 text-forest-300 px-2 py-0.5 rounded border border-forest-700">
-              Personalized Learning Match
-            </span>
-            <h3 id="skill-request-title" className="font-bold text-base text-white mt-1 font-display">
-              {step === 'form' ? 'Submit a Custom Skill Request' : 'Verified Educator Matches'}
+            <h3 id="skill-request-title" className="font-bold text-lg text-ink-900 font-display">
+              {step === 'form' ? 'Tell us what you want to learn' : 'People who could teach you'}
             </h3>
+            {step === 'form' && <p className="text-sm text-ink-600">We’ll look for someone who fits and introduce you on WhatsApp.</p>}
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="p-2 rounded-control bg-ink-800 hover:bg-ink-700 text-ink-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="rounded-control text-ink-500 hover:bg-ink-100 hover:text-ink-900 transition w-11 h-11 shrink-0 flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {step === 'form' ? (
+        {!user ? (
+          <SignInPrompt
+            title="Sign in to send a request"
+            description="We reply to requests on WhatsApp and in your dashboard, so we need to know who it’s from."
+            next={`${window.location.pathname}?request=skill`}
+            onClose={onClose}
+          />
+        ) : step === 'form' ? (
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {errorMsg && (
-              <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
+              <Alert>{errorMsg}</Alert>
             )}
 
-            <div className="text-[13px] text-ink-600 bg-ink-50 p-3 rounded-card border border-ink-200">
-              Tell us what practical skill you want to learn. Our rule-based matchmaking will instantly evaluate verified educators across Mbarara, Ankole, and Uganda based on skill fit, location, budget, and format.
-            </div>
-
-            <Field label="Skill Wanted" htmlFor="skill-wanted" required>
+            <Field label="What do you want to learn?" htmlFor="skill-wanted" required>
               <Input
                 id="skill-wanted"
                 type="text"
                 list="popular-skills"
                 value={skillName}
                 onChange={(e) => setSkillName(e.target.value)}
-                placeholder="e.g. Garment Pattern Drafting & Cutting, Solar Installation..."
+                placeholder="e.g. pattern cutting, solar installation, cake decorating"
                 required
               />
             </Field>
@@ -143,72 +150,89 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
             </datalist>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Your Current Skill Level" htmlFor="skill-level">
+              <Field label="Where are you starting from?" htmlFor="skill-level">
                 <Select
                   id="skill-level"
                   value={skillLevel}
                   onChange={(e) => setSkillLevel(e.target.value as SkillLevel)}
                 >
-                  <option value="beginner">Beginner (No prior experience)</option>
-                  <option value="intermediate">Intermediate (Some foundation)</option>
-                  <option value="advanced">Advanced (Looking for mastery / certification)</option>
+                  <option value="beginner">Complete beginner</option>
+                  <option value="intermediate">I know the basics</option>
+                  <option value="advanced">I want to master it</option>
                 </Select>
               </Field>
 
-              <Field label="Format Preference" htmlFor="format-pref">
+              <Field label="How do you want to learn?" htmlFor="format-pref">
                 <Select
                   id="format-pref"
                   value={formatPreference}
                   onChange={(e) => setFormatPreference(e.target.value as TeachingFormat)}
                 >
-                  <option value="in-person">In-Person Workshop (Hands-on bench/site)</option>
-                  <option value="hybrid">Hybrid (Practical in-person + online theory)</option>
-                  <option value="online">Online Live (Screen share & 1-on-1 calls)</option>
+                  <option value="in-person">At a workshop</option>
+                  <option value="hybrid">Mix of online and workshop</option>
+                  <option value="online">Online</option>
                 </Select>
               </Field>
             </div>
 
-            <Field label="Specific Learning Goals & Outcome" htmlFor="learning-goal" required>
+            <Field label="What do you want to be able to do?" htmlFor="learning-goal" required hint="The more specific, the better the match.">
               <Textarea
                 id="learning-goal"
                 rows={2}
                 value={learningGoal}
                 onChange={(e) => setLearningGoal(e.target.value)}
-                placeholder="e.g. Master pattern drafting for blazers and dresses; learn how to calibrate industrial straight stitch machines."
+                placeholder="e.g. Cut and sew a fitted blazer, and service my own straight-stitch machine."
                 required
               />
             </Field>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Your General Location (City / Suburb)" htmlFor="req-location" required>
-                <Input
-                  id="req-location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Mbarara High Street, Kakoba, Ruharo, Booma, Kampala"
-                  required
-                />
-              </Field>
+            <Field label="Where are you?" htmlFor="req-location" required>
+              <Input
+                id="req-location"
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. Kakoba, Mbarara"
+                required
+              />
+            </Field>
 
-              <Field label="Total Budget for Training (UGX)" htmlFor="req-budget" required>
-                <Input
-                  id="req-budget"
-                  type="number"
-                  step={10000}
-                  min={30000}
-                  value={budgetUGX}
-                  onChange={(e) => setBudgetUGX(Number(e.target.value))}
-                  required
-                />
-              </Field>
-            </div>
-            <p className="text-xs text-forest-700 font-semibold -mt-2">
-              {formatUGX(budgetUGX)} Total Allocation
-            </p>
+            <fieldset>
+              <legend className="block text-[14px] font-semibold text-ink-700 mb-1.5">
+                Your total budget <span className="text-rose-600" aria-hidden="true">*</span>
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {[100000, 250000, 500000, 1000000].map(amount => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() => setBudgetUGX(amount)}
+                    aria-pressed={budgetUGX === amount}
+                    className={`px-3.5 min-h-[44px] rounded-control border text-sm font-semibold transition ${budgetUGX === amount ? 'bg-forest-50 border-forest-600 text-forest-900' : 'border-ink-200 text-ink-700 hover:bg-ink-50'}`}
+                  >
+                    {formatUGX(amount)}
+                  </button>
+                ))}
+                <label className="flex items-center gap-2 px-3 min-h-[44px] rounded-control border border-ink-200 text-sm text-ink-700 focus-within:ring-2 focus-within:ring-forest-700">
+                  <span className="text-ink-600">Other: UGX</span>
+                  <input
+                    id="req-budget"
+                    type="number"
+                    inputMode="numeric"
+                    step={10000}
+                    min={30000}
+                    value={budgetUGX}
+                    onChange={(e) => setBudgetUGX(Number(e.target.value))}
+                    className="w-24 bg-transparent focus:outline-none text-base sm:text-sm font-semibold text-ink-900"
+                    aria-label="Budget in UGX"
+                    required
+                  />
+                </label>
+              </div>
+            </fieldset>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Preferred Schedule" htmlFor="req-schedule">
+              <Field label="When suits you?" htmlFor="req-schedule">
                 <Input
                   id="req-schedule"
                   type="text"
@@ -218,7 +242,7 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                 />
               </Field>
 
-              <Field label="Frequency & Target Duration" htmlFor="req-frequency">
+              <Field label="How often, for how long?" htmlFor="req-frequency">
                 <Input
                   id="req-frequency"
                   type="text"
@@ -229,48 +253,24 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
               </Field>
             </div>
 
-            <div className="border-t border-ink-200 pt-4">
-              <h4 className="text-xs font-bold text-ink-800 uppercase tracking-wider mb-3">
-                Your Contact Information
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Field label="Your Name" htmlFor="req-name" required>
-                  <Input
-                    id="req-name"
-                    type="text"
-                    value={learnerName}
-                    onChange={(e) => setLearnerName(e.target.value)}
-                    required
-                  />
-                </Field>
-                <Field label="Phone / WhatsApp" htmlFor="req-phone" required>
-                  <Input
-                    id="req-phone"
-                    type="tel"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    required
-                  />
-                </Field>
-                <Field label="Email" htmlFor="req-email" required>
-                  <Input
-                    id="req-email"
-                    type="email"
-                    value={learnerEmail}
-                    onChange={(e) => setLearnerEmail(e.target.value)}
-                    required
-                  />
-                </Field>
-              </div>
-            </div>
+            <Field label="Your WhatsApp number" htmlFor="req-phone" required hint={`We’ll reply here and in your dashboard. Sending as ${learnerName || user?.name} (${learnerEmail || user?.email}).`}>
+              <Input
+                id="req-phone"
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="+256 7XX XXX XXX"
+                required
+              />
+            </Field>
 
             </div>
             <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-200 flex items-center justify-end gap-3 pb-safe">
               <Button variant="outline" size="md" type="button" onClick={onClose}>
                 Cancel
               </Button>
-              <Button variant="primary" size="md" type="submit" isLoading={isSubmitting} rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                Submit & Find Verified Matches
+              <Button variant="primary" size="md" type="submit" isLoading={isSubmitting}>
+                Send request
               </Button>
             </div>
           </form>
@@ -282,9 +282,9 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                 <CheckCircle2 className="w-5 h-5 text-forest-700" />
               </div>
               <div>
-                <div className="font-bold text-forest-900 text-[13px]">Skill Request Submitted Successfully!</div>
-                <p className="text-[13px] text-forest-800 mt-1">
-                  Your request for <span className="font-bold">{skillName}</span> is now active in the matching pool. Here are verified educators matched via rule-based scoring:
+                <div className="font-bold text-forest-900 text-[15px]">Request sent</div>
+                <p className="text-[14px] text-forest-800 mt-1">
+                  We’ll also look ourselves and reply on WhatsApp. {matches.length > 0 ? <>Meanwhile, these educators look like a fit for <span className="font-bold">{skillName}</span>:</> : null}
                 </p>
               </div>
             </div>
@@ -298,17 +298,13 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={m.educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-                          alt={m.educator.user?.name}
-                          className="w-12 h-12 rounded-card object-cover border border-ink-200"
-                        />
+                        <Avatar src={m.educator.user?.avatar_url} name={m.educator.user?.name} className="w-12 h-12 rounded-card border border-ink-200" />
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-bold text-ink-900 text-[15px] font-display">{m.educator.user?.name}</h4>
-                            <Badge variant="success" size="sm">{m.match_score}% MATCH</Badge>
+                            <Badge variant="success" size="sm">{m.match_score}% fit</Badge>
                           </div>
-                          <p className="text-[13px] text-ink-600">{m.educator.title}</p>
+                          <p className="text-[14px] text-ink-600">{m.educator.title}</p>
                           <div className="text-xs text-ink-500 flex items-center gap-2 mt-0.5">
                             <span>{m.educator.location}</span>
                             <span>•</span>
@@ -325,14 +321,12 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                           if (onSelectEducator) onSelectEducator(m.educator.id);
                         }}
                       >
-                        View & Book
+                        View profile
                       </Button>
                     </div>
 
                     <div className="bg-ink-50 p-3 rounded-control border border-ink-100 text-xs space-y-1.5">
-                      <span className="font-semibold text-ink-700 block text-[11px] uppercase tracking-wider">
-                        Rule-Based Match Criteria:
-                      </span>
+                      <span className="font-semibold text-ink-800 block text-[13px]">Why they fit</span>
                       {m.match_reasons.map((r, i) => (
                         <div key={i} className="flex items-center gap-1.5 text-ink-600">
                           <CheckCircle2 className="w-3.5 h-3.5 text-forest-600 shrink-0" />
@@ -344,15 +338,15 @@ export const SkillRequestModal: React.FC<SkillRequestModalProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center text-[13px] text-ink-600 bg-ink-50 rounded-card border border-ink-200">
-                Our operations team will review your request and match you with a verified educator within 24 hours.
+              <div className="p-6 text-center text-[14px] text-ink-600 bg-ink-50 rounded-card border border-ink-200">
+                Nobody on iSkillLink teaches this yet. We’ll look for someone and reply on WhatsApp.
               </div>
             )}
 
             </div>
             <div className="shrink-0 p-4 bg-ink-50 border-t border-ink-100 flex items-center justify-end pb-safe">
-              <Button variant="secondary" size="md" onClick={onClose}>
-                Go to Dashboard
+              <Button variant="secondary" size="md" onClick={() => { onClose(); navigate('/dashboard/learner/requests'); }}>
+                See my requests
               </Button>
             </div>
           </div>

@@ -9,7 +9,7 @@ import {
   Message, Notification, AdminAction, Inquiry, NewsletterSubscriber
 } from './types.js';
 import {
-  initialCategories, initialSkills, initialUsers, initialLearners,
+  initialCategories, initialSkills, createInitialUsers, initialLearners,
   initialEducators, initialEducatorSkills, initialQualifications,
   initialPortfolios, initialVerifications, initialLearnerRequests,
   initialMatches, initialBookings, initialPayments, initialTransactions,
@@ -46,14 +46,54 @@ export interface DatabaseState {
   newsletterSubscribers: NewsletterSubscriber[];
 }
 
+// Older persisted files used snake_case collection names; map them onto the current keys.
+const LEGACY_STATE_KEYS: Record<string, keyof DatabaseState> = {
+  educator_skills: 'educatorSkills',
+  learner_requests: 'learnerRequests',
+  availabilities: 'availability',
+  admin_actions: 'adminActions',
+  newsletter_subscribers: 'newsletterSubscribers'
+};
+
+const STATE_COLLECTIONS: Array<keyof DatabaseState> = [
+  'users', 'learners', 'educators', 'categories', 'skills', 'educatorSkills',
+  'qualifications', 'portfolios', 'verifications', 'learnerRequests', 'matches',
+  'bookings', 'availability', 'payments', 'transactions', 'reviews', 'messages',
+  'notifications', 'adminActions', 'inquiries', 'newsletterSubscribers'
+];
+
+/**
+ * Brings a persisted state blob (JSON file or PostgreSQL row) into the current shape:
+ * legacy snake_case collections are renamed and any missing collection becomes an empty array.
+ */
+function normalizeState(raw: any): DatabaseState {
+  const state: any = { ...raw };
+  for (const [legacyKey, currentKey] of Object.entries(LEGACY_STATE_KEYS)) {
+    if (Array.isArray(state[legacyKey])) {
+      if (!Array.isArray(state[currentKey])) state[currentKey] = state[legacyKey];
+      delete state[legacyKey];
+    }
+  }
+  for (const key of STATE_COLLECTIONS) {
+    if (!Array.isArray(state[key])) state[key] = [];
+  }
+  return state as DatabaseState;
+}
+
 class Database {
   private data: DatabaseState;
   private postgresPool: Pool | null = process.env.DATABASE_URL
     ? new Pool({ connectionString: process.env.DATABASE_URL, max: 5, ssl: { rejectUnauthorized: false } })
     : null;
+  // PostgreSQL bookkeeping: the row version this instance last read or wrote, and its write queue.
+  private postgresVersion: string | null = null;
+  private pendingWrite: Promise<void> = Promise.resolve();
 
   constructor() {
-    this.data = this.loadDatabase();
+    // With PostgreSQL the row is the only source of truth: start from the seed in memory and let
+    // initialize() load the row (or store the seed if there is none). Saving here would race
+    // initialize() and could overwrite live data with the seed on every cold start.
+    this.data = this.postgresPool ? this.buildDefaultState() : this.loadDatabase();
     this.ensurePasswordsHashed();
   }
 
@@ -67,16 +107,43 @@ class Database {
         updated_at timestamptz NOT NULL DEFAULT now()
       )
     `);
-    const result = await this.postgresPool.query<{ state: DatabaseState }>(
-      'SELECT state FROM app_state WHERE id = 1'
+    const result = await this.postgresPool.query<{ state: DatabaseState; version: string }>(
+      'SELECT state, updated_at::text AS version FROM app_state WHERE id = 1'
     );
     if (result.rows[0]?.state) {
-      this.data = result.rows[0].state;
+      this.data = normalizeState(result.rows[0].state);
+      this.postgresVersion = result.rows[0].version;
       this.ensurePasswordsHashed();
       return;
     }
 
-    await this.persistToPostgres();
+    this.saveData();
+    await this.flush();
+  }
+
+  /**
+   * Picks up writes made by other server instances. Serverless hosts such as Vercel run several
+   * instances, each with its own in-memory copy, so the API refreshes before handling a request.
+   */
+  public async refresh() {
+    if (!this.postgresPool) return;
+    await this.flush();
+    const latest = await this.postgresPool.query<{ version: string }>(
+      'SELECT updated_at::text AS version FROM app_state WHERE id = 1'
+    );
+    const version = latest.rows[0]?.version;
+    if (!version || version === this.postgresVersion) return;
+
+    const result = await this.postgresPool.query<{ state: DatabaseState; version: string }>(
+      'SELECT state, updated_at::text AS version FROM app_state WHERE id = 1'
+    );
+    this.data = normalizeState(result.rows[0].state);
+    this.postgresVersion = result.rows[0].version;
+  }
+
+  /** Resolves once every queued PostgreSQL write has finished, so a response never outruns its save. */
+  public async flush() {
+    await this.pendingWrite;
   }
 
   /**
@@ -101,13 +168,11 @@ class Database {
     try {
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
+        const parsed = normalizeState(JSON.parse(raw));
         // Ensure founder Ashabahebwa Hassan is always present in users
         if (!parsed.users.some((u: User) => u.email === 'ashabahebwahassan665@gmail.com')) {
           return this.resetToDefault();
         }
-        if (!parsed.inquiries) parsed.inquiries = [];
-        if (!parsed.newsletterSubscribers) parsed.newsletterSubscribers = [];
         return parsed;
       }
     } catch (err) {
@@ -119,9 +184,13 @@ class Database {
 
   private saveData(dataToSave?: DatabaseState) {
     if (this.postgresPool) {
-      void this.persistToPostgres(dataToSave).catch(error => {
-        console.error('Failed to persist PostgreSQL application state:', error);
-      });
+      // Snapshot now and write in order: later writes must not be overtaken by earlier ones.
+      const snapshot = JSON.stringify(dataToSave || this.data);
+      this.pendingWrite = this.pendingWrite
+        .then(() => this.persistToPostgres(snapshot))
+        .catch(error => {
+          console.error('Failed to persist PostgreSQL application state:', error);
+        });
       return;
     }
     try {
@@ -137,19 +206,29 @@ class Database {
     }
   }
 
-  private async persistToPostgres(dataToSave?: DatabaseState) {
+  private async persistToPostgres(snapshot: string) {
     if (!this.postgresPool) return;
-    await this.postgresPool.query(
+    const result = await this.postgresPool.query<{ version: string }>(
       `INSERT INTO app_state (id, state, updated_at)
        VALUES (1, $1::jsonb, now())
-       ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state, updated_at = now()`,
-      [JSON.stringify(dataToSave || this.data)]
+       ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state, updated_at = now()
+       RETURNING updated_at::text AS version`,
+      [snapshot]
     );
+    this.postgresVersion = result.rows[0]?.version ?? this.postgresVersion;
   }
 
   public resetToDefault() {
-    this.data = {
-      users: initialUsers.map(u => ({
+    this.data = this.buildDefaultState();
+    this.saveData();
+    return this.data;
+  }
+
+  private buildDefaultState(): DatabaseState {
+    // Deep-copy the seed collections so runtime writes never mutate the seed module itself
+    // (otherwise a later reset would bring back previously written records).
+    return structuredClone({
+      users: createInitialUsers().map(u => ({
         ...u,
         password_hash: u.password_hash.startsWith('$2') ? u.password_hash : hashPasswordSync(u.password_hash)
       })),
@@ -173,9 +252,7 @@ class Database {
       adminActions: initialAdminActions,
       inquiries: [],
       newsletterSubscribers: []
-    };
-    this.saveData();
-    return this.data;
+    });
   }
 
   // Generic Getters
@@ -211,6 +288,10 @@ class Database {
 
   public findUserByGoogleSub(googleSub: string) {
     return this.data.users.find(u => u.google_sub === googleSub);
+  }
+
+  public findUserBySupabaseId(supabaseId: string) {
+    return this.data.users.find(u => u.supabase_id === supabaseId);
   }
 
   public createUser(user: User) {

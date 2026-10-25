@@ -11,12 +11,12 @@ import {
 } from './types.js';
 import {
   hashPassword,
-  hashPasswordSync,
   comparePassword,
   generateToken,
   sanitizeUser
 } from './utils/security.js';
 import { revokeToken } from './utils/security.js';
+import { createRoleProfile, getOrCreateLearnerProfile, unusablePasswordHash } from './accounts.js';
 import {
   authenticateToken,
   optionalToken,
@@ -25,6 +25,7 @@ import {
   requireSelfOrAdmin
 } from './middleware/auth.js';
 import multer from 'multer';
+import { put } from '@vercel/blob';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -41,22 +42,23 @@ if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 if (process.env.NODE_ENV === 'production' && !GOOGLE_CLIENT_ID) {
-  console.error('[FATAL] GOOGLE_CLIENT_ID is not set. Refusing to start production authentication without it.');
-  process.exit(1);
+  // The site no longer offers Google sign-in; /api/auth/google answers 503 until this is set.
+  console.warn('[Auth] GOOGLE_CLIENT_ID is not set; Google sign-in is disabled.');
 }
 
-// Ensure upload directory exists (6.4 Binary Media Upload Pipeline)
+// 6.4 Binary Media Upload Pipeline. Vercel's filesystem is read-only, so when a Vercel Blob store
+// is connected (BLOB_READ_WRITE_TOKEN) avatars go there; otherwise they are written to local disk.
+const useBlobStorage = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const uploadsAvailable = useBlobStorage || !process.env.VERCEL;
 const UPLOAD_DIR = path.join(__dirname, '../public/uploads/avatars');
-if (!fs.existsSync(UPLOAD_DIR)) {
+if (!useBlobStorage && uploadsAvailable && !fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
-const storage = multer.diskStorage({
+const avatarFileName = (originalName: string) =>
+  `avatar-${Date.now()}-${Math.random().toString(36).slice(2,6)}${path.extname(originalName) || '.jpg'}`;
+const storage = useBlobStorage ? multer.memoryStorage() : multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    const name = `avatar-${Date.now()}-${Math.random().toString(36).slice(2,6)}${ext}`;
-    cb(null, name);
-  }
+  filename: (_req, file, cb) => cb(null, avatarFileName(file.originalname))
 });
 const upload = multer({
   storage,
@@ -81,20 +83,46 @@ const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',').map(s => s.trim())
   : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173'];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (server-to-server, Postman, mobile apps)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
-      callback(new Error(`CORS policy: Origin '${origin}' is not allowed. Authorized origins: ${allowedOrigins.join(', ')}`));
-    }
-  },
-  credentials: true
+// Same-origin calls (the frontend and API on one host, as on Vercel) are always allowed.
+function isSameOrigin(req: Request, origin: string) {
+  const host = (req.headers['x-forwarded-host'] as string | undefined)?.split(',')[0].trim() || req.headers.host;
+  try {
+    return !!host && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
+app.use(cors((req, callback) => {
+  const origin = req.headers.origin;
+  // Allow requests with no origin (server-to-server, Postman, mobile apps)
+  if (!origin || allowedOrigins.includes(origin) || isSameOrigin(req as Request, origin)) {
+    callback(null, { origin: true, credentials: true });
+  } else {
+    console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
+    callback(new Error(`CORS policy: Origin '${origin}' is not allowed. Authorized origins: ${allowedOrigins.join(', ')}`));
+  }
 }));
 
 app.use(express.json({ limit: '10mb' }));
+
+// Serverless hosts run several instances, each holding its own copy of the state. Load other
+// instances' writes before handling a request, and hold the response until this request's own
+// writes are saved: an instance can be frozen as soon as its response is sent.
+app.use('/api', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    await db.refresh();
+  } catch (err) {
+    console.error('Failed to refresh application state:', err);
+    return res.status(503).json({ error: 'The database is unavailable. Please try again in a moment.' });
+  }
+  const sendJson = res.json.bind(res);
+  res.json = (body?: unknown) => {
+    void db.flush().then(() => sendJson(body));
+    return res;
+  };
+  next();
+});
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
@@ -140,6 +168,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // AUTHENTICATION & ACCESS CONTROL
 // ==========================================
 
+/** Photos sent at sign-up: an image data URL (cropped client-side, under ~1MB) or an https link. */
+function acceptableAvatar(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  if (value.startsWith('data:image/') && value.length < 1_000_000) return value;
+  if (value.startsWith('https://')) return value;
+  return '';
+}
+
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -148,22 +184,17 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
   const user = db.findUserByEmail(String(email).trim());
   if (!user) {
-    return res.status(401).json({ error: 'Account not found with this email. Please register.' });
+    return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
 
   const isPasswordValid = await comparePassword(password, user.password_hash);
   if (!isPasswordValid) {
-    return res.status(401).json({ error: 'Incorrect password. Please try again.' });
+    return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
 
-  let learnerProfile = null;
-  let educatorProfile = null;
-
-  if (user.role === 'learner') {
-    learnerProfile = db.findLearnerByUserId(user.id);
-  } else if (user.role === 'educator') {
-    educatorProfile = db.findEducatorByUserId(user.id);
-  }
+  // Return every profile the account owns (a learner may also have applied to teach).
+  const learnerProfile = db.findLearnerByUserId(user.id) || null;
+  const educatorProfile = db.findEducatorByUserId(user.id) || null;
 
   const token = generateToken(user);
 
@@ -173,11 +204,11 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     educatorProfile,
     token
   });
+});
 
-  app.post('/api/auth/logout', authenticateToken, (req: Request, res: Response) => {
-    if (req.user?.jti) revokeToken(req.user.jti);
-    res.status(204).send();
-  });
+app.post('/api/auth/logout', authenticateToken, (req: Request, res: Response) => {
+  if (req.user?.jti) revokeToken(req.user.jti);
+  res.status(204).send();
 });
 
 app.post('/api/auth/google', async (req: Request, res: Response) => {
@@ -220,7 +251,7 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
       id: userId,
       email: payload.email.toLowerCase(),
       google_sub: payload.sub,
-      password_hash: hashPasswordSync(`google-disabled-password-${Date.now()}`),
+      password_hash: unusablePasswordHash(),
       role: 'learner',
       name: payload.name || payload.email.split('@')[0],
       phone: '+256 744 024 529',
@@ -241,13 +272,9 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
     });
   }
 
-  let learnerProfile = null;
-  let educatorProfile = null;
-  if (user.role === 'learner') {
-    learnerProfile = db.findLearnerByUserId(user.id);
-  } else if (user.role === 'educator') {
-    educatorProfile = db.findEducatorByUserId(user.id);
-  }
+  // Return every profile the account owns (a learner may also have applied to teach).
+  const learnerProfile = db.findLearnerByUserId(user.id) || null;
+  const educatorProfile = db.findEducatorByUserId(user.id) || null;
 
   const token = generateToken(user);
 
@@ -289,73 +316,20 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     role,
     name: String(name).trim(),
     phone: phone || '+256 744 024 529',
-    avatar_url: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+    // Keep the photo chosen at sign-up (a data URL or https link); never substitute a stock face.
+    avatar_url: acceptableAvatar(req.body.avatar_url),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
 
   db.createUser(newUser);
 
-  let learnerProfile: Learner | null = null;
-  let educatorProfile: Educator | null = null;
-
-  if (role === 'learner') {
-    learnerProfile = {
-      id: `lrn-${Date.now()}`,
-      user_id: userId,
-      location: location || 'Mbarara, Uganda',
-      bio: bio || 'Interested in learning practical skills.',
-      learning_interests: learning_interests || [],
-      preferred_format: preferred_format || 'in-person',
-      created_at: new Date().toISOString()
-    };
-    db.createLearner(learnerProfile);
-  } else if (role === 'educator') {
-    educatorProfile = {
-      id: `edu-${Date.now()}`,
-      user_id: userId,
-      title: 'Practical Skills Educator',
-      bio: bio || 'Sharing practical vocational expertise in Uganda.',
-      educator_type: 'practitioner',
-      years_experience: 1,
-      location: location || 'Mbarara, Uganda',
-      service_area: 'Mbarara City & Western Region',
-      teaching_formats: ['in-person'],
-      languages: ['English', 'Runyankole'],
-      equipment_provided: 'Workshop practical equipment',
-      hourly_rate_ugx: 35000,
-      status: 'applied',
-      rating: 0,
-      total_reviews: 0,
-      total_students: 0,
-      created_at: new Date().toISOString()
-    };
-    db.createEducator(educatorProfile);
-
-    // Create verification entry
-    db.addVerification({
-      id: `v-${educatorProfile.id}`,
-      educator_id: educatorProfile.id,
-      national_id_number: 'CM-PENDING-SUBMISSION',
-      national_id_status: 'pending',
-      background_check_status: 'pending',
-      interview_status: 'pending',
-      skill_assessment_status: 'pending',
-      notes: 'New educator registered. Pending verification.'
-    });
-
-    // Notify Ashabahebwa Hassan (Admin)
-    db.createNotification({
-      id: `notif-${Date.now()}`,
-      user_id: 'usr-admin-ashabahebwa',
-      type: 'system_alert',
-      title: 'New Educator Registered',
-      message: `${name} has registered as an educator from ${location || 'Mbarara'}.`,
-      link: '/admin-dashboard',
-      is_read: false,
-      created_at: new Date().toISOString()
-    });
-  }
+  const { learnerProfile, educatorProfile } = createRoleProfile(newUser, {
+    location,
+    bio,
+    learning_interests,
+    preferred_format
+  });
 
   const token = generateToken(newUser);
 
@@ -377,14 +351,9 @@ app.get('/api/auth/me', authenticateToken, (req: Request, res: Response) => {
     return res.status(404).json({ error: 'User account not found' });
   }
 
-  let learnerProfile = null;
-  let educatorProfile = null;
-
-  if (user.role === 'learner') {
-    learnerProfile = db.findLearnerByUserId(user.id);
-  } else if (user.role === 'educator') {
-    educatorProfile = db.findEducatorByUserId(user.id);
-  }
+  // Return every profile the account owns (a learner may also have applied to teach).
+  const learnerProfile = db.findLearnerByUserId(user.id) || null;
+  const educatorProfile = db.findEducatorByUserId(user.id) || null;
 
   res.json({
     user: sanitizeUser(user),
@@ -427,11 +396,28 @@ app.patch('/api/users/:id', authenticateToken, requireSelfOrAdmin(req => String(
 });
 
 // 6.4 Binary Media Upload Pipeline — multipart handling, store file path not Base64
-app.post('/api/uploads/avatar', authenticateToken, upload.single('avatar'), (req: Request, res: Response) => {
+app.post('/api/uploads/avatar', authenticateToken, (_req: Request, res: Response, next: NextFunction) => {
+  if (!uploadsAvailable) {
+    return res.status(503).json({ error: 'Photo uploads are not set up on this server yet.' });
+  }
+  next();
+}, upload.single('avatar'), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file provided. Field name must be \"avatar\".' });
   }
-  const relativeUrl = `/uploads/avatars/${req.file.filename}`;
+  let relativeUrl = `/uploads/avatars/${req.file.filename}`;
+  if (useBlobStorage) {
+    try {
+      const blob = await put(`avatars/${avatarFileName(req.file.originalname)}`, req.file.buffer, {
+        access: 'public',
+        contentType: req.file.mimetype
+      });
+      relativeUrl = blob.url;
+    } catch (err) {
+      console.error('Avatar upload to Vercel Blob failed:', err);
+      return res.status(502).json({ error: 'The photo could not be saved. Please try again.' });
+    }
+  }
   // Optionally update user if userId provided in body and authorized
   const userId = (req.body.userId as string) || req.user?.id;
   if (userId) {
@@ -440,7 +426,7 @@ app.post('/api/uploads/avatar', authenticateToken, upload.single('avatar'), (req
       db.updateUser(String(userId), { avatar_url: relativeUrl });
     }
   }
-  res.json({ success: true, url: relativeUrl, filename: req.file.filename, size: req.file.size });
+  res.json({ success: true, url: relativeUrl, filename: req.file.filename || path.basename(relativeUrl), size: req.file.size });
 });
 
 // ==========================================
@@ -569,7 +555,7 @@ app.get('/api/educators/:id', (req: Request, res: Response) => {
 });
 
 // Educator Multi-step Application / Onboarding
-app.post('/api/educators/onboard', async (req: Request, res: Response) => {
+app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Response) => {
   const {
     name, email, phone, location, educator_type, title, bio,
     years_experience, service_area, teaching_formats, languages,
@@ -582,6 +568,20 @@ app.post('/api/educators/onboard', async (req: Request, res: Response) => {
   }
 
   let user = db.findUserByEmail(String(email).trim());
+  if (user) {
+    // An application may only be attached to an existing account by that account's owner (or an admin).
+    const isAdmin = req.user?.role === 'admin' || req.user?.role === 'secondary_admin';
+    if (!isAdmin && req.user?.id !== user.id) {
+      return res.status(409).json({ error: 'An account already exists with this email. Sign in to that account first, then submit your application.' });
+    }
+  }
+
+  // Reuse the profile created at registration so the application isn't split across two profiles.
+  const existingEducator = user ? db.findEducatorByUserId(user.id) : undefined;
+  if (existingEducator && !['applied', 'under_review', 'verification'].includes(existingEducator.status)) {
+    return res.status(409).json({ error: 'Your educator profile has already been reviewed. Contact support to change your application details.' });
+  }
+
   if (!user) {
     // Require a password for new educator accounts
     if (!password || String(password).length < 8) {
@@ -591,12 +591,12 @@ app.post('/api/educators/onboard', async (req: Request, res: Response) => {
     const hashedPassword = await hashPassword(String(password));
     user = {
       id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      email: String(email).trim(),
+      email: String(email).trim().toLowerCase(),
       password_hash: hashedPassword,
       role: 'educator',
       name: String(name).trim(),
       phone: phone || '+256 744 024 529',
-      avatar_url: req.body.avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+      avatar_url: acceptableAvatar(req.body.avatar_url),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -606,8 +606,10 @@ app.post('/api/educators/onboard', async (req: Request, res: Response) => {
     user.avatar_url = req.body.avatar_url;
   }
 
-  const educatorId = `edu-${Date.now()}`;
+  const educatorId = existingEducator?.id || `edu-${Date.now()}`;
+  const submissionStamp = Date.now();
   const newEducator: Educator = {
+    ...existingEducator,
     id: educatorId,
     user_id: user.id,
     title,
@@ -623,19 +625,23 @@ app.post('/api/educators/onboard', async (req: Request, res: Response) => {
     package_rate_ugx: package_rate_ugx ? Number(package_rate_ugx) : undefined,
     status: 'applied',
     verification_notes: 'New application submitted via platform. Pending review by Ashabahebwa Hassan.',
-    rating: 0,
-    total_reviews: 0,
-    total_students: 0,
-    created_at: new Date().toISOString()
+    rating: existingEducator?.rating ?? 0,
+    total_reviews: existingEducator?.total_reviews ?? 0,
+    total_students: existingEducator?.total_students ?? 0,
+    created_at: existingEducator?.created_at || new Date().toISOString()
   };
 
-  db.createEducator(newEducator);
+  if (existingEducator) {
+    db.updateEducator(educatorId, newEducator);
+  } else {
+    db.createEducator(newEducator);
+  }
 
   // Add skills
   if (Array.isArray(skills)) {
     skills.forEach((s: any, idx: number) => {
       db.addEducatorSkill({
-        id: `es-${educatorId}-${idx}`,
+        id: `es-${educatorId}-${submissionStamp}-${idx}`,
         educator_id: educatorId,
         skill_id: s.skill_id || `custom-skill-${idx}`,
         skill_name: s.skill_name || s.name || 'Skill',
@@ -651,7 +657,7 @@ app.post('/api/educators/onboard', async (req: Request, res: Response) => {
   if (Array.isArray(qualifications)) {
     qualifications.forEach((q: any, idx: number) => {
       db.addQualification({
-        id: `q-${educatorId}-${idx}`,
+        id: `q-${educatorId}-${submissionStamp}-${idx}`,
         educator_id: educatorId,
         title: q.title || 'Qualification',
         institution: q.institution || 'Uganda Vocational Institute',
@@ -666,11 +672,11 @@ app.post('/api/educators/onboard', async (req: Request, res: Response) => {
   if (Array.isArray(portfolios)) {
     portfolios.forEach((p: any, idx: number) => {
       db.addPortfolio({
-        id: `p-${educatorId}-${idx}`,
+        id: `p-${educatorId}-${submissionStamp}-${idx}`,
         educator_id: educatorId,
         title: p.title || 'Work Sample',
         description: p.description || '',
-        image_url: p.image_url || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+        image_url: p.image_url || '',
         tag: p.tag || 'Practical Work'
       });
     });
@@ -726,9 +732,46 @@ app.patch('/api/educators/:id', authenticateToken, (req: Request, res: Response)
     return res.status(403).json({ error: 'Access denied. You can only update your own educator profile.' });
   }
 
-  const updated = db.updateEducator(String(req.params.id), req.body);
+  // Owners may only edit their own profile details; status, rating and other trust fields
+  // are changed through the admin verification endpoints.
+  const editableFields: Array<keyof Educator> = [
+    'title', 'bio', 'educator_type', 'years_experience', 'location', 'service_area',
+    'teaching_formats', 'languages', 'equipment_provided', 'hourly_rate_ugx', 'package_rate_ugx'
+  ];
+  const updates: Partial<Educator> = {};
+  for (const field of editableFields) {
+    if (req.body[field] !== undefined) (updates as any)[field] = req.body[field];
+  }
+  if (isAdmin) {
+    if (req.body.featured !== undefined) updates.featured = Boolean(req.body.featured);
+  }
+
+  db.updateEducator(String(req.params.id), updates);
   res.json(db.findEducatorById(String(req.params.id)));
 });
+
+/**
+ * Resolves the learner profile a learner-facing write acts for. Learners always act as
+ * themselves (any learner_id in the body is ignored); admins must name the learner.
+ * Sends the error response and returns null when no learner can be resolved.
+ */
+function resolveActingLearnerId(req: Request, res: Response, requestedLearnerId?: string): string | null {
+  const isAdmin = req.user!.role === 'admin' || req.user!.role === 'secondary_admin';
+  if (isAdmin) {
+    if (!requestedLearnerId || !db.getLearners().some(l => l.id === requestedLearnerId)) {
+      res.status(400).json({ error: 'A valid learner_id is required when acting as an administrator.' });
+      return null;
+    }
+    return requestedLearnerId;
+  }
+
+  const learnerProfile = getOrCreateLearnerProfile(req.user!.id);
+  if (!learnerProfile) {
+    res.status(403).json({ error: 'A learner profile is required for this action.' });
+    return null;
+  }
+  return learnerProfile.id;
+}
 
 // ==========================================
 // LEARNER REQUESTS & MATCHING
@@ -778,7 +821,8 @@ app.post('/api/learner-requests', authenticateToken, requireRole('learner', 'adm
     return res.status(400).json({ error: 'Skill name, learning goal, and budget are required' });
   }
 
-  const effectiveLearnerId = learner_id || `lrn-${req.user!.id}`;
+  const effectiveLearnerId = resolveActingLearnerId(req, res, learner_id);
+  if (!effectiveLearnerId) return;
   const effectiveName = learner_name || req.user!.name;
   const effectiveEmail = learner_email || req.user!.email;
 
@@ -895,17 +939,20 @@ app.post('/api/learner-requests/:id/assign-match', authenticateToken, requireRol
     details: `Matched learner ${request.learner_name} with educator ${educator.user?.name} (${educator.title}).`
   });
 
-  // Notify Learner
-  db.createNotification({
-    id: `notif-${Date.now()}`,
-    user_id: request.learner_id.startsWith('usr') ? request.learner_id : 'usr-learner-1',
-    type: 'match_found',
-    title: 'Educator Match Found!',
-    message: `iSkillLink matched your request for "${request.skill_name}" with ${educator.user?.name}.`,
-    link: `/educators/${educator.id}`,
-    is_read: false,
-    created_at: new Date().toISOString()
-  });
+  // Notify Learner (request.learner_id is a learner profile id; notifications target the user)
+  const learnerUserId = db.getLearners().find(l => l.id === request.learner_id)?.user_id;
+  if (learnerUserId) {
+    db.createNotification({
+      id: `notif-${Date.now()}`,
+      user_id: learnerUserId,
+      type: 'match_found',
+      title: 'Educator Match Found!',
+      message: `iSkillLink matched your request for "${request.skill_name}" with ${educator.user?.name}.`,
+      link: `/educators/${educator.id}`,
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
 
   res.json({ success: true, match: newMatch });
 });
@@ -978,7 +1025,14 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
     return res.status(400).json({ error: 'Missing required booking parameters' });
   }
 
-  const effectiveLearnerId = learner_id || `lrn-${req.user!.id}`;
+  const effectiveLearnerId = resolveActingLearnerId(req, res, learner_id);
+  if (!effectiveLearnerId) return;
+
+  const educator = db.findEducatorById(educator_id);
+  if (!educator) {
+    return res.status(404).json({ error: 'Educator not found' });
+  }
+
   const total = Number(total_amount_ugx);
   const platformFee = Math.round(total * 0.10); // 10% platform commission
   const educatorPayout = total - platformFee;
@@ -1024,8 +1078,7 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
   });
 
   // Notify educator
-  const educator = db.findEducatorById(educator_id);
-  if (educator && educator.user) {
+  if (educator.user) {
     db.createNotification({
       id: `notif-${Date.now()}`,
       user_id: educator.user.id,
@@ -1041,38 +1094,89 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
   res.status(201).json({ success: true, booking: newBooking });
 });
 
-app.patch('/api/bookings/:id/status', authenticateToken, requireRole('educator', 'admin'), (req: Request, res: Response) => {
-  const { status, cancellation_reason } = req.body;
+/** Works out how the authenticated user relates to a booking. */
+function bookingAccess(req: Request, booking: Booking) {
+  const isAdmin = req.user!.role === 'admin' || req.user!.role === 'secondary_admin';
+  const educatorProfile = db.findEducatorByUserId(req.user!.id);
+  const learnerProfile = db.findLearnerByUserId(req.user!.id);
+  return {
+    isAdmin,
+    isEducatorOwner: !!educatorProfile && booking.educator_id === educatorProfile.id,
+    isLearnerOwner: !!learnerProfile && booking.learner_id === learnerProfile.id
+  };
+}
+
+const BOOKING_STATUSES: Booking['status'][] = ['pending', 'accepted', 'declined', 'confirmed', 'in_progress', 'completed', 'cancelled'];
+
+app.patch('/api/bookings/:id/status', authenticateToken, (req: Request, res: Response) => {
+  const { status } = req.body;
   const booking = db.getBookings().find(b => b.id === String(req.params.id));
 
   if (!booking) {
     return res.status(404).json({ error: 'Booking not found' });
   }
+  if (!BOOKING_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Invalid booking status. Expected one of: ${BOOKING_STATUSES.join(', ')}.` });
+  }
+
+  // Educators manage their own bookings; learners may confirm their own session is done or cancel it.
+  const { isAdmin, isEducatorOwner, isLearnerOwner } = bookingAccess(req, booking);
+  const learnerAllowed = isLearnerOwner && (status === 'completed' || status === 'cancelled');
+  if (!isAdmin && !isEducatorOwner && !learnerAllowed) {
+    return res.status(403).json({ error: 'Access denied. You can only update bookings you are part of.' });
+  }
 
   const updates: Partial<Booking> = { status };
   if (status === 'completed') {
+    if (!['confirmed', 'in_progress'].includes(booking.status)) {
+      return res.status(409).json({ error: 'Only confirmed or in-progress sessions can be marked completed.' });
+    }
     updates.completed_at = new Date().toISOString();
     updates.milestone_progress = 100;
 
-    // Update payment to completed if applicable
+    // Escrowed funds stay 'paid' until an admin releases the payout (which records the ledger entries).
     const payment = db.getPayments().find(p => p.booking_id === booking.id);
-    if (payment) {
-      db.updatePayment(payment.id, { status: 'completed' });
+    if (payment?.status === 'paid') {
+      db.createNotification({
+        id: `notif-${Date.now()}`,
+        user_id: 'usr-admin-ashabahebwa',
+        type: 'payment_update',
+        title: 'Payout Ready for Release',
+        message: `Session "${booking.skill_name}" was completed. UGX ${payment.payout_amount_ugx.toLocaleString()} is ready to release to the educator.`,
+        link: '/dashboard/admin/payments',
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
     }
   }
 
   const updated = db.updateBooking(booking.id, updates);
+
+  if (status === 'completed') {
+    const learnersTaught = new Set(
+      db.getBookings().filter(b => b.educator_id === booking.educator_id && b.status === 'completed').map(b => b.learner_id)
+    );
+    db.updateEducator(booking.educator_id, { total_students: learnersTaught.size });
+  }
+
   res.json(updated);
 });
 
 app.patch('/api/bookings/:id/progress', authenticateToken, requireRole('educator', 'admin'), (req: Request, res: Response) => {
   const { milestone_progress } = req.body;
-  const updated = db.updateBooking(String(req.params.id), {
-    milestone_progress: Math.min(100, Math.max(0, Number(milestone_progress)))
-  });
-  if (!updated) {
+  const booking = db.getBookings().find(b => b.id === String(req.params.id));
+  if (!booking) {
     return res.status(404).json({ error: 'Booking not found' });
   }
+
+  const { isAdmin, isEducatorOwner } = bookingAccess(req, booking);
+  if (!isAdmin && !isEducatorOwner) {
+    return res.status(403).json({ error: 'Access denied. You can only update progress on your own bookings.' });
+  }
+
+  const updated = db.updateBooking(booking.id, {
+    milestone_progress: Math.min(100, Math.max(0, Number(milestone_progress) || 0))
+  });
   res.json(updated);
 });
 
@@ -1184,6 +1288,9 @@ app.patch('/api/payments/:id/release-payout', authenticateToken, requireRole('ad
   if (!payment) {
     return res.status(404).json({ error: 'Payment not found' });
   }
+  if (payment.status !== 'paid') {
+    return res.status(409).json({ error: `Only funds held in escrow can be released. This payment is '${payment.status}'.` });
+  }
 
   db.updatePayment(payment.id, { status: 'completed' });
 
@@ -1245,20 +1352,33 @@ app.post('/api/reviews', authenticateToken, requireRole('learner', 'admin'), (re
     rating, skill_rating, punctuality_rating, communication_rating, comment
   } = req.body;
 
-  if (!educator_id || !rating || !comment) {
-    return res.status(400).json({ error: 'Educator, rating, and review comment are required' });
+  if (!booking_id || !educator_id || !rating || !comment) {
+    return res.status(400).json({ error: 'Booking, educator, rating, and review comment are required' });
   }
 
-  const effectiveLearnerId = learner_id || `lrn-${req.user!.id}`;
+  const effectiveLearnerId = resolveActingLearnerId(req, res, learner_id);
+  if (!effectiveLearnerId) return;
   const effectiveName = learner_name || req.user!.name;
+
+  // Reviews are marked verified, so each must come from a completed session the learner took.
+  const booking = db.getBookings().find(b => b.id === booking_id);
+  if (!booking || booking.learner_id !== effectiveLearnerId || booking.educator_id !== educator_id) {
+    return res.status(404).json({ error: 'Booking not found for this learner and educator.' });
+  }
+  if (booking.status !== 'completed') {
+    return res.status(409).json({ error: 'Only completed sessions can be reviewed.' });
+  }
+  if (db.getReviews().some(r => r.booking_id === booking.id)) {
+    return res.status(409).json({ error: 'This session has already been reviewed.' });
+  }
 
   const newReview: Review = {
     id: `rev-${Date.now()}`,
-    booking_id: booking_id || `bk-${Date.now()}`,
+    booking_id: booking.id,
     educator_id,
     learner_id: effectiveLearnerId,
     learner_name: effectiveName,
-    learner_avatar: learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    learner_avatar: learner_avatar || db.findUserById(req.user!.id)?.avatar_url || '',
     rating: Number(rating),
     skill_rating: Number(skill_rating) || Number(rating),
     punctuality_rating: Number(punctuality_rating) || Number(rating),
@@ -1295,11 +1415,19 @@ app.post('/api/reviews/:id/reply', authenticateToken, requireRole('educator', 'a
     return res.status(400).json({ error: 'Reply text required' });
   }
 
-  const updated = db.replyToReview(String(req.params.id), reply);
-  if (!updated) {
+  const review = db.getReviews().find(r => r.id === String(req.params.id));
+  if (!review) {
     return res.status(404).json({ error: 'Review not found' });
   }
 
+  // Educators may only reply to reviews of their own profile.
+  const isAdmin = req.user!.role === 'admin' || req.user!.role === 'secondary_admin';
+  const educatorProfile = db.findEducatorByUserId(req.user!.id);
+  if (!isAdmin && (!educatorProfile || review.educator_id !== educatorProfile.id)) {
+    return res.status(403).json({ error: 'Access denied. You can only reply to reviews of your own profile.' });
+  }
+
+  const updated = db.replyToReview(review.id, reply);
   res.json({ success: true, review: updated });
 });
 
@@ -1378,7 +1506,11 @@ app.get('/api/notifications', authenticateToken, (req: Request, res: Response) =
 });
 
 app.patch('/api/notifications/:id/read', authenticateToken, (req: Request, res: Response) => {
-  db.markNotificationRead(String(req.params.id));
+  const notification = db.getNotifications().find(n => n.id === String(req.params.id));
+  if (!notification || notification.user_id !== req.user!.id) {
+    return res.status(404).json({ error: 'Notification not found' });
+  }
+  db.markNotificationRead(notification.id);
   res.json({ success: true });
 });
 
@@ -1425,6 +1557,13 @@ app.get('/api/admin/verification-queue', authenticateToken, requireRole('admin')
   res.json(queue);
 });
 
+const VERIFICATION_STEP_LABELS: Record<string, string> = {
+  national_id: 'National ID check',
+  background_check: 'Background check',
+  interview: 'Interview',
+  skill_assessment: 'Skill assessment'
+};
+
 app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
   const { educator_id, step, status, notes } = req.body;
   const verification = db.getVerifications().find(v => v.educator_id === educator_id);
@@ -1440,6 +1579,12 @@ app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'
     verified_by_admin_id: adminId,
     notes: notes || verification.notes
   };
+
+  // The ID check can't pass without an ID number to check.
+  const nin = verification.national_id_number || '';
+  if (step === 'national_id' && status === 'verified' && (nin === '' || /^CM-(PENDING|APP-PENDING|NOT)/.test(nin))) {
+    return res.status(409).json({ error: 'This applicant has not submitted a National ID number yet.' });
+  }
 
   if (step === 'national_id') updates.national_id_status = status;
   if (step === 'background_check') updates.background_check_status = status;
@@ -1466,7 +1611,7 @@ app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'
     action_type: 'UPDATE_VERIFICATION_STEP',
     target_entity: 'Verification',
     target_id: educator_id,
-    details: `Updated ${step} to status: ${status}. Notes: ${notes || 'None'}`
+    details: `${VERIFICATION_STEP_LABELS[step] || step} ${status} for ${db.findEducatorById(educator_id)?.user?.name || 'educator'}.${notes ? ` Note: ${notes}` : ''}`
   });
 
   res.json({ success: true, verification: db.getVerifications().find(v => v.educator_id === educator_id) });
@@ -1478,6 +1623,17 @@ app.patch('/api/admin/educator-status', authenticateToken, requireRole('admin'),
 
   if (!educator) {
     return res.status(404).json({ error: 'Educator not found' });
+  }
+
+  // "Verified" must mean something: an educator only goes live after all four checks pass.
+  const v = educator.verification;
+  const fullyVerified = !!v &&
+    v.national_id_status === 'verified' &&
+    v.background_check_status === 'verified' &&
+    v.interview_status === 'completed' &&
+    v.skill_assessment_status === 'verified';
+  if ((status === 'active' || status === 'approved') && !fullyVerified) {
+    return res.status(409).json({ error: 'Complete all four verification checks before activating this educator.' });
   }
 
   const adminId = req.user?.id || 'usr-admin-ashabahebwa';

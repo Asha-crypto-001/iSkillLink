@@ -14,11 +14,10 @@ import { LearnerDashboard } from './pages/LearnerDashboard';
 import { EducatorDashboard } from './pages/EducatorDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AuthPage } from './pages/AuthPage';
-import { EducatorProfileModal } from './components/EducatorProfileModal';
 import { BookingModal } from './components/BookingModal';
 import { SkillRequestModal } from './components/SkillRequestModal';
+import { RequireAuth } from './components/RequireAuth';
 import { Educator } from './types';
-import { api } from './services/api';
 
 const viewToPath: Record<string, string> = {
   'home': '/',
@@ -48,17 +47,44 @@ function getViewFromPath(pathname: string): string {
   return 'home';
 }
 
+/** Shown to signed-in users who are not administrators. */
+const AdminRestricted: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
+      <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200 shadow-sm">
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <h2 className="text-2xl font-bold text-ink-900">This area is for administrators</h2>
+      <p className="text-sm text-ink-600 leading-relaxed">Your account doesn’t have access to platform operations.</p>
+      <button onClick={() => navigate('/')} className="px-6 py-2.5 rounded-xl bg-ink-900 text-white text-sm font-bold shadow hover:bg-ink-800 transition">
+        Back to iSkillLink
+      </button>
+    </div>
+  );
+};
+
 const AppContent: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
-  const [selectedEducatorForModal, setSelectedEducatorForModal] = useState<Educator | null>(null);
   const [selectedEducatorForBooking, setSelectedEducatorForBooking] = useState<Educator | null>(null);
   const [showSkillRequestModal, setShowSkillRequestModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const currentView = getViewFromPath(location.pathname);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('request') === 'skill' && user) {
+      setShowSkillRequestModal(true);
+      params.delete('request');
+      navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+    }
+  }, [location.search, user]);
   const isDashboardRoute = location.pathname.startsWith('/dashboard/');
   const isAuthRoute = location.pathname === '/auth';
 
@@ -93,8 +119,9 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // The profile page is the one place an educator is shown in full (shareable, back button works).
   const handleViewEducator = (educator: Educator) => {
-    setSelectedEducatorForModal(educator);
+    navigate(`/educators/${educator.id}`);
   };
 
   const handleRequestBooking = (educator: Educator) => {
@@ -103,24 +130,24 @@ const AppContent: React.FC = () => {
 
   const handleBookingSuccess = () => {
     setSelectedEducatorForBooking(null);
-    showToast('Booking request submitted successfully! Funds held safely in escrow.');
+    showToast('Booking request sent. Once the educator confirms, pay into escrow from your dashboard.');
     navigate('/dashboard/learner');
   };
 
   const handleSkillRequestSuccess = () => {
-    showToast('Custom skill request submitted! Matches computed.');
+    showToast('Request sent. We’ll look for someone and get back to you.');
   };
 
-  const handleSelectEducatorById = async (educatorId: string) => {
-    try {
-      const edu = await api.getEducatorById(educatorId);
-      setSelectedEducatorForModal(edu);
-    } catch (e) {
-      console.error('Failed to load educator:', e);
-    }
+  const handleSelectEducatorById = (educatorId: string) => {
+    navigate(`/educators/${educatorId}`);
   };
 
   const handleAuthSuccess = (role: string) => {
+    const next = new URLSearchParams(location.search).get('next');
+    if (next && next.startsWith('/') && !next.startsWith('//')) {
+      navigate(next, { replace: true });
+      return;
+    }
     if (role === 'admin' || role === 'secondary_admin') navigate('/dashboard/admin');
     else if (role === 'educator') navigate('/dashboard/educator');
     else navigate('/dashboard/learner');
@@ -134,40 +161,13 @@ const AppContent: React.FC = () => {
     return selectedCategoryId;
   };
 
-  const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    if (user && (user.role === 'admin' || user.role === 'secondary_admin')) {
-      return <>{children}</>;
-    }
-    return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200 shadow-sm">
-          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-black text-gray-900">Restricted Administrator Area</h2>
-        <p className="text-xs text-gray-600 leading-relaxed">
-          This operations portal is private and restricted strictly to Founder <strong>Ashabahebwa Hassan</strong> and authorized secondary administrators.
-        </p>
-        <div className="pt-2">
-          <button
-            onClick={() => navigate('/auth')}
-            className="px-6 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow hover:bg-slate-800 transition"
-          >
-            Admin Sign In
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-ink-50 text-ink-900 font-sans flex flex-col justify-between selection:bg-forest-100 selection:text-forest-900 overflow-x-clip max-w-[100vw]">
       <a href="#main-content" className="skip-link">Skip to main content</a>
       {/* Single accessible toast region — Phase 5 polish: dismissible, pause on hover/focus, 44px target, no double announcement */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">{toastMessage}</div>
       {toastMessage && (
-        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 inset-x-4 sm:inset-x-auto sm:right-5 sm:max-w-sm z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[13px] font-semibold flex items-center gap-3 animate-fadeIn">
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-5 inset-x-4 sm:inset-x-auto sm:right-5 sm:max-w-sm z-50 bg-ink-900 text-white px-4 py-3 rounded-control shadow-level-3 border border-ink-800 text-[14px] font-semibold flex items-center gap-3 animate-fadeIn">
           <span className="w-2 h-2 rounded-full bg-forest-400 shrink-0" aria-hidden="true"></span>
           <span className="flex-1 leading-snug">{toastMessage}</span>
           <button
@@ -185,7 +185,7 @@ const AppContent: React.FC = () => {
           currentView={currentView}
           setCurrentView={setCurrentView}
           onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-          onOpenAuth={() => navigate('/auth')}
+          onOpenAuth={(mode) => navigate(mode === 'register' ? '/auth?mode=register' : '/auth')}
         />
       )}
 
@@ -229,28 +229,36 @@ const AppContent: React.FC = () => {
           } />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard/learner" element={
-            <LearnerDashboard
-              onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-              onViewEducator={handleViewEducator}
-            />
+            <RequireAuth>
+              <LearnerDashboard
+                onOpenSkillRequest={() => setShowSkillRequestModal(true)}
+                onViewEducator={handleViewEducator}
+              />
+            </RequireAuth>
           } />
           <Route path="/dashboard/learner/*" element={
-            <LearnerDashboard
-              onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-              onViewEducator={handleViewEducator}
-            />
+            <RequireAuth>
+              <LearnerDashboard
+                onOpenSkillRequest={() => setShowSkillRequestModal(true)}
+                onViewEducator={handleViewEducator}
+              />
+            </RequireAuth>
           } />
           <Route path="/dashboard/educator" element={
-            <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            <RequireAuth>
+              <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            </RequireAuth>
           } />
           <Route path="/dashboard/educator/*" element={
-            <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            <RequireAuth>
+              <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            </RequireAuth>
           } />
           <Route path="/dashboard/admin" element={
-            <AdminGuard><AdminDashboard /></AdminGuard>
+            <RequireAuth roles={['admin', 'secondary_admin']} denied={<AdminRestricted />}><AdminDashboard /></RequireAuth>
           } />
           <Route path="/dashboard/admin/*" element={
-            <AdminGuard><AdminDashboard /></AdminGuard>
+            <RequireAuth roles={['admin', 'secondary_admin']} denied={<AdminRestricted />}><AdminDashboard /></RequireAuth>
           } />
           <Route path="/auth" element={<AuthPage onSuccess={handleAuthSuccess} />} />
           {/* Legacy redirects */}
@@ -261,14 +269,6 @@ const AppContent: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-
-      {selectedEducatorForModal && (
-        <EducatorProfileModal
-          educator={selectedEducatorForModal}
-          onClose={() => setSelectedEducatorForModal(null)}
-          onRequestBooking={handleRequestBooking}
-        />
-      )}
 
       {selectedEducatorForBooking && (
         <BookingModal

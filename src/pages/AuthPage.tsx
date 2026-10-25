@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Lock, Mail, User, Phone, CheckCircle2,
-  AlertCircle, ArrowRight, GraduationCap, BookOpen, MapPin,
+  ArrowLeft, ArrowRight, GraduationCap, BookOpen, MapPin,
   Camera, Upload
 } from 'lucide-react';
 import { Field } from '../components/ui/Field';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import logoUrl from '../assets/logo.png';
+import { Alert } from '../components/ui/Alert';
 
 interface AuthPageProps {
   onSuccess: (role: string) => void;
@@ -20,7 +22,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   defaultMode = 'login'
 }) => {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
+  const [searchParams] = useSearchParams();
+  // Visitors sent here from a guarded page or a form get a reason, and are returned afterwards.
+  const returningTo = searchParams.get('next');
+  const [mode, setMode] = useState<'login' | 'register'>(searchParams.get('mode') === 'register' ? 'register' : defaultMode);
   const [role, setRole] = useState<'learner' | 'educator'>('learner');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -95,6 +100,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
   return (
     <div className="max-w-md mx-auto px-4 py-12 space-y-6">
+      <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm font-semibold text-ink-600 hover:text-ink-900 rounded-control">
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+        Back to iSkillLink
+      </Link>
+
       {/* Brand Header */}
       <div className="text-center space-y-3">
         <div className="w-16 h-16 bg-white rounded-card shadow-level-1 border border-ink-200/90 p-2.5 mx-auto flex items-center justify-center">
@@ -106,10 +116,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </div>
         <div>
           <h1 className="text-2xl font-bold text-ink-900 tracking-tight">
-            {mode === 'login' ? 'Sign In to iSkillLink' : 'Create an Account'}
+            {mode === 'login' ? (returningTo ? 'Sign in to continue' : 'Sign in to iSkillLink') : 'Create your account'}
           </h1>
-          <p className="text-xs text-ink-500 mt-0.5">
-            Where Skills Meet Opportunity • Mbarara, Uganda
+          <p className="text-sm text-ink-600 mt-1">
+            {mode === 'login'
+              ? (returningTo ? 'You’ll go straight back to where you were.' : 'Welcome back.')
+              : 'Free for learners. Educators are checked before taking bookings.'}
           </p>
         </div>
       </div>
@@ -121,7 +133,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); }}
-            className={`flex-1 py-2 rounded-lg transition ${
+            className={`flex-1 min-h-[44px] rounded-lg transition ${
               mode === 'login' ? 'bg-white text-ink-900 shadow-level-1' : 'text-ink-500 hover:text-ink-900'
             }`}
           >
@@ -130,7 +142,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           <button
             type="button"
             onClick={() => { setMode('register'); setErrorMsg(''); }}
-            className={`flex-1 py-2 rounded-lg transition ${
+            className={`flex-1 min-h-[44px] rounded-lg transition ${
               mode === 'register' ? 'bg-white text-ink-900 shadow-level-1' : 'text-ink-500 hover:text-ink-900'
             }`}
           >
@@ -139,24 +151,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
+          <Alert>{errorMsg}</Alert>
         )}
-
-        <div className="text-center text-xs font-semibold text-ink-600">
-          Sign in securely with your email and password.
-        </div>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <div className="border-t border-ink-200 w-full" />
-          <span className="bg-white px-2.5 text-[10px] font-bold uppercase tracking-wider text-stone-400 shrink-0">
-            Email and password
-          </span>
-          <div className="border-t border-ink-200 w-full" />
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {mode === 'register' && (
@@ -170,7 +166,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     onClick={() => setRole('learner')}
                     className={`p-3 rounded-card border flex flex-col items-center gap-1 transition ${
                       role === 'learner'
-                        ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold'
+                        ? 'bg-forest-50 border-forest-600 text-forest-950 font-bold'
                         : 'border-ink-200 text-ink-600 hover:bg-ink-50'
                     }`}
                   >
@@ -183,7 +179,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     onClick={() => setRole('educator')}
                     className={`p-3 rounded-card border flex flex-col items-center gap-1 transition ${
                       role === 'educator'
-                        ? 'bg-forest-50 border-forest-600 text-emerald-950 font-bold'
+                        ? 'bg-forest-50 border-forest-600 text-forest-950 font-bold'
                         : 'border-ink-200 text-ink-600 hover:bg-ink-50'
                     }`}
                   >
@@ -214,7 +210,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-2 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 text-ink-700 font-semibold text-[11px] flex items-center gap-1.5"
+                    className="px-3 py-2 rounded-lg border border-ink-200 bg-white hover:bg-ink-50 text-ink-700 font-semibold text-[12px] flex items-center gap-1.5"
                   >
                     <Camera className="w-3.5 h-3.5 text-forest-700" />
                     <span>{avatarUrl ? 'Change Photo' : 'Upload Photo'}</span>
@@ -223,7 +219,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     <button
                       type="button"
                       onClick={() => setAvatarUrl('')}
-                      className="text-ink-400 hover:text-rose-600 text-[11px]"
+                      className="text-ink-400 hover:text-rose-600 text-[12px]"
                     >
                       Remove
                     </button>
@@ -305,9 +301,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </Button>
         </form>
 
-        <div className="pt-3 border-t border-ink-100 text-center text-xs text-ink-500">
-          Protected by iSkillLink Security • Headquartered in Mbarara City
-        </div>
+        {mode === 'login' && (
+          <p className="pt-3 border-t border-ink-100 text-center text-xs text-ink-600">
+            Forgot your password?{' '}
+            <a href="https://wa.me/256744024529?text=Hello%20iSkillLink%2C%20I%20need%20help%20resetting%20my%20password." target="_blank" rel="noopener noreferrer" className="font-semibold text-forest-700 hover:text-forest-800 underline underline-offset-2">
+              Message us on WhatsApp
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

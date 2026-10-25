@@ -4,6 +4,7 @@ import { formatUGX } from '../utils/formatters';
 import { ShieldCheck, Star, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
+import { Avatar } from './ui/Avatar';
 
 interface EducatorCardProps {
   educator: Educator;
@@ -16,7 +17,7 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
   onViewProfile,
   onRequestBooking
 }) => {
-  const avatar = educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';
+  const avatar = educator.user?.avatar_url;
   const name = educator.user?.name || 'Practitioner';
 
   return (
@@ -24,11 +25,7 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
       <div className="p-5 pb-4">
         <div className="flex items-start gap-3.5">
           <div className="relative shrink-0">
-            <img
-              src={avatar}
-              alt={name}
-              className="w-14 h-14 rounded-card object-cover border border-ink-200 shadow-soft"
-            />
+            <Avatar src={avatar} name={name} className="w-14 h-14 rounded-card border border-ink-200 shadow-soft" />
             {educator.status === 'active' && (
               <span
                 title="Verified Practitioner"
@@ -86,9 +83,11 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
               key={s.id}
               variant="success"
               size="sm"
-              className="truncate max-w-[150px]"
+              className="max-w-full"
+              title={s.skill_name}
             >
-              {s.skill_name}
+              {/* Text needs its own box: truncate has no effect directly inside inline-flex */}
+              <span className="truncate min-w-0">{s.skill_name}</span>
             </Badge>
           ))}
         </div>
@@ -96,10 +95,9 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
 
       <div className="px-5 py-3.5 bg-ink-50 border-t border-ink-100 flex items-center justify-between gap-3 pb-safe sm:pb-3.5">
         <div>
-          <span className="text-[11px] text-ink-600 uppercase font-bold tracking-wider block">Rate</span>
-          <span className="text-[15px] font-bold text-ink-900 font-display">
+          <span className="text-[12px] text-ink-600 font-semibold block">Per hour</span>
+          <span className="text-[15px] font-bold text-ink-900 font-display whitespace-nowrap">
             {formatUGX(educator.hourly_rate_ugx)}
-            <span className="text-xs text-ink-600 font-normal"> / hr</span>
           </span>
         </div>
 
@@ -111,17 +109,16 @@ export const EducatorCard: React.FC<EducatorCardProps> = ({
             className="min-h-[44px] px-4"
             aria-label={`View profile of ${name}`}
           >
-            View Profile
+            Profile
           </Button>
           <Button
             variant="primary"
             size="md"
             onClick={() => onRequestBooking(educator)}
-            rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
             className="min-h-[44px] px-4 shadow-soft"
             aria-label={`Book session with ${name}`}
           >
-            Learn
+            Book
           </Button>
         </div>
       </div>

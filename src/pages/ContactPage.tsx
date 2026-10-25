@@ -6,6 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Textarea } from '../components/ui/Textarea';
 import { Button } from '../components/ui/Button';
+import { Alert } from '../components/ui/Alert';
 
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -56,73 +57,49 @@ export const ContactPage: React.FC = () => {
   return (
     <div className="container-app py-12 space-y-12">
       {/* Header */}
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
-          Support & Management
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
-          Contact iSkillLink Uganda
+      <div className="space-y-3 max-w-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-ink-900 font-display">
+          Talk to us
         </h1>
-        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-          Reach our management team led by <strong>Ashabahebwa Hassan</strong> in Mbarara City for verification inquiries, custom learning requests, or platform support.
+        <p className="text-base text-ink-600 leading-relaxed">
+          Questions about a booking, a payment or teaching on iSkillLink? Our team in Mbarara reads every message.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Contact Info Sidebar */}
         <div className="space-y-6">
-          <div className="bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 space-y-4">
-            <h3 className="font-bold text-sm text-white uppercase tracking-wider">
-              Mbarara Operations HQ
-            </h3>
-
-            <div className="space-y-3 text-xs text-slate-300">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Mbarara City, Western Region, Uganda</span>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <div>WhatsApp: +256 744 024 529</div>
-                  <div className="text-slate-400 mt-0.5">Direct Line: +256 772 233 621</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <div><a href="mailto:iskilllink0@gmail.com" className="hover:text-emerald-300 underline font-medium">iskilllink0@gmail.com</a> (Official Inquiries)</div>
-                  <div className="text-slate-400 mt-0.5"><a href="mailto:ashabahebwahassan665@gmail.com" className="hover:text-emerald-300 underline">ashabahebwahassan665@gmail.com</a> (Founder)</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Clock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Mon – Sat: 8:00 AM – 6:00 PM EAT</span>
-              </div>
-            </div>
+          {/* WhatsApp is how most people reach us — make it the obvious first choice */}
+          <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 space-y-3">
+            <h2 className="font-bold text-base text-ink-900">Fastest: WhatsApp</h2>
+            <a
+              href="https://wa.me/256744024529"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-control bg-forest-700 hover:bg-forest-800 text-white text-sm font-bold"
+            >
+              <Phone className="w-4 h-4" aria-hidden="true" /> +256 744 024 529
+            </a>
+            <p className="flex items-center gap-2 text-sm text-ink-600"><Clock className="w-4 h-4" aria-hidden="true" /> Mon – Sat, 8am – 6pm</p>
           </div>
 
-          <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200 space-y-2 text-xs text-emerald-950">
-            <h4 className="font-bold text-emerald-900">Direct WhatsApp Helpline</h4>
-            <p className="text-[11px] text-emerald-800 leading-relaxed">
-              For immediate assistance with bookings or verification, reach Founder & Admin Ashabahebwa Hassan on WhatsApp at <a href="https://wa.me/256744024529" target="_blank" rel="noreferrer" className="underline font-bold">+256 744 024 529</a>.
-            </p>
-          </div>
+          <ul className="space-y-3 text-sm text-ink-700 px-1">
+            <li className="flex items-start gap-3"><Phone className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><span>Call: +256 772 233 621</span></li>
+            <li className="flex items-start gap-3"><Mail className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><a href="mailto:iskilllink0@gmail.com" className="underline underline-offset-2 hover:text-ink-900 relative after:absolute after:-inset-y-3 after:-inset-x-1 after:content-['']">iskilllink0@gmail.com</a></li>
+            <li className="flex items-start gap-3"><MapPin className="w-4 h-4 text-ink-500 shrink-0 mt-0.5" aria-hidden="true" /><span>Mbarara City, Western Uganda</span></li>
+          </ul>
         </div>
 
         {/* Contact Form — now unified via Field/Input primitives (Phase 3) */}
         <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-card border border-ink-200 shadow-level-1 space-y-4">
-          <h3 className="font-bold text-base text-ink-900 font-display">Send Us a Message</h3>
+          <h2 className="font-bold text-base text-ink-900 font-display">Or send a message</h2>
 
           {submitted ? (
             <div className="p-6 bg-forest-50 rounded-card border border-forest-200 text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-forest-600 mx-auto" />
-              <h4 className="font-bold text-forest-900 text-[13px]">Message Sent Successfully!</h4>
-              <p className="text-[13px] text-forest-800">
-                Thank you, {name}. Ashabahebwa Hassan and the iSkillLink team will respond to your message promptly.
+              <h3 className="font-bold text-forest-900 text-[14px]">Message sent</h3>
+              <p className="text-[14px] text-forest-800">
+                Thank you, {name}. We’ve got your message and will reply by email or WhatsApp.
               </p>
             </div>
           ) : (
@@ -187,9 +164,7 @@ export const ContactPage: React.FC = () => {
               </Field>
 
               {submitError && (
-                <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
-                  <span>{submitError}</span>
-                </div>
+                <Alert>{submitError}</Alert>
               )}
               <Button
                 type="submit"
@@ -205,27 +180,27 @@ export const ContactPage: React.FC = () => {
       </div>
 
       {/* FAQ Accordion Section */}
-      <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-6">
+      <div className="bg-white p-8 rounded-3xl border border-ink-200 shadow-sm space-y-6">
         <div className="text-center space-y-1">
-          <h3 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h3>
-          <p className="text-xs text-gray-500">Everything you need to know about learning and teaching on iSkillLink.</p>
+          <h3 className="text-xl font-bold text-ink-900">Frequently Asked Questions</h3>
+          <p className="text-xs text-ink-500">Everything you need to know about learning and teaching on iSkillLink.</p>
         </div>
 
         <div className="space-y-3 max-w-3xl mx-auto">
           {faqs.map((faq, idx) => (
             <div
               key={idx}
-              className="border border-gray-200 rounded-xl overflow-hidden text-xs"
+              className="border border-ink-200 rounded-xl overflow-hidden text-xs"
             >
               <button
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full p-4 text-left font-bold text-gray-900 bg-gray-50/50 hover:bg-gray-50 flex items-center justify-between transition"
+                className="w-full p-4 text-left font-bold text-ink-900 bg-ink-50/50 hover:bg-ink-50 flex items-center justify-between transition"
               >
                 <span>{faq.q}</span>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${openFaq === idx ? 'rotate-180 text-emerald-700' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-ink-400 transition-transform ${openFaq === idx ? 'rotate-180 text-forest-700' : ''}`} />
               </button>
               {openFaq === idx && (
-                <div className="p-4 bg-white text-gray-600 leading-relaxed border-t border-gray-100">
+                <div className="p-4 bg-white text-ink-600 leading-relaxed border-t border-ink-100">
                   {faq.a}
                 </div>
               )}

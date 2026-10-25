@@ -1,146 +1,174 @@
 import React from 'react';
+import { Phone, MessageCircle, ArrowRight } from 'lucide-react';
 import { LearnerRequest } from '../../types';
-import { formatUGX, formatShortDate } from '../../utils/formatters';
+import { formatUGX, formatShortDate, whatsappNumber } from '../../utils/formatters';
 import { StatusBadge } from '../../components/ui/Badge';
 
+interface TradeDemand {
+  trade: string;
+  requestCount: number;
+  averageBudgetUgx: number;
+  topLocations?: string[];
+}
+
+interface DemandData {
+  tradeDemand?: TradeDemand[];
+  learnerInterests?: Record<string, number>;
+}
+
 interface AdminInterestsTabProps {
-  demandData: any;
+  demandData: DemandData | null;
   learnerRequests: LearnerRequest[];
+  onFindMatch: (req: LearnerRequest) => void;
 }
 
 export const AdminInterestsTab: React.FC<AdminInterestsTabProps> = ({
   demandData,
-  learnerRequests
+  learnerRequests,
+  onFindMatch
 }) => {
+  const open = learnerRequests.filter(r => r.status === 'open').length;
+  const matched = learnerRequests.filter(r => r.status === 'matched' || r.status === 'fulfilled').length;
+
+  const trades = demandData?.tradeDemand || [];
+  const topCount = Math.max(1, ...trades.map(t => t.requestCount));
+
+  const interests = Object.entries(demandData?.learnerInterests || {}).sort((a, b) => b[1] - a[1]);
+
+  const contactLinks = (r: LearnerRequest) => {
+    const wa = whatsappNumber(r.contact_phone);
+    const link = 'w-11 h-11 md:w-9 md:h-9 rounded-control border border-ink-200 hover:bg-ink-50 inline-flex items-center justify-center text-ink-700';
+    return (
+      <div className="flex items-center gap-1.5">
+        {r.contact_phone && <a href={`tel:${r.contact_phone}`} className={link} aria-label={`Call ${r.learner_name}`} title={r.contact_phone}><Phone className="w-4 h-4" aria-hidden="true" /></a>}
+        {wa && <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className={link} aria-label={`WhatsApp ${r.learner_name}`}><MessageCircle className="w-4 h-4" aria-hidden="true" /></a>}
+      </div>
+    );
+  };
+
+  const matchControl = (r: LearnerRequest) => r.status === 'open' ? (
+    <button
+      onClick={() => onFindMatch(r)}
+      className="px-3 min-h-[44px] md:min-h-[36px] rounded-control bg-forest-700 hover:bg-forest-800 text-white text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap"
+    >
+      Find a match <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+    </button>
+  ) : null;
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
-      <div className="border-b border-gray-100 pb-4">
-        <h2 className="text-base font-bold text-gray-900">
-          Demand & User Interests Intelligence
-        </h2>
-        <p className="text-xs text-gray-500">
-          Real-time analytics on what skills Ugandan students are requesting, average learner budgets in UGX, and regional demand clusters.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* What people ask for, ranked by real request counts */}
+        <section aria-labelledby="demand-heading" className={`${interests.length ? 'lg:col-span-3' : 'lg:col-span-5'} bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4`}>
+          <div>
+            <h2 id="demand-heading" className="text-base font-bold text-ink-900">Most asked for</h2>
+            <p className="text-sm text-ink-600">
+              {learnerRequests.length} {learnerRequests.length === 1 ? 'request' : 'requests'} · {open} waiting for a match · {matched} matched
+            </p>
+          </div>
 
-      {/* Quick Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-        <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-1">
-          <span className="text-gray-600 font-semibold">Total Custom Learning Inquiries</span>
-          <div className="text-2xl font-black text-emerald-950">{demandData?.totalRequests || learnerRequests.length}</div>
-          <span className="text-[11px] text-emerald-800 font-medium">Submitted by active learners</span>
-        </div>
-
-        <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1">
-          <span className="text-gray-600 font-semibold">Open Matching Queue</span>
-          <div className="text-2xl font-black text-amber-950">{demandData?.openRequestsCount || learnerRequests.filter(r => r.status === 'open').length}</div>
-          <span className="text-[11px] text-amber-800 font-medium">Awaiting educator match</span>
-        </div>
-
-        <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-1">
-          <span className="text-gray-600 font-semibold">Matched & In-Training</span>
-          <div className="text-2xl font-black text-blue-950">{demandData?.matchedRequestsCount || learnerRequests.filter(r => r.status === 'matched').length}</div>
-          <span className="text-[11px] text-blue-800 font-medium">Apprentices actively learning</span>
-        </div>
-      </div>
-
-      {/* Detailed Skill Demand Breakdown */}
-      <div className="space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
-          Top Requested Vocational & Technical Trades
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {demandData?.tradeDemand && demandData.tradeDemand.length > 0 ? (
-            demandData.tradeDemand.map((item: any, idx: number) => (
-              <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-gray-50/50 space-y-2">
-                <div className="flex items-center justify-between font-bold text-gray-900 text-xs">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-md bg-emerald-800 text-white flex items-center justify-center text-[10px] font-bold">
-                      {idx + 1}
-                    </span>
-                    {item.trade}
-                  </span>
-                  <span className="text-emerald-800 font-black">{item.requestCount} inquiries</span>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-gray-600 pt-1 border-t border-gray-200/60">
-                  <span>Avg Student Budget: <strong>{formatUGX(item.averageBudgetUgx)}</strong></span>
-                  <span className="text-gray-500 truncate max-w-[150px]">
-                    Areas: {item.topLocations?.join(', ') || 'Mbarara City'}
-                  </span>
-                </div>
-              </div>
-            ))
+          {trades.length === 0 ? (
+            <p className="py-6 text-sm text-ink-600">Nobody has sent a request yet. They’ll be ranked here as they come in.</p>
           ) : (
-            <div className="p-4 text-xs text-gray-500 italic">No demand data aggregated yet.</div>
-          )}
-        </div>
-      </div>
-
-      {/* Full Custom Learner Requests Log with Contacts */}
-      <div className="space-y-3 pt-4 border-t border-gray-100">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
-          Live Learner Requests & Contact Records
-        </h3>
-
-        <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-xl">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
-              <tr>
-                <th className="p-3">Learner Name</th>
-                <th className="p-3">Requested Skill</th>
-                <th className="p-3">Location</th>
-                <th className="p-3">Max Budget</th>
-                <th className="p-3">Direct Contact</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Submitted</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 text-gray-700">
-              {learnerRequests.map(r => (
-                <tr key={r.id} className="hover:bg-gray-50/50">
-                  <td className="p-3 font-bold text-gray-900">{r.learner_name}</td>
-                  <td className="p-3 font-semibold text-emerald-950">{r.skill_name}</td>
-                  <td className="p-3 text-gray-600">{r.location}</td>
-                  <td className="p-3 font-bold text-gray-900">{formatUGX(r.budget_ugx)}</td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={`tel:${r.contact_phone}`}
-                        className="text-emerald-800 font-semibold hover:underline"
-                      >
-                        {r.contact_phone}
-                      </a>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <StatusBadge status={r.status} />
-                  </td>
-                  <td className="p-3 text-gray-500">{formatShortDate(r.created_at)}</td>
-                </tr>
+            <ol className="space-y-4">
+              {trades.map(t => (
+                <li key={t.trade} className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="font-semibold text-ink-900 min-w-0">{t.trade}</span>
+                    <span className="text-ink-700 tabular-nums whitespace-nowrap">{t.requestCount} {t.requestCount === 1 ? 'request' : 'requests'}</span>
+                  </div>
+                  <div className="h-2 rounded-pill bg-ink-100 overflow-hidden" aria-hidden="true">
+                    <div className="h-full rounded-pill bg-forest-600" style={{ width: `${(t.requestCount / topCount) * 100}%` }} />
+                  </div>
+                  <div className="text-xs text-ink-600">
+                    Budget about {formatUGX(t.averageBudgetUgx)}
+                    {t.topLocations?.length ? ` · ${t.topLocations.join(', ')}` : ''}
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="md:hidden space-y-3">
-          {learnerRequests.map(r => (
-            <div key={r.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-gray-900">{r.learner_name}</span>
-                <StatusBadge status={r.status} />
-              </div>
-              <div className="text-xs font-semibold text-emerald-950">{r.skill_name} • {r.location}</div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div><span className="text-gray-500">Budget:</span> <span className="font-bold">{formatUGX(r.budget_ugx)}</span></div>
-                <div><span className="text-gray-500">Date:</span> <span className="text-gray-600">{formatShortDate(r.created_at)}</span></div>
-              </div>
-              <a href={`tel:${r.contact_phone}`} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 hover:underline">{r.contact_phone}</a>
-            </div>
-          ))}
-          {learnerRequests.length===0 && <div className="text-center py-8 text-xs text-gray-400">No learner requests yet.</div>}
-        </div>
+            </ol>
+          )}
+        </section>
+
+        {/* What learners ticked when they signed up — only once someone has */}
+        {interests.length > 0 && (
+        <section aria-labelledby="signup-heading" className="lg:col-span-2 bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
+          <div>
+            <h2 id="signup-heading" className="text-base font-bold text-ink-900">Picked at sign-up</h2>
+            <p className="text-sm text-ink-600">Interests learners chose when they made an account.</p>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {interests.map(([name, count]) => (
+              <li key={name} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill border border-ink-200 bg-ink-50 text-sm text-ink-800">
+                {name} <span className="text-ink-500 tabular-nums">{count}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        )}
       </div>
+
+      {/* Every request, with a way to reach the learner */}
+      <section aria-labelledby="requests-heading" className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
+        <h2 id="requests-heading" className="text-base font-bold text-ink-900">Requests</h2>
+
+        {learnerRequests.length === 0 ? (
+          <p className="py-10 text-center text-sm text-ink-600">No requests yet.</p>
+        ) : (
+          <>
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="text-xs text-ink-600 border-b border-ink-200">
+                  <tr>
+                    <th scope="col" className="py-2 pr-3 font-semibold">Learner</th>
+                    <th scope="col" className="py-2 px-3 font-semibold">Wants to learn</th>
+                    <th scope="col" className="py-2 px-3 font-semibold text-right">Budget</th>
+                    <th scope="col" className="py-2 px-3 font-semibold">Contact</th>
+                    <th scope="col" className="py-2 px-3 font-semibold">Status</th>
+                    <th scope="col" className="py-2 pl-3 font-semibold text-right"><span className="sr-only">Action</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ink-100">
+                  {learnerRequests.map(r => (
+                    <tr key={r.id}>
+                      <td className="py-3 pr-3">
+                        <div className="font-semibold text-ink-900">{r.learner_name}</div>
+                        <div className="text-xs text-ink-600">{r.location} · asked {formatShortDate(r.created_at)}</div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="text-ink-900">{r.skill_name}</div>
+                        <div className="text-xs text-ink-600 capitalize">{r.skill_level}</div>
+                      </td>
+                      <td className="py-3 px-3 text-right text-ink-900 tabular-nums whitespace-nowrap">{formatUGX(r.budget_ugx)}</td>
+                      <td className="py-3 px-3">{contactLinks(r)}</td>
+                      <td className="py-3 px-3"><StatusBadge status={r.status} /></td>
+                      <td className="py-3 pl-3 text-right">{matchControl(r)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <ul className="md:hidden divide-y divide-ink-100">
+              {learnerRequests.map(r => (
+                <li key={r.id} className="py-3 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-ink-900">{r.learner_name} · {r.skill_name}</div>
+                      <div className="text-xs text-ink-600">{r.location} · {formatUGX(r.budget_ugx)} · {formatShortDate(r.created_at)}</div>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    {contactLinks(r)}
+                    {matchControl(r)}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
     </div>
   );
 };
