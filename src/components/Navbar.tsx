@@ -1,12 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  ChevronDown, ChevronRight, LogOut, Menu, X,
-  Camera, LayoutDashboard, ClipboardList
+  ChevronDown, ChevronRight, LogOut, Menu, X, ArrowUpRight, ArrowRight,
+  Camera, LayoutDashboard, ClipboardList,
+  Scissors, Zap, Utensils, Smartphone, Hammer, Code
 } from 'lucide-react';
 import { ProfilePhotoUploadModal } from './ProfilePhotoUploadModal';
 import logoUrl from '../assets/logo.png';
 import { Avatar } from './ui/Avatar';
+
+// Popular trades for the Explore menu (ids from the seeded categories).
+const EXPLORE_TRADES = [
+  { label: 'Fashion & tailoring', text: 'Pattern cutting, sewing, kitenge', categoryId: 'cat-fashion', icon: Scissors },
+  { label: 'Solar & electrical', text: 'Home wiring and solar installs', categoryId: 'cat-electrical', icon: Zap },
+  { label: 'Cooking & baking', text: 'Cakes, pastry and catering', categoryId: 'cat-culinary', icon: Utensils },
+  { label: 'Phone repair', text: 'Screens, batteries and boards', categoryId: 'cat-repair', icon: Smartphone },
+  { label: 'Carpentry', text: 'Furniture and joinery', categoryId: 'cat-carpentry', icon: Hammer },
+  { label: 'Web development', text: 'Websites and apps', categoryId: 'cat-tech', icon: Code }
+];
 
 interface NavbarProps {
   currentView: string;
@@ -33,7 +45,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [exploreOpen, setExploreOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const exploreRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -55,6 +70,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
+      }
+      if (exploreRef.current && !exploreRef.current.contains(event.target as Node)) {
+        setExploreOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -108,13 +126,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header
-        className={`sticky top-0 z-40 bg-white/80 backdrop-blur-xl backdrop-saturate-150 border-b transition-[border-color,box-shadow] duration-200 ${
-          isScrolled ? 'border-ink-200/80 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.25)]' : 'border-ink-100'
-        }`}
-      >
-        <div className="container-app">
-          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6 h-16 lg:h-[72px]">
+      {/* A floating frosted-glass capsule; the strip around it lets the page show through */}
+      <header className="sticky top-0 z-40 px-3 sm:px-5 pt-3 pointer-events-none">
+        <div
+          className={`pointer-events-auto mx-auto max-w-container rounded-pill border bg-white/75 backdrop-blur-xl backdrop-saturate-150 transition-[box-shadow,border-color,background-color] duration-200 ${
+            isScrolled
+              ? 'border-ink-200/80 bg-white/85 shadow-[0_12px_32px_-12px_rgba(15,23,42,0.22)]'
+              : 'border-ink-200/60 shadow-[0_4px_20px_-12px_rgba(15,23,42,0.14)]'
+          }`}
+        >
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6 h-14 lg:h-16 pl-4 pr-2 sm:pl-5">
             {/* Brand */}
             <button
               onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
@@ -127,7 +148,60 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Primary links */}
             <nav className="hidden lg:flex items-center justify-center gap-1" aria-label="Primary">
-              {navLinks.map(link => {
+              <div
+                ref={exploreRef}
+                className="relative"
+                onMouseEnter={() => setExploreOpen(true)}
+                onMouseLeave={() => setExploreOpen(false)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setExploreOpen(false); }}
+              >
+                <button
+                  onClick={() => setExploreOpen(open => !open)}
+                  aria-expanded={exploreOpen}
+                  aria-controls="explore-menu"
+                  className={`flex items-center gap-1 px-3.5 min-h-[40px] rounded-pill text-[15px] whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 ${
+                    currentView === 'find-skill' || exploreOpen ? 'font-semibold text-ink-900 bg-ink-100/70' : 'font-medium text-ink-600 hover:text-ink-900 hover:bg-ink-100/70'
+                  }`}
+                >
+                  Explore skills
+                  <ChevronDown className={`w-4 h-4 text-ink-500 transition-transform ${exploreOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </button>
+
+                {exploreOpen && (
+                  // pt-3 keeps the hover area continuous between the button and the panel
+                  <div id="explore-menu" className="absolute left-1/2 top-full -translate-x-1/2 pt-3 z-50">
+                    <div className="w-[34rem] rounded-card border border-ink-200 bg-white p-2 shadow-level-3 animate-fadeIn">
+                      <div className="grid grid-cols-2 gap-0.5">
+                        {EXPLORE_TRADES.map(({ label, text, categoryId, icon: Icon }) => (
+                          <button
+                            key={categoryId}
+                            onClick={() => { navigate(`/find-skill?category=${categoryId}`); setExploreOpen(false); }}
+                            className="group flex items-start gap-3 rounded-control p-3 text-left hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                          >
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-forest-50 text-forest-700 group-hover:bg-forest-700 group-hover:text-white transition" aria-hidden="true">
+                              <Icon className="h-[18px] w-[18px]" />
+                            </span>
+                            <span>
+                              <span className="block text-sm font-semibold text-ink-900">{label}</span>
+                              <span className="block text-xs text-ink-500 mt-0.5">{text}</span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="mt-1 flex items-center justify-between gap-3 rounded-control bg-ink-50 px-3 py-2.5">
+                        <button onClick={() => { setCurrentView('find-skill'); setExploreOpen(false); }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-forest-700 hover:text-forest-800 min-h-[36px]">
+                          Browse all trades<ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button onClick={() => { onOpenSkillRequest(); setExploreOpen(false); }} className="text-sm text-ink-600 hover:text-ink-900 min-h-[36px]">
+                          Can’t find yours? <span className="font-semibold underline underline-offset-2">Request it</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {navLinks.filter(link => link.id !== 'find-skill').map(link => {
                 const isActive = currentView === link.id;
                 return (
                   <button
@@ -233,8 +307,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button onClick={() => onOpenAuth('login')} className="px-4 min-h-[44px] md:min-h-[40px] rounded-pill text-[15px] font-medium text-ink-700 hover:text-ink-900 hover:bg-ink-100/70 whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700">
                     Sign in
                   </button>
-                  <button onClick={() => onOpenAuth('register')} className="px-5 min-h-[44px] md:min-h-[42px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2">
+                  <button onClick={() => onOpenAuth('register')} className="group flex items-center gap-2.5 pl-5 pr-1.5 min-h-[44px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2">
                     Get started
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-forest-800 transition-transform group-hover:rotate-45" aria-hidden="true">
+                      <ArrowUpRight className="h-4 w-4" />
+                    </span>
                   </button>
                 </div>
               )}
@@ -254,10 +331,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile menu — a sheet under the bar */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-50" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="lg:hidden fixed inset-x-0 bottom-0 top-[4.25rem] z-50 pointer-events-auto" role="dialog" aria-modal="true" aria-label="Menu">
             <div className="absolute inset-0 bg-ink-950/30 backdrop-blur-sm animate-fadeIn" onClick={() => setMobileMenuOpen(false)} aria-hidden="true" />
-            <div className="relative bg-white border-b border-ink-200 shadow-level-3 max-h-full overflow-y-auto animate-slideUp">
-              <div className="container-app py-4 space-y-4">
+            <div className="absolute inset-x-3 sm:inset-x-5 top-1.5 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-display border border-ink-200 bg-white shadow-level-3 animate-slideUp">
+              <div className="px-4 py-4 space-y-4">
                 {user && (
                   <div className="flex items-center gap-3 px-1">
                     <Avatar src={user.avatar_url} name={user.name} className="w-10 h-10 rounded-full" />
@@ -271,7 +348,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 )}
 
-                <nav aria-label="Mobile primary" className="divide-y divide-ink-100 border-y border-ink-100">
+                <nav aria-label="Mobile primary" className={`divide-y divide-ink-100 border-b border-ink-100 ${user ? "border-t" : ""}`}>
                   {navLinks.map(link => {
                     const isActive = currentView === link.id;
                     return (
