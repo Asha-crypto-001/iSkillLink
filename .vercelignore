@@ -1,0 +1,6 @@
+# Local-only data: the API uses PostgreSQL (Supabase) on Vercel
+server/data/
+public/uploads/
+.env
+.env.*
+!.env.example
