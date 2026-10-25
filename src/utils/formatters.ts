@@ -16,6 +16,19 @@ export function formatShortDate(dateStr: string): string {
   }
 }
 
+/** "just now", "5 min ago", "3 h ago", "yesterday", then a short date. */
+export function formatTimeAgo(dateStr: string): string {
+  const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return dateStr;
+  const minutes = Math.round((Date.now() - then) / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  if (hours < 48) return 'yesterday';
+  return formatShortDate(dateStr);
+}
+
 export function formatDateTime(dateStr: string): string {
   try {
     const d = new Date(dateStr);

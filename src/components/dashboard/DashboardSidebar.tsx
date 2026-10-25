@@ -2,27 +2,23 @@ import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { DashboardNavItem, DashboardRole } from './dashboardTypes';
+import { DashboardNavItem, DashboardRole, SidebarPeople } from './dashboardTypes';
 import { cn } from '../../utils/cn';
+import { Avatar } from '../ui/Avatar';
 import logoUrl from '../../assets/logo.png';
 
 interface DashboardSidebarProps {
   items: DashboardNavItem[];
   role: DashboardRole;
+  people?: SidebarPeople;
   open?: boolean;
   onClose?: () => void;
 }
 
-const roleLabels: Record<DashboardRole, string> = {
-  learner: 'Learner workspace',
-  educator: 'Educator workspace',
-  admin: 'Admin workspace',
-  secondary_admin: 'Admin workspace',
-  guest: 'Dashboard',
-};
+const sectionLabel = 'px-6 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400';
 
-export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ items, role, open = false, onClose }) => {
-  const { user, logout } = useAuth();
+export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ items, people, open = false, onClose }) => {
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,61 +31,102 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ items, role,
     onClose?.();
   };
 
+  // "Settings" items sit at the bottom with Logout; the rest are grouped under their headings.
+  const mainItems = items.filter(item => item.group !== 'Settings');
+  const settingsItems = items.filter(item => item.group === 'Settings');
+
+  const renderItem = (item: DashboardNavItem) => {
+    const active = isActive(item);
+    const Icon = item.icon;
+    const hasBadge = item.badge !== undefined && item.badge !== 0 && item.badge !== '';
+    return (
+      <li key={item.href}>
+        <NavLink
+          to={item.href}
+          end={item.end}
+          onClick={onClose}
+          aria-current={active ? 'page' : undefined}
+          className={cn(
+            'flex h-11 items-center gap-3 rounded-[12px] px-3 text-[15px] transition-colors',
+            active ? 'bg-[#F5F6FA] font-semibold text-ink-900' : 'font-medium text-ink-500 hover:text-ink-900',
+          )}
+        >
+          <Icon className={cn('h-[18px] w-[18px]', active ? 'text-forest-600' : 'text-ink-400')} aria-hidden="true" />
+          <span className="flex-1">{item.label}</span>
+          {hasBadge && (
+            <span className="grid h-5 min-w-5 place-items-center rounded-pill bg-forest-500 px-1.5 text-[11px] font-bold text-white">
+              {item.badge}<span className="sr-only"> new</span>
+            </span>
+          )}
+        </NavLink>
+      </li>
+    );
+  };
+
   return (
     <aside
       id="dashboard-sidebar"
       aria-label="Dashboard navigation"
       className={cn(
-        'fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-ink-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-[#ECEEF3] bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0',
         open && 'translate-x-0',
       )}
     >
-      <div className="flex h-20 items-center justify-between border-b border-ink-200 px-6">
-        <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2 min-h-[44px] rounded-control focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Go to home">
-          <span className="grid h-9 w-9 place-items-center rounded-control border border-ink-200 bg-white p-1 shadow-soft">
-            <img src={logoUrl} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight text-ink-950">iSkillLink</span>
+      <div className="flex h-20 items-center justify-between px-6">
+        <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-forest-600" aria-label="Go to the iSkillLink home page">
+          <img src={logoUrl} alt="" className="h-8 w-8 object-contain" aria-hidden="true" />
+          <span className="text-lg font-bold tracking-tight text-ink-900">iSkillLink</span>
         </button>
-        <button type="button" onClick={onClose} className="rounded-control p-3 text-ink-500 hover:bg-ink-100 lg:hidden" aria-label="Close navigation">
+        <button type="button" onClick={onClose} className="rounded-control p-2.5 text-ink-500 hover:bg-[#F5F6FA] lg:hidden" aria-label="Close navigation">
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="border-b border-ink-100 px-6 py-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500">{roleLabels[role]}</p>
-        <p className="mt-1 truncate text-sm font-semibold text-ink-900">{user?.name || 'Welcome'}</p>
-      </div>
-
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Primary">
-        {items.map((item) => {
-          const active = isActive(item);
-          const Icon = item.icon;
+      <nav className="flex-1 overflow-y-auto pb-4 pt-2" aria-label="Primary">
+        {mainItems.map((item, index) => {
+          const group = item.group || 'Overview';
+          const startsGroup = index === 0 || (mainItems[index - 1].group || 'Overview') !== group;
+          if (!startsGroup) return null;
+          const groupItems = mainItems.filter(i => (i.group || 'Overview') === group);
           return (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              end={item.end}
-              onClick={onClose}
-              aria-current={active ? 'page' : undefined}
-              className={cn(
-                'flex min-h-11 items-center gap-3 rounded-control px-3 text-sm font-semibold transition-colors',
-                active ? 'bg-forest-50 text-forest-800' : 'text-ink-600 hover:bg-ink-50 hover:text-ink-950',
-              )}
-            >
-              <Icon className={cn('h-[18px] w-[18px]', active ? 'text-forest-700' : 'text-ink-400')} aria-hidden="true" />
-              <span className="flex-1">{item.label}</span>
-              {item.badge !== undefined && <span className="rounded-pill bg-ink-100 px-2 py-0.5 text-xs text-ink-600">{item.badge}</span>}
-            </NavLink>
+            <div key={group} className={cn(index > 0 && 'mt-6')}>
+              <p className={sectionLabel}>{group}</p>
+              <ul className="space-y-0.5 px-3">{groupItems.map(renderItem)}</ul>
+            </div>
           );
         })}
+
+        {people && people.people.length > 0 && (
+          <div className="mt-6">
+            <p className={sectionLabel}>{people.title}</p>
+            <ul className="space-y-0.5 px-3">
+              {people.people.slice(0, 4).map(person => (
+                <li key={person.id}>
+                  <button type="button" onClick={() => { navigate(person.href); onClose?.(); }} className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-left hover:bg-[#F5F6FA]">
+                    <Avatar src={person.avatar_url} name={person.name} className="h-8 w-8 rounded-full" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-ink-900">{person.name}</span>
+                      {person.subtitle && <span className="block truncate text-xs text-ink-400">{person.subtitle}</span>}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </nav>
 
-      <div className="border-t border-ink-200 p-3">
-        <button type="button" onClick={handleLogout} className="flex min-h-11 w-full items-center gap-3 rounded-control px-3 text-sm font-semibold text-ink-600 hover:bg-ink-50 hover:text-ink-950">
-          <LogOut className="h-[18px] w-[18px] text-ink-400" aria-hidden="true" />
-          Sign out
-        </button>
+      <div className="border-t border-[#ECEEF3] py-4">
+        <p className={sectionLabel}>Settings</p>
+        <ul className="space-y-0.5 px-3">
+          {settingsItems.map(renderItem)}
+          <li>
+            <button type="button" onClick={handleLogout} className="flex h-11 w-full items-center gap-3 rounded-[12px] px-3 text-[15px] font-medium text-rose-500 hover:bg-rose-50">
+              <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
+              Log out
+            </button>
+          </li>
+        </ul>
       </div>
     </aside>
   );

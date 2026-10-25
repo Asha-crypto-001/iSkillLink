@@ -262,7 +262,7 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
     };
     db.createUser(user);
     db.createLearner({
-      id: `lrn-${Date.now()}`,
+      id: `lrn-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: userId,
       location: 'Mbarara, Uganda',
       bio: 'Practical skills student (Signed in with Google).',
@@ -606,7 +606,7 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
     user.avatar_url = req.body.avatar_url;
   }
 
-  const educatorId = existingEducator?.id || `edu-${Date.now()}`;
+  const educatorId = existingEducator?.id || `edu-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
   const submissionStamp = Date.now();
   const newEducator: Educator = {
     ...existingEducator,
@@ -696,12 +696,12 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
 
   // Notify Ashabahebwa Hassan (Admin)
   db.createNotification({
-    id: `notif-${Date.now()}`,
+    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     user_id: 'usr-admin-ashabahebwa',
     type: 'system_alert',
     title: 'New Educator Application Submitted',
     message: `${name} has applied as an educator for "${title}". Review in Verification Queue.`,
-    link: '/admin-dashboard',
+    link: '/dashboard/admin/verification',
     is_read: false,
     created_at: new Date().toISOString()
   });
@@ -798,7 +798,14 @@ app.get('/api/learner-requests', optionalToken, (req: Request, res: Response) =>
   const sanitized = requests.map(r => {
     const isOwner = currentLearnerProfile && r.learner_id === currentLearnerProfile.id;
     if (isAdmin || isOwner) {
-      return r;
+      // The learner sees who they were matched with, so they can go straight to booking.
+      const latestMatch = db.getMatches()
+        .filter(m => m.request_id === r.id)
+        .sort((x, y) => y.created_at.localeCompare(x.created_at))[0];
+      const matched = latestMatch ? db.findEducatorById(latestMatch.educator_id) : undefined;
+      return matched
+        ? { ...r, matched_educator: { id: matched.id, name: matched.user?.name || 'Your educator', title: matched.title, hourly_rate_ugx: matched.hourly_rate_ugx, avatar_url: matched.user?.avatar_url || '' } }
+        : r;
     }
     return {
       ...r,
@@ -826,7 +833,7 @@ app.post('/api/learner-requests', authenticateToken, requireRole('learner', 'adm
   const effectiveName = learner_name || req.user!.name;
   const effectiveEmail = learner_email || req.user!.email;
 
-  const requestId = `req-${Date.now()}`;
+  const requestId = `req-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
   const newRequest: LearnerRequest = {
     id: requestId,
     learner_id: effectiveLearnerId,
@@ -854,7 +861,7 @@ app.post('/api/learner-requests', authenticateToken, requireRole('learner', 'adm
   if (potentialMatches.length > 0 && potentialMatches[0].match_score >= 80) {
     const top = potentialMatches[0];
     db.createMatch({
-      id: `match-${Date.now()}`,
+      id: `match-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       request_id: requestId,
       educator_id: top.educator.id,
       match_score: top.match_score,
@@ -869,12 +876,12 @@ app.post('/api/learner-requests', authenticateToken, requireRole('learner', 'adm
 
   // Notify Ashabahebwa Hassan (Admin)
   db.createNotification({
-    id: `notif-${Date.now()}`,
+    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     user_id: 'usr-admin-ashabahebwa',
     type: 'match_found',
     title: 'New Skill Request Received',
     message: `${newRequest.learner_name} requested training for "${newRequest.skill_name}" (Budget: UGX ${newRequest.budget_ugx.toLocaleString()})`,
-    link: '/admin-dashboard',
+    link: '/dashboard/admin/matchmaker',
     is_read: false,
     created_at: new Date().toISOString()
   });
@@ -914,7 +921,7 @@ app.post('/api/learner-requests/:id/assign-match', authenticateToken, requireRol
   const adminId = req.user?.id || 'usr-admin-ashabahebwa';
 
   const newMatch = db.createMatch({
-    id: `match-${Date.now()}`,
+    id: `match-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     request_id: request.id,
     educator_id: educator.id,
     match_score: 95,
@@ -943,7 +950,7 @@ app.post('/api/learner-requests/:id/assign-match', authenticateToken, requireRol
   const learnerUserId = db.getLearners().find(l => l.id === request.learner_id)?.user_id;
   if (learnerUserId) {
     db.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: learnerUserId,
       type: 'match_found',
       title: 'Educator Match Found!',
@@ -1037,7 +1044,7 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
   const platformFee = Math.round(total * 0.10); // 10% platform commission
   const educatorPayout = total - platformFee;
 
-  const bookingId = `bk-${Date.now()}`;
+  const bookingId = `bk-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
   const newBooking: Booking = {
     id: bookingId,
     learner_id: effectiveLearnerId,
@@ -1061,7 +1068,7 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
   db.createBooking(newBooking);
 
   // Create associated payment record in 'pending' status
-  const paymentId = `pay-${Date.now()}`;
+  const paymentId = `pay-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
   db.createPayment({
     id: paymentId,
     booking_id: bookingId,
@@ -1080,12 +1087,12 @@ app.post('/api/bookings', authenticateToken, requireRole('learner', 'admin'), (r
   // Notify educator
   if (educator.user) {
     db.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: educator.user.id,
       type: 'booking_request',
       title: 'New Booking Request',
       message: `You have received a new booking for "${newBooking.skill_name}" on ${scheduled_date}.`,
-      link: '/educator-dashboard/bookings',
+      link: '/dashboard/educator/bookings',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1138,7 +1145,7 @@ app.patch('/api/bookings/:id/status', authenticateToken, (req: Request, res: Res
     const payment = db.getPayments().find(p => p.booking_id === booking.id);
     if (payment?.status === 'paid') {
       db.createNotification({
-        id: `notif-${Date.now()}`,
+        id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
         user_id: 'usr-admin-ashabahebwa',
         type: 'payment_update',
         title: 'Payout Ready for Release',
@@ -1151,6 +1158,41 @@ app.patch('/api/bookings/:id/status', authenticateToken, (req: Request, res: Res
   }
 
   const updated = db.updateBooking(booking.id, updates);
+
+  // Tell the other side what changed, so neither has to keep checking the dashboard.
+  const learnerUserId = db.getLearners().find(l => l.id === booking.learner_id)?.user_id;
+  const bookingEducator = db.findEducatorById(booking.educator_id);
+  const educatorFirstName = bookingEducator?.user?.name?.split(' ')[0] || 'Your educator';
+  const learnerUpdates: Partial<Record<Booking['status'], { title: string; message: string }>> = {
+    confirmed: { title: `${educatorFirstName} accepted your booking`, message: `Pay into escrow to secure "${booking.skill_name}" on ${booking.scheduled_date}.` },
+    declined: { title: `${educatorFirstName} can’t take this booking`, message: `"${booking.skill_name}" on ${booking.scheduled_date} was declined. Nothing was charged.` },
+    completed: { title: 'Session marked done', message: `How was "${booking.skill_name}"? Leave a review to help the next learner.` }
+  };
+  const learnerUpdate = learnerUpdates[status as Booking['status']];
+  if (learnerUpdate && learnerUserId && req.user!.id !== learnerUserId) {
+    db.createNotification({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      user_id: learnerUserId,
+      type: status === 'confirmed' ? 'booking_accepted' : 'system_alert',
+      title: learnerUpdate.title,
+      message: learnerUpdate.message,
+      link: status === 'completed' ? '/dashboard/learner/reviews' : '/dashboard/learner/bookings',
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
+  if (status === 'cancelled' && isLearnerOwner && bookingEducator?.user) {
+    db.createNotification({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      user_id: bookingEducator.user.id,
+      type: 'system_alert',
+      title: 'A learner cancelled',
+      message: `"${booking.skill_name}" on ${booking.scheduled_date} was cancelled.`,
+      link: '/dashboard/educator/bookings',
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
 
   if (status === 'completed') {
     const learnersTaught = new Set(
@@ -1237,7 +1279,8 @@ app.post('/api/payments/simulate-payment', authenticateToken, (req: Request, res
     }
   }
 
-  const referenceCode = `${(method || 'MTN').toUpperCase()}-UG-${Date.now().toString().slice(-6)}`;
+  // A short network prefix keeps references readable: MTN-UG-123456, AIRTEL-UG-123456.
+  const referenceCode = `${method === 'airtel_money' ? 'AIRTEL' : 'MTN'}-UG-${Date.now().toString().slice(-6)}`;
   
   db.updatePayment(payment.id, {
     method: method || 'mtn_momo',
@@ -1250,7 +1293,7 @@ app.post('/api/payments/simulate-payment', authenticateToken, (req: Request, res
 
   // Record transaction in ledger
   db.createTransaction({
-    id: `tx-${Date.now()}`,
+    id: `tx-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     payment_id: payment.id,
     type: 'learner_charge',
     amount_ugx: payment.amount_ugx,
@@ -1263,12 +1306,12 @@ app.post('/api/payments/simulate-payment', authenticateToken, (req: Request, res
   const educator = db.findEducatorById(payment.educator_id);
   if (educator && educator.user) {
     db.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: educator.user.id,
       type: 'payment_update',
       title: 'Payment Secured in Escrow',
       message: `Learner deposited UGX ${payment.amount_ugx.toLocaleString()} into iSkillLink Escrow. Funds will be disbursed upon session completion.`,
-      link: '/educator-dashboard/earnings',
+      link: '/dashboard/educator/earnings',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1296,7 +1339,7 @@ app.patch('/api/payments/:id/release-payout', authenticateToken, requireRole('ad
 
   // Create educator payout transaction
   db.createTransaction({
-    id: `tx-${Date.now()}-payout`,
+    id: `tx-${Date.now()}-${Math.random().toString(36).slice(2,6)}-payout`,
     payment_id: payment.id,
     type: 'educator_payout',
     amount_ugx: payment.payout_amount_ugx,
@@ -1307,7 +1350,7 @@ app.patch('/api/payments/:id/release-payout', authenticateToken, requireRole('ad
 
   // Create platform commission transaction
   db.createTransaction({
-    id: `tx-${Date.now()}-comm`,
+    id: `tx-${Date.now()}-${Math.random().toString(36).slice(2,6)}-comm`,
     payment_id: payment.id,
     type: 'platform_commission',
     amount_ugx: payment.platform_fee_ugx,
@@ -1327,6 +1370,20 @@ app.patch('/api/payments/:id/release-payout', authenticateToken, requireRole('ad
     target_id: payment.id,
     details: `Disbursed UGX ${payment.payout_amount_ugx.toLocaleString()} to Educator ${payment.educator_id}. Retained UGX ${payment.platform_fee_ugx.toLocaleString()} commission.`
   });
+
+  const payoutEducator = db.findEducatorById(payment.educator_id);
+  if (payoutEducator?.user) {
+    db.createNotification({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      user_id: payoutEducator.user.id,
+      type: 'payment_update',
+      title: 'Payout sent',
+      message: `UGX ${payment.payout_amount_ugx.toLocaleString()} is on its way to your MoMo.`,
+      link: '/dashboard/educator/earnings',
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
 
   res.json({ success: true, payment: db.getPayments().find(p => p.id === payment.id) });
 });
@@ -1373,7 +1430,7 @@ app.post('/api/reviews', authenticateToken, requireRole('learner', 'admin'), (re
   }
 
   const newReview: Review = {
-    id: `rev-${Date.now()}`,
+    id: `rev-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     booking_id: booking.id,
     educator_id,
     learner_id: effectiveLearnerId,
@@ -1395,12 +1452,12 @@ app.post('/api/reviews', authenticateToken, requireRole('learner', 'admin'), (re
   const educator = db.findEducatorById(educator_id);
   if (educator && educator.user) {
     db.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: educator.user.id,
       type: 'system_alert',
       title: 'New Student Review Received',
       message: `${newReview.learner_name} gave you a ${newReview.rating}-star review!`,
-      link: '/educator-dashboard/reviews',
+      link: '/dashboard/educator/reviews',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1455,6 +1512,16 @@ app.get('/api/messages', authenticateToken, (req: Request, res: Response) => {
   res.json(messages);
 });
 
+// Marks the messages the signed-in user received in a conversation as read.
+app.post('/api/messages/read', authenticateToken, (req: Request, res: Response) => {
+  const { conversation_id } = req.body;
+  if (!conversation_id) {
+    return res.status(400).json({ error: 'conversation_id is required' });
+  }
+  db.markMessagesRead(String(conversation_id), req.user!.id);
+  res.json({ success: true });
+});
+
 app.post('/api/messages', authenticateToken, (req: Request, res: Response) => {
   const { conversation_id, receiver_id, content } = req.body;
   if (!receiver_id || !content) {
@@ -1463,7 +1530,7 @@ app.post('/api/messages', authenticateToken, (req: Request, res: Response) => {
 
   // Sender is guaranteed to be the authenticated user
   const sender_id = req.user!.id;
-  const msgId = `msg-${Date.now()}`;
+  const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
   const convId = conversation_id || `conv-${[sender_id, receiver_id].sort().join('-')}`;
 
   const newMsg: Message = {
@@ -1480,13 +1547,20 @@ app.post('/api/messages', authenticateToken, (req: Request, res: Response) => {
 
   // Create notification for receiver
   const sender = db.findUserById(sender_id);
+  const receiver = db.findUserById(receiver_id);
+  // Learners and educators land on the conversation in their inbox; admins have no inbox.
+  const receiverLink = receiver?.role === 'educator'
+    ? `/dashboard/educator/messages?with=${sender_id}`
+    : receiver?.role === 'admin' || receiver?.role === 'secondary_admin'
+      ? '/dashboard/admin'
+      : `/dashboard/learner/messages?with=${sender_id}`;
   db.createNotification({
-    id: `notif-${Date.now()}`,
+    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     user_id: receiver_id,
     type: 'system_alert',
     title: `New message from ${sender?.name || 'User'}`,
     message: content.length > 60 ? `${content.substring(0, 60)}...` : content,
-    link: '/dashboard/messages',
+    link: receiverLink,
     is_read: false,
     created_at: new Date().toISOString()
   });
@@ -1656,12 +1730,12 @@ app.patch('/api/admin/educator-status', authenticateToken, requireRole('admin'),
   // Notify Educator
   if (educator.user) {
     db.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: educator.user.id,
       type: 'verification_update',
       title: `Application Status: ${status.toUpperCase()}`,
       message: `Your educator profile status has been updated to "${status}". ${notes ? `Note: ${notes}` : ''}`,
-      link: '/educator-dashboard',
+      link: '/dashboard/educator',
       is_read: false,
       created_at: new Date().toISOString()
     });
@@ -1778,7 +1852,7 @@ app.post('/api/inquiries', (req: Request, res: Response) => {
   db.createInquiry(inquiry);
   // Notify admin
   db.createNotification({
-    id: `notif-${Date.now()}`,
+    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     user_id: 'usr-admin-ashabahebwa',
     type: 'system_alert',
     title: 'New Contact Inquiry',
