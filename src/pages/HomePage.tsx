@@ -251,10 +251,8 @@ export const HomePage: React.FC<HomePageProps> = ({
                 )}
               </div>
 
-              {/* Two workshop photos: the big arched one has a solid green arch of the same shape set behind it,
-                  offset down and to the right; the small one overlaps the bottom-left corner. */}
+              {/* Two workshop photos: the big arched one, with the small one overlapping its bottom-left corner. */}
               <div className="relative mx-auto w-full max-w-[34rem] aspect-[1.1]">
-                <div aria-hidden="true" className="absolute left-[36%] w-[46%] top-[5%] bottom-[16%] [border-radius:50%_50%_32px_32px/32%_32%_32px_32px] bg-forest-500" />
                 <WorkshopPhoto
                   photo={HERO_PHOTOS.carpentry}
                   sizes="(min-width: 1024px) 16rem, 46vw"
