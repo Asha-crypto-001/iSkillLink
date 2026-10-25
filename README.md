@@ -78,6 +78,28 @@ GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 
 Register every production frontend origin in Google Cloud Console. The API must never accept profile fields such as email or name as proof of Google authentication. Public Google registration creates learner accounts only; an existing password account must be explicitly linked after the user signs in.
 
+### Production deployment with Vercel and Supabase
+
+Vercel hosts the frontend and the Express API in one project: [vercel.json](./vercel.json) builds the Vite site, runs the API as a single function at `/api` ([api/index.ts](./api/index.ts)), and sends every other path to the app. Supabase provides PostgreSQL and the email/password accounts.
+
+1. **Database:** in Supabase, open **Connect** and copy the **Transaction pooler** connection string (port `6543`). Use the pooler rather than the direct `db.<project>.supabase.co:5432` address: every Vercel function instance opens its own connections. The API creates its `app_state` table and seeds it on the first request.
+2. **Project:** in Vercel, import this repository. No build settings are needed.
+3. **Environment variables** (Production and Preview):
+   - `DATABASE_URL`: the pooler connection string from step 1
+   - `JWT_SECRET`: a long random value
+   - `ADMIN_PASSWORD`: the lead admin's password, applied only when the database is first seeded (at least 8 characters)
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`: from Supabase **Project Settings → API**
+
+   `VITE_API_URL` and `CLIENT_ORIGIN` are not needed: on Vercel the site calls its own `/api`, and same-origin requests are always allowed.
+4. **Photo uploads:** in Vercel, open **Storage**, create a **Blob** store and connect it to the project. This adds `BLOB_READ_WRITE_TOKEN`. Without it, uploads answer "Photo uploads are not set up on this server yet" (the filesystem is read-only on Vercel).
+5. **Auth redirects:** in Supabase **Auth → URL Configuration**, add the Vercel domain.
+6. Every push to `main` deploys to production, and every pull request gets a preview. Previews use the production database unless you give Preview its own `DATABASE_URL`.
+
+Things to know:
+
+- All application data is one JSON row in `app_state`. Each function instance reloads it when another instance has written, and saves before it responds. Two simultaneous writes on different instances are last-write-wins, which is fine at this scale but not beyond it.
+- Vercel's free Hobby plan is for non-commercial use. A site that takes payments needs the Pro plan.
+
 ### Production deployment with Netlify and Supabase
 
 Netlify hosts the static frontend. Supabase provides the existing email/password accounts, Google authentication, PostgreSQL, and the `auth` Edge Function:
