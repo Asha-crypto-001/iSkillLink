@@ -5,15 +5,13 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
   ArrowRight, ArrowUpRight, BadgeCheck, CalendarCheck, ClipboardList, Hammer,
-  IdCard, MessageCircle, Minus, Plus, Star, UserPlus, Users, Wallet
+  Minus, Plus, Star, UserPlus, Users, Wallet
 } from 'lucide-react';
-import { VERIFICATION_STEPS } from '../utils/verification';
 import { categoryColor } from '../utils/categoryColors';
 import { CategoryIcon } from '../utils/categoryIcons';
 import { APPLY_PATH, hasSentApplication } from '../utils/educatorApplication';
 import teacherChalkboardPhoto from '../assets/photos/teacher-chalkboard.webp';
 import educatorsIllustration from '../assets/photos/educators-illustration.webp';
-import teacherWidePhoto from '../assets/photos/teacher-wide.webp';
 
 interface BecomeEducatorPageProps {
   setCurrentView: (view: string) => void;
@@ -39,8 +37,6 @@ const START_STEPS = [
   { icon: BadgeCheck, title: 'Get checked', text: 'We check your ID, talk to you, and visit your workshop.' },
   { icon: CalendarCheck, title: 'Start teaching', text: 'Your profile goes live and learners can book you.' }
 ];
-
-const CHECK_ICONS = [IdCard, BadgeCheck, MessageCircle, Hammer];
 
 const FAQS = [
   { q: 'Do I need a certificate to teach?', a: 'No. Many of the best educators learned on the job. Add a certificate if you have one; either way, we see your work when we visit your workshop.' },
@@ -199,34 +195,6 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurre
               </li>
             ))}
           </ol>
-        </div>
-      </section>
-
-      {/* ===== WHAT WE CHECK ===== */}
-      <section className="container-app py-16 lg:py-24" aria-labelledby="checks-heading">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <img src={teacherWidePhoto} width={740} height={415} alt="A teacher leading a lesson while pupils listen" loading="lazy" decoding="async" className="aspect-[4/3] w-full rounded-display object-cover bg-ink-100" />
-          <div>
-            <p className={sectionEyebrow}>What we check</p>
-            <h2 id="checks-heading" className={sectionTitle}>We check every educator, so learners trust you</h2>
-            <p className="mt-3 text-base text-ink-600 leading-relaxed max-w-lg">Four checks, arranged with you on WhatsApp after you apply. You can follow each one from your dashboard.</p>
-            <ul className="mt-8 space-y-4">
-              {VERIFICATION_STEPS.map((check, index) => {
-                const Icon = CHECK_ICONS[index] || BadgeCheck;
-                return (
-                  <li key={check.key} className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700" aria-hidden="true">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="font-semibold text-ink-900">{check.label}</p>
-                      <p className="text-sm text-ink-600">{check.applicantDetail}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
         </div>
       </section>
 
