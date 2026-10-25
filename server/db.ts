@@ -366,7 +366,7 @@ class Database {
 
     // Send user notification
     this.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: user.id,
       type: 'system_alert',
       title: 'Administrator Access Granted',
@@ -403,7 +403,7 @@ class Database {
 
     // Send user notification
     this.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: user.id,
       type: 'system_alert',
       title: 'Administrator Privileges Updated',
