@@ -798,7 +798,14 @@ app.get('/api/learner-requests', optionalToken, (req: Request, res: Response) =>
   const sanitized = requests.map(r => {
     const isOwner = currentLearnerProfile && r.learner_id === currentLearnerProfile.id;
     if (isAdmin || isOwner) {
-      return r;
+      // The learner sees who they were matched with, so they can go straight to booking.
+      const latestMatch = db.getMatches()
+        .filter(m => m.request_id === r.id)
+        .sort((x, y) => y.created_at.localeCompare(x.created_at))[0];
+      const matched = latestMatch ? db.findEducatorById(latestMatch.educator_id) : undefined;
+      return matched
+        ? { ...r, matched_educator: { id: matched.id, name: matched.user?.name || 'Your educator', title: matched.title, hourly_rate_ugx: matched.hourly_rate_ugx, avatar_url: matched.user?.avatar_url || '' } }
+        : r;
     }
     return {
       ...r,
@@ -1152,6 +1159,41 @@ app.patch('/api/bookings/:id/status', authenticateToken, (req: Request, res: Res
 
   const updated = db.updateBooking(booking.id, updates);
 
+  // Tell the other side what changed, so neither has to keep checking the dashboard.
+  const learnerUserId = db.getLearners().find(l => l.id === booking.learner_id)?.user_id;
+  const bookingEducator = db.findEducatorById(booking.educator_id);
+  const educatorFirstName = bookingEducator?.user?.name?.split(' ')[0] || 'Your educator';
+  const learnerUpdates: Partial<Record<Booking['status'], { title: string; message: string }>> = {
+    confirmed: { title: `${educatorFirstName} accepted your booking`, message: `Pay into escrow to secure "${booking.skill_name}" on ${booking.scheduled_date}.` },
+    declined: { title: `${educatorFirstName} can’t take this booking`, message: `"${booking.skill_name}" on ${booking.scheduled_date} was declined. Nothing was charged.` },
+    completed: { title: 'Session marked done', message: `How was "${booking.skill_name}"? Leave a review to help the next learner.` }
+  };
+  const learnerUpdate = learnerUpdates[status as Booking['status']];
+  if (learnerUpdate && learnerUserId && req.user!.id !== learnerUserId) {
+    db.createNotification({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      user_id: learnerUserId,
+      type: status === 'confirmed' ? 'booking_accepted' : 'system_alert',
+      title: learnerUpdate.title,
+      message: learnerUpdate.message,
+      link: status === 'completed' ? '/dashboard/learner/reviews' : '/dashboard/learner/bookings',
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
+  if (status === 'cancelled' && isLearnerOwner && bookingEducator?.user) {
+    db.createNotification({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      user_id: bookingEducator.user.id,
+      type: 'system_alert',
+      title: 'A learner cancelled',
+      message: `"${booking.skill_name}" on ${booking.scheduled_date} was cancelled.`,
+      link: '/dashboard/educator/bookings',
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
+
   if (status === 'completed') {
     const learnersTaught = new Set(
       db.getBookings().filter(b => b.educator_id === booking.educator_id && b.status === 'completed').map(b => b.learner_id)
@@ -1237,7 +1279,8 @@ app.post('/api/payments/simulate-payment', authenticateToken, (req: Request, res
     }
   }
 
-  const referenceCode = `${(method || 'MTN').toUpperCase()}-UG-${Date.now().toString().slice(-6)}`;
+  // A short network prefix keeps references readable: MTN-UG-123456, AIRTEL-UG-123456.
+  const referenceCode = `${method === 'airtel_money' ? 'AIRTEL' : 'MTN'}-UG-${Date.now().toString().slice(-6)}`;
   
   db.updatePayment(payment.id, {
     method: method || 'mtn_momo',
@@ -1327,6 +1370,20 @@ app.patch('/api/payments/:id/release-payout', authenticateToken, requireRole('ad
     target_id: payment.id,
     details: `Disbursed UGX ${payment.payout_amount_ugx.toLocaleString()} to Educator ${payment.educator_id}. Retained UGX ${payment.platform_fee_ugx.toLocaleString()} commission.`
   });
+
+  const payoutEducator = db.findEducatorById(payment.educator_id);
+  if (payoutEducator?.user) {
+    db.createNotification({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      user_id: payoutEducator.user.id,
+      type: 'payment_update',
+      title: 'Payout sent',
+      message: `UGX ${payment.payout_amount_ugx.toLocaleString()} is on its way to your MoMo.`,
+      link: '/dashboard/educator/earnings',
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+  }
 
   res.json({ success: true, payment: db.getPayments().find(p => p.id === payment.id) });
 });
@@ -1455,6 +1512,16 @@ app.get('/api/messages', authenticateToken, (req: Request, res: Response) => {
   res.json(messages);
 });
 
+// Marks the messages the signed-in user received in a conversation as read.
+app.post('/api/messages/read', authenticateToken, (req: Request, res: Response) => {
+  const { conversation_id } = req.body;
+  if (!conversation_id) {
+    return res.status(400).json({ error: 'conversation_id is required' });
+  }
+  db.markMessagesRead(String(conversation_id), req.user!.id);
+  res.json({ success: true });
+});
+
 app.post('/api/messages', authenticateToken, (req: Request, res: Response) => {
   const { conversation_id, receiver_id, content } = req.body;
   if (!receiver_id || !content) {
@@ -1481,12 +1548,12 @@ app.post('/api/messages', authenticateToken, (req: Request, res: Response) => {
   // Create notification for receiver
   const sender = db.findUserById(sender_id);
   const receiver = db.findUserById(receiver_id);
-  // Only the learner dashboard has an inbox; other roles land on their dashboard.
+  // Learners and educators land on the conversation in their inbox; admins have no inbox.
   const receiverLink = receiver?.role === 'educator'
-    ? '/dashboard/educator'
+    ? `/dashboard/educator/messages?with=${sender_id}`
     : receiver?.role === 'admin' || receiver?.role === 'secondary_admin'
       ? '/dashboard/admin'
-      : '/dashboard/learner/messages';
+      : `/dashboard/learner/messages?with=${sender_id}`;
   db.createNotification({
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
     user_id: receiver_id,

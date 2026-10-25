@@ -64,13 +64,23 @@ const STATE_COLLECTIONS: Array<keyof DatabaseState> = [
 
 // Older notifications link to dashboard paths that no longer exist; map them onto the current routes.
 const LEGACY_NOTIFICATION_LINKS: Array<[string, string]> = [
-  ['/dashboard/messages', '/dashboard/learner/messages'],
   ['/admin-dashboard', '/dashboard/admin'],
   ['/educator-dashboard', '/dashboard/educator'],
   ['/learner-dashboard', '/dashboard/learner']
 ];
 
-function currentNotificationLink(link: string): string {
+// The old shared inbox link opens the inbox that belongs to the notification's owner.
+const INBOX_BY_ROLE: Record<string, string> = {
+  learner: '/dashboard/learner/messages',
+  educator: '/dashboard/educator/messages',
+  admin: '/dashboard/admin',
+  secondary_admin: '/dashboard/admin'
+};
+
+function currentNotificationLink(link: string, ownerRole?: string): string {
+  if (link === '/dashboard/messages') return INBOX_BY_ROLE[ownerRole || 'learner'] || INBOX_BY_ROLE.learner;
+  // An earlier fix pointed every legacy inbox link at the learner inbox; send educators to theirs.
+  if (link === '/dashboard/learner/messages' && ownerRole === 'educator') return INBOX_BY_ROLE.educator;
   for (const [legacy, current] of LEGACY_NOTIFICATION_LINKS) {
     if (link === legacy || link.startsWith(`${legacy}/`)) return current + link.slice(legacy.length);
   }
@@ -93,7 +103,8 @@ function normalizeState(raw: any): DatabaseState {
     if (!Array.isArray(state[key])) state[key] = [];
   }
   for (const notification of state.notifications as Notification[]) {
-    if (notification.link) notification.link = currentNotificationLink(notification.link);
+    const ownerRole = (state.users as User[]).find(u => u.id === notification.user_id)?.role;
+    if (notification.link) notification.link = currentNotificationLink(notification.link, ownerRole);
   }
   return state as DatabaseState;
 }
