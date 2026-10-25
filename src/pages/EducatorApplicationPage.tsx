@@ -235,7 +235,6 @@ export const EducatorApplicationPage: React.FC<{ onApplicationSubmitted?: () => 
           eyebrow="Teach on iSkillLink"
           title="Your educator application"
           description="About ten minutes. You can go back to any step before you send it."
-          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard/educator' }, { label: 'Application' }]}
         />
 
         <div className="grid lg:grid-cols-[16rem_minmax(0,1fr)] gap-6 lg:gap-10 items-start">

@@ -477,7 +477,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             ) : (
               <button onClick={() => setCurrentView('become-educator')} className="px-6 min-h-[48px] rounded-pill bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition inline-flex items-center gap-2">Apply to teach<ArrowRight className="w-4 h-4" aria-hidden="true" /></button>
             )}
-            <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[48px] rounded-pill bg-white text-ink-800 font-bold text-sm border border-ink-200 hover:bg-ink-50 transition">More detail</button>
+            <button onClick={() => navigate('/about#how-it-works')} className="px-6 min-h-[48px] rounded-pill bg-white text-ink-800 font-bold text-sm border border-ink-200 hover:bg-ink-50 transition">More detail</button>
           </div>
         </div>
       </section>
@@ -612,7 +612,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button onClick={() => setCurrentView('become-educator')} className="px-6 min-h-[48px] rounded-pill bg-sun-300 hover:bg-sun-200 text-ink-950 font-bold text-sm flex items-center justify-center gap-2 transition focus-visible:ring-sun-300 focus-visible:ring-offset-forest-950">
                   <span>Apply to teach</span><ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
-                <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[48px] rounded-pill glass-dark hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center gap-2 transition focus-visible:ring-white focus-visible:ring-offset-forest-950">
+                <button onClick={() => navigate('/about#checks')} className="px-6 min-h-[48px] rounded-pill glass-dark hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center gap-2 transition focus-visible:ring-white focus-visible:ring-offset-forest-950">
                   <span>How vetting works</span><ShieldCheck className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>

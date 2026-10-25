@@ -28,7 +28,7 @@ export function createRoleProfile(user: User, details: RoleProfileDetails = {}) 
 
   if (user.role === 'learner') {
     learnerProfile = {
-      id: `lrn-${Date.now()}`,
+      id: `lrn-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: user.id,
       location: details.location || 'Mbarara, Uganda',
       bio: details.bio || 'Interested in learning practical skills.',
@@ -39,7 +39,7 @@ export function createRoleProfile(user: User, details: RoleProfileDetails = {}) 
     db.createLearner(learnerProfile);
   } else if (user.role === 'educator') {
     educatorProfile = {
-      id: `edu-${Date.now()}`,
+      id: `edu-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: user.id,
       title: 'Practical Skills Educator',
       bio: details.bio || 'Sharing practical vocational expertise in Uganda.',
@@ -73,12 +73,12 @@ export function createRoleProfile(user: User, details: RoleProfileDetails = {}) 
 
     // Notify Ashabahebwa Hassan (Admin)
     db.createNotification({
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
       user_id: 'usr-admin-ashabahebwa',
       type: 'system_alert',
       title: 'New Educator Registered',
       message: `${user.name} has registered as an educator from ${details.location || 'Mbarara'}.`,
-      link: '/admin-dashboard',
+      link: '/dashboard/admin/verification',
       is_read: false,
       created_at: new Date().toISOString()
     });

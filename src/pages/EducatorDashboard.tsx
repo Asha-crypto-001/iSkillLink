@@ -1,68 +1,79 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Educator, Booking, Review, LearnerRequest, Payment, Message } from '../types';
+import { Educator, Booking, Review, LearnerRequest, Payment } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { formatUGX, formatShortDate } from '../utils/formatters';
-import { PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
+import { formatUGX, formatShortDate, formatTimeAgo } from '../utils/formatters';
+import { Badge, PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
 import { VERIFICATION_STEPS, isStepPassed, verificationProgress } from '../utils/verification';
 import { APPLY_PATH, REGISTRATION_TITLE } from '../utils/educatorApplication';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
-import { DashboardHeader, DashboardShell, SectionHeader, StatRow } from '../components/dashboard';
 import {
-  GraduationCap, Calendar, Clock, DollarSign, Star,
-  MessageSquare, Settings, ShieldCheck, CheckCircle2,
-  XCircle, ArrowRight, UserCheck, Wrench, FileText, Send, Sparkles,
-  Camera, User
+  BookingJourney, DashboardBanner, DashboardHeader, DashboardShell, DateTile, MessagesPanel, Panel, PillArrow, ProfileSummaryCard, StatRow, btn,
+  greetingForNow, lastMonths
+} from '../components/dashboard';
+import {
+  GraduationCap, Calendar, Clock, Star, MessageSquare, Settings, CheckCircle2, ArrowRight, Users, Wallet,
+  Camera, User, Eye, MapPin, Inbox, ShieldCheck, Circle, Sparkles, LayoutGrid
 } from 'lucide-react';
+import { skillPhoto } from '../utils/skillPhotos';
 import { Alert } from '../components/ui/Alert';
 import { Field } from '../components/ui/Field';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/ui/Avatar';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
+import { useMessages } from '../hooks/useMessages';
+import { bookingStage, isBookingPaid, upcomingBookings } from '../utils/bookingStage';
+import { cn } from '../utils/cn';
 
 interface EducatorDashboardProps {
   onViewProfileModal?: (educator: Educator) => void;
 }
 
+type EducatorTab = 'overview' | 'bookings' | 'leads' | 'messages' | 'earnings' | 'reviews' | 'profile';
+
+const FORMAT_LABELS: Record<string, string> = { 'in-person': 'At your workshop', hybrid: 'Online and workshop', online: 'Online' };
+const METHOD_LABELS: Record<string, string> = { mtn_momo: 'MTN MoMo', airtel_money: 'Airtel Money', bank_transfer: 'Bank transfer', cash_escrow: 'Cash' };
+const longDate = (date: string) => new Date(`${date}T00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
 export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
-  const { user, educatorProfile } = useAuth();
+  const { user, educatorProfile, notifications } = useAuth();
   const educatorId: string | undefined = educatorProfile?.id;
   const location = useLocation();
   const navigate = useNavigate();
 
-  const getActiveTab = (): 'overview' | 'bookings' | 'leads' | 'earnings' | 'reviews' | 'profile' => {
+  const getActiveTab = (): EducatorTab => {
     const seg = location.pathname.split('/')[3];
-    if (['bookings','leads','earnings','reviews','profile'].includes(seg)) return seg as any;
+    if (['bookings', 'leads', 'messages', 'earnings', 'reviews', 'profile'].includes(seg)) return seg as EducatorTab;
     return 'overview';
   };
   const activeTab = getActiveTab();
-  const setActiveTab = (tab: 'overview' | 'bookings' | 'leads' | 'earnings' | 'reviews' | 'profile') => {
-    if (tab === 'overview') navigate('/dashboard/educator');
-    else navigate(`/dashboard/educator/${tab}`);
-  };
+  const goTo = (tab: EducatorTab) => navigate(tab === 'overview' ? '/dashboard/educator' : `/dashboard/educator/${tab}`);
+
   const [educator, setEducator] = useState<Educator | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [openRequests, setOpenRequests] = useState<LearnerRequest[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [replyText, setReplyText] = useState<{ [reviewId: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [actionError, setActionError] = useState('');
+  const { messages, send, markConversationRead, unreadCount } = useMessages(user?.id, activeTab === 'messages');
 
-  const loadDashboardData = async () => {
+  /** `quiet` refreshes in the background without the loading skeleton. */
+  const loadDashboardData = async (quiet = false) => {
     // Accounts without an educator profile have nothing to load; they are prompted to apply instead.
     if (!educatorId) {
       setLoading(false);
       return;
     }
     try {
-      setLoading(true);
+      if (!quiet) setLoading(true);
       const [edu, bks, revs, reqs, pays] = await Promise.all([
         api.getEducatorById(educatorId),
         api.getBookings({ educator_id: educatorId }),
@@ -70,7 +81,6 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         api.getLearnerRequests({ status: 'open' }),
         api.getPayments({ educator_id: educatorId })
       ]);
-
       setEducator(edu);
       setBookings(bks);
       setReviews(revs);
@@ -79,7 +89,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     } catch (err) {
       console.error('Error loading educator dashboard:', err);
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   };
 
@@ -87,11 +97,17 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     loadDashboardData();
   }, [educatorId]);
 
+  // Opening a tab shows the latest, and the dashboard keeps itself current while open.
+  useEffect(() => {
+    if (!loading) loadDashboardData(true);
+  }, [activeTab]);
+  useAutoRefresh(() => loadDashboardData(true), 30000, !!educatorId);
+
   const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
     try {
       setActionError('');
       await api.updateBookingStatus(bookingId, status);
-      loadDashboardData();
+      loadDashboardData(true);
     } catch (e: any) {
       console.error('Failed to update booking status:', e);
       setActionError(e.message || 'Could not update the booking. Please try again.');
@@ -100,12 +116,12 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
 
   const progressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleUpdateProgress = useCallback((bookingId: string, progress: number) => {
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, milestone_progress: progress } : b));
     if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current);
     progressTimeoutRef.current = setTimeout(async () => {
       try {
         setActionError('');
         await api.updateBookingProgress(bookingId, progress);
-        loadDashboardData();
       } catch (e: any) {
         console.error('Failed to update progress:', e);
         setActionError(e.message || 'Could not save milestone progress. Please try again.');
@@ -119,20 +135,13 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     try {
       setActionError('');
       await api.replyToReview(reviewId, text);
-      loadDashboardData();
+      loadDashboardData(true);
       setReplyText(prev => ({ ...prev, [reviewId]: '' }));
     } catch (e: any) {
       console.error('Error submitting reply:', e);
       setActionError(e.message || 'Could not post your reply. Please try again.');
     }
   };
-
-  const ratingLabel = educator?.rating ? `${educator.rating}★` : 'No ratings yet';
-  const TAB_LABELS: Record<typeof activeTab, string> = {
-    overview: 'Overview', bookings: 'Bookings', leads: 'Leads', earnings: 'Earnings', reviews: 'Reviews', profile: 'Profile'
-  };
-  const FORMAT_LABELS: Record<string, string> = { 'in-person': 'At your workshop', hybrid: 'Online and workshop', online: 'Online' };
-  const pendingBookings = bookings.filter(b => b.status === 'pending');
 
   // Editable profile fields (PATCH /api/educators/:id accepts these from the owner).
   const [profileForm, setProfileForm] = useState({ title: '', hourly_rate_ugx: 0, location: '', service_area: '', equipment_provided: '' });
@@ -164,47 +173,82 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
       setSavingProfile(false);
     }
   };
+
   const introductionLink = (req: LearnerRequest) =>
     `https://wa.me/256744024529?text=${encodeURIComponent(`Hello iSkillLink, I'm ${user?.name} (${educator?.title}). Please introduce me to the learner who requested "${req.skill_name}" (request ${req.id}).`)}`;
 
   const heldPayout = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.payout_amount_ugx, 0);
   const paidOut = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.payout_amount_ugx, 0);
-  const platformFees = payments
-    .filter(p => p.status === 'paid' || p.status === 'completed')
-    .reduce((sum, p) => sum + p.platform_fee_ugx, 0);
+  const platformFees = payments.filter(p => p.status === 'paid' || p.status === 'completed').reduce((sum, p) => sum + p.platform_fee_ugx, 0);
 
   const isLive = educator?.status === 'active' || educator?.status === 'approved';
-
   // Registered as an educator but hasn't sent the application from their account yet.
-
   const applicationNotSent = !!educator && educator.title === REGISTRATION_TITLE;
   const progress = verificationProgress(educator?.verification);
   const nextStepIndex = VERIFICATION_STEPS.findIndex(step => !isStepPassed(educator?.verification, step));
   const reviewCount = educator?.total_reviews || 0;
-  const ratingSummary = educator?.rating ? `${educator.rating}★ from ${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'}` : 'No reviews yet';
+  const firstName = user?.name?.split(' ')[0] || 'there';
 
-  // Leads in the educator's own trade come first; a word match on title/skills is enough here.
+  // Leads in the educator's own skill come first; a word match on title/skills is enough here.
   const tradeText = [educator?.title, ...(educator?.skills || []).map(s => s.skill_name)].join(' ').toLowerCase();
   const matchesTrade = (req: LearnerRequest) =>
     req.skill_name.toLowerCase().split(/[^a-z]+/).some(word => word.length > 3 && tradeText.includes(word));
   const sortedLeads = [...openRequests].sort((a, b) => Number(matchesTrade(b)) - Number(matchesTrade(a)));
 
+  const learnerFirst = (b: Booking) => b.learnerUser?.name?.split(' ')[0] || 'the learner';
+  const pendingBookings = bookings.filter(b => b.status === 'pending' || b.status === 'accepted');
+  const awaitingPayment = bookings.filter(b => (b.status === 'confirmed' || b.status === 'in_progress') && !isBookingPaid(b));
+  const paidUpcoming = upcomingBookings(bookings).filter(b => (b.status === 'confirmed' || b.status === 'in_progress') && isBookingPaid(b));
+  const finished = bookings.filter(b => ['completed', 'declined', 'cancelled'].includes(b.status)).sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date));
+  const unrepliedReviews = reviews.filter(r => !r.educator_reply);
+  const completedSessions = bookings.filter(b => b.status === 'completed').length;
+
+  // Learners the educator can message: everyone who has booked them.
+  const contacts = Array.from(new Map(
+    bookings.filter(b => b.learnerUser).map(b => [b.learnerUser!.id, {
+      id: b.learnerUser!.id,
+      name: b.learnerUser!.name,
+      subtitle: b.skill_name,
+      avatar_url: b.learnerUser!.avatar_url,
+      phone: b.learnerUser!.phone
+    }])
+  ).values());
+  const messageLink = (b: Booking) => b.learnerUser ? `/dashboard/educator/messages?with=${b.learnerUser.id}` : '/dashboard/educator/messages';
+
+  const earningsByMonth = lastMonths(6).map(month => ({
+    label: month.label,
+    value: payments.filter(p => (p.status === 'paid' || p.status === 'completed') && p.created_at.startsWith(month.key)).reduce((sum, p) => sum + p.payout_amount_ugx, 0)
+  }));
+
+  const navItems = [
+    { label: 'Dashboard', href: '/dashboard/educator', icon: LayoutGrid, end: true },
+    { label: 'Inbox', href: '/dashboard/educator/messages', icon: MessageSquare, badge: unreadCount || undefined },
+    { label: 'Bookings', href: '/dashboard/educator/bookings', icon: Calendar, badge: pendingBookings.length || undefined },
+    { label: 'Leads', href: '/dashboard/educator/leads', icon: Users },
+    { label: 'Earnings', href: '/dashboard/educator/earnings', icon: Wallet },
+    { label: 'Reviews', href: '/dashboard/educator/reviews', icon: Star, badge: unrepliedReviews.length || undefined },
+    { label: 'Profile', href: '/dashboard/educator/profile', icon: Settings, group: 'Settings' }
+  ];
+
+  const TAB_HEADERS: Record<Exclude<EducatorTab, 'overview'>, { title: string; description: string }> = {
+    bookings: { title: 'Bookings', description: 'Accept requests, then mark each session done after it happens. Our team then sends 90% to your MoMo.' },
+    leads: { title: 'Leads', description: 'Learners who described what they want to learn. Ask us and we’ll introduce you.' },
+    messages: { title: 'Messages', description: 'Talk to your learners about times, tools and what to bring.' },
+    earnings: { title: 'Earnings', description: 'Learners pay into escrow after you accept. Once the session is done, we send 90% to your MoMo and keep 10%.' },
+    reviews: { title: 'Reviews', description: 'Shown on your public profile. A short, kind reply goes a long way.' },
+    profile: { title: 'Profile', description: 'What learners see before they book you.' }
+  };
+
   if (loading) {
     return (
-      <DashboardShell role="educator">
-      <div className="container-app py-6 space-y-6" aria-busy="true" aria-live="polite">
-        <div className="h-32 rounded-3xl bg-white border border-ink-200 shadow-level-1 relative overflow-hidden">
-          <Skeleton className="w-full h-full" />
+      <DashboardShell role="educator" navItems={navItems}>
+        <div className="mx-auto max-w-7xl space-y-6" aria-busy="true" aria-live="polite">
+          <Skeleton className="h-48 w-full rounded-[20px]" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-card" />)}
+          </div>
+          <Skeleton className="h-64 w-full rounded-card" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-card" />)}
-        </div>
-        <div className="p-8 rounded-card border border-ink-200 bg-white">
-          <Skeleton className="h-6 w-48 mb-4" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-5/6" />
-        </div>
-      </div>
       </DashboardShell>
     );
   }
@@ -212,523 +256,581 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
   if (!educatorId) {
     return (
       <DashboardShell role="educator">
-      <div className="container-app space-y-6">
-        <DashboardHeader
-          eyebrow="Educator portal"
-          title={`Welcome, ${user?.name || 'Educator'}`}
-          breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard' }]}
-        />
-        <EmptyState
-          icon={<GraduationCap className="w-6 h-6" />}
-          title="No educator profile yet"
-          description="Complete the educator application so the iSkillLink team can check your skills and list you for learners."
-          action={<button onClick={() => navigate('/dashboard/educator/apply')} className="rounded-pill bg-forest-700 px-5 min-h-[44px] text-sm font-semibold text-white">Start your application</button>}
-        />
-      </div>
+        <div className="mx-auto max-w-4xl">
+          <DashboardBanner
+            eyebrow="Teach on iSkillLink"
+            title={`Welcome, ${firstName}`}
+            description="Complete the educator application so our team can check your skills and list you for learners."
+            actions={<button onClick={() => navigate(APPLY_PATH)} className={btn.sun}>Start your application<PillArrow /></button>}
+          />
+        </div>
       </DashboardShell>
     );
   }
 
-  return (
-    <DashboardShell role="educator" navItems={[
-      { label: 'Overview', href: '/dashboard/educator', icon: GraduationCap, end: true },
-      { label: 'Bookings', href: '/dashboard/educator/bookings', icon: Calendar },
-      { label: 'Leads', href: '/dashboard/educator/leads', icon: Clock },
-      { label: 'Earnings', href: '/dashboard/educator/earnings', icon: DollarSign },
-      { label: 'Reviews', href: '/dashboard/educator/reviews', icon: Star },
-      { label: 'Profile', href: '/dashboard/educator/profile', icon: Settings }
-    ]}>
-    <div className="container-app space-y-6">
-      <DashboardHeader
-        eyebrow={isLive ? 'Educator portal' : applicationNotSent ? 'Application not sent yet' : 'Application in review'}
-        title={user?.name || 'Educator'}
-        description={[educator?.title, `${educator?.years_experience || 0} years experience`, ratingSummary, `${formatUGX(educator?.hourly_rate_ugx || 0)}/hr`].filter(Boolean).join(' · ')}
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: TAB_LABELS[activeTab] }]}
-        actions={educator?.status && <StatusBadge status={educator.status} size="md" />}
-      />
+  /** What the educator can do next with a booking. */
+  const bookingActions = (b: Booking) => {
+    if (b.status === 'pending' || b.status === 'accepted') {
+      return (
+        <div className="flex gap-2">
+          <button onClick={() => handleUpdateBookingStatus(b.id, 'declined')} className={cn(btn.outline, 'min-h-[40px] flex-1 px-4')}>Decline</button>
+          <button onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')} className={cn(btn.primary, 'min-h-[40px] flex-1 px-4')}>Accept</button>
+        </div>
+      );
+    }
+    if ((b.status === 'confirmed' || b.status === 'in_progress') && isBookingPaid(b)) {
+      return (
+        <button onClick={() => handleUpdateBookingStatus(b.id, 'completed')} className={cn(btn.primary, 'min-h-[40px] w-full')}>
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />Mark session done
+        </button>
+      );
+    }
+    return null;
+  };
 
-      {actionError && (
-        <Alert onDismiss={() => setActionError('')}>{actionError}</Alert>
-      )}
-
-      {/* OVERVIEW TAB */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {educator?.status === 'suspended' ? (
-            <section className="bg-white rounded-card border border-rose-200 shadow-level-1 p-6 space-y-2" aria-labelledby="hold-heading">
-              <h2 id="hold-heading" className="text-lg font-bold text-ink-900">Your profile is on hold</h2>
-              <p className="text-sm text-ink-600">Learners can’t book you right now. {educator.verification_notes ? `Reason: ${educator.verification_notes}. ` : ''}Message us on WhatsApp to sort it out.</p>
-              <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className="inline-flex px-4 py-2.5 min-h-[44px] items-center rounded-control bg-forest-700 hover:bg-forest-800 text-white text-xs font-bold">WhatsApp iSkillLink</a>
-            </section>
-          ) : applicationNotSent ? (
-            <section className="rounded-display border border-forest-200 bg-forest-50/70 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5" aria-labelledby="finish-heading">
-              <div>
-                <h2 id="finish-heading" className="text-xl font-bold text-ink-900">Finish your application to start teaching</h2>
-                <p className="mt-1 text-sm text-ink-700 max-w-xl">Tell us about your craft, what you teach and your workshop. It takes about ten minutes, then we arrange your checks on WhatsApp.</p>
-              </div>
-              <button onClick={() => navigate(APPLY_PATH)} className="shrink-0 px-6 min-h-[48px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold">Continue your application</button>
-            </section>
-          ) : !isLive ? (
-            <section className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-5" aria-labelledby="application-heading">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                <div>
-                  <h2 id="application-heading" className="text-lg font-bold text-ink-900">
-                    Your application: {progress.passed} of {progress.total} checks done
-                  </h2>
-                  <p className="text-sm text-ink-600 mt-1">Learners can book you as soon as all four checks pass. We’ll contact you on WhatsApp to arrange each one.</p>
-                </div>
-                <button onClick={() => navigate(`/educators/${educator?.id}`)} className="shrink-0 px-4 py-2.5 min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 text-xs font-bold text-ink-800">
-                  Preview your public profile
+  // One card on the bookings board.
+  const boardCard = (b: Booking) => {
+    const stage = bookingStage(b, 'educator');
+    const muted = stage.stopped;
+    return (
+      <article key={b.id} className={cn('rounded-[20px] border border-[#ECEEF3] bg-white p-4 shadow-soft', muted && 'opacity-70')}>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="rounded-pill bg-sky-50 px-2.5 py-0.5 text-[12px] font-semibold text-sky-700">{b.skill_name}</span>
+          <span className="rounded-pill bg-[#EEF0F5] px-2.5 py-0.5 text-[12px] font-semibold text-ink-600">{FORMAT_LABELS[b.format] || b.format}</span>
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <Avatar src={b.learnerUser?.avatar_url} name={b.learnerUser?.name} className="h-10 w-10 rounded-full" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold text-ink-900">{b.learnerUser?.name || 'A learner'}</p>
+            <p className="truncate text-xs text-ink-500">{formatShortDate(b.scheduled_date)} · {b.start_time} · {b.duration_hours} h</p>
+          </div>
+        </div>
+        {b.notes && <p className="mt-3 rounded-[14px] bg-[#F7F8FB] px-3 py-2 text-sm leading-relaxed text-ink-700">“{b.notes}”</p>}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="font-bold text-ink-900">{formatUGX(b.educator_payout_ugx)}</span>
+          <Badge variant={stage.variant} size="sm" dot>{stage.label}</Badge>
+        </div>
+        {(b.status === 'confirmed' || b.status === 'in_progress') && isBookingPaid(b) && (
+          <div className="mt-3">
+            <p className="text-[12px] text-ink-500">Progress {b.learnerUser ? `${learnerFirst(b)} sees` : 'shown to the learner'}</p>
+            <div className="mt-1.5 grid grid-cols-5 gap-1" role="group" aria-label="Session progress">
+              {[0, 25, 50, 75, 100].map(pct => (
+                <button key={pct} onClick={() => handleUpdateProgress(b.id, pct)} aria-pressed={b.milestone_progress === pct}
+                  className={cn('min-h-[36px] rounded-pill text-[12px] font-semibold transition', b.milestone_progress === pct ? 'bg-forest-500 text-white' : 'bg-[#F1F2F6] text-ink-600 hover:bg-[#E8EAF0]')}>
+                  {pct}%
                 </button>
-              </div>
-              <ol className="space-y-3">
-                {VERIFICATION_STEPS.map((step, index) => {
-                  const passed = isStepPassed(educator?.verification, step);
-                  const isNext = index === nextStepIndex;
-                  return (
-                    <li key={step.key} className={`flex items-start gap-3 p-3.5 rounded-card border ${isNext ? 'border-forest-200 bg-forest-50/60' : 'border-ink-200'}`}>
-                      <span className={`mt-0.5 w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${passed ? 'bg-forest-700 text-white' : isNext ? 'bg-white border-2 border-forest-700 text-forest-800' : 'bg-ink-100 text-ink-500'}`} aria-hidden="true">
-                        {passed ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-semibold text-ink-900">{step.label}</span>
-                          <span className={`text-xs font-semibold ${passed ? 'text-forest-700' : isNext ? 'text-forest-800' : 'text-ink-500'}`}>{passed ? 'Done' : isNext ? 'Next' : 'Waiting'}</span>
-                        </div>
-                        <p className="text-[14px] text-ink-600">{step.applicantDetail}</p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          ) : (
-            <StatRow stats={[
-              { label: 'Students taught', value: educator?.total_students ?? 0, detail: 'Learners with a completed session', icon: User },
-              { label: 'Upcoming sessions', value: bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length, detail: 'Confirmed or awaiting your reply', icon: Calendar },
-              { label: 'Paid out to you', value: formatUGX(paidOut), detail: heldPayout > 0 ? `${formatUGX(heldPayout)} still held in escrow` : 'Sent to your MoMo', icon: DollarSign },
-              { label: 'Average rating', value: ratingLabel, detail: `From ${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'}`, icon: Star, accent: 'amber' }
-            ]} />
-          )}
+              ))}
+            </div>
+          </div>
+        )}
+        {bookingActions(b) && <div className="mt-4">{bookingActions(b)}</div>}
+        {b.learnerUser && !muted && (
+          <button onClick={() => navigate(messageLink(b))} className="mt-3 inline-flex min-h-[36px] items-center gap-1.5 text-xs font-semibold text-forest-700 hover:text-forest-800">
+            <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />Message {learnerFirst(b)}
+          </button>
+        )}
+      </article>
+    );
+  };
 
-          {/* Pending Bookings to Accept — only once learners can book this educator */}
-          {isLive && (
-          <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-4">
-            <SectionHeader title={pendingBookings.length > 0 ? `Waiting for your reply (${pendingBookings.length})` : 'Waiting for your reply'} action={<button
-                onClick={() => setActiveTab('bookings')}
-                className="text-xs font-bold text-forest-700 hover:text-forest-800 min-h-[44px]"
-              >
-                All bookings
-              </button>} />
+  const BOARD = [
+    { key: 'requests', title: 'Requests', dot: 'bg-amber-500', items: pendingBookings, empty: 'New booking requests land here.' },
+    { key: 'payment', title: 'Waiting for payment', dot: 'bg-clay-500', items: awaitingPayment, empty: 'Accepted sessions wait here until the learner pays.' },
+    { key: 'upcoming', title: 'Upcoming', dot: 'bg-sky-500', items: paidUpcoming, empty: 'Paid sessions show here.' },
+    { key: 'done', title: 'Done', dot: 'bg-forest-500', items: finished, empty: 'Finished sessions show here.' }
+  ];
 
-            <div className="space-y-3">
-              {pendingBookings.length > 0 ? (
-                pendingBookings.map(b => (
-                  <div
-                    key={b.id}
-                    className="p-4 rounded-card border border-amber-200 bg-amber-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+  // The banner: the most useful next thing for this educator.
+  const banner = (() => {
+    if (educator?.status === 'suspended') {
+      return {
+        title: 'Your profile is on hold',
+        description: <>Learners can’t book you right now. {educator.verification_notes ? `Reason: ${educator.verification_notes}. ` : ''}Message us on WhatsApp to sort it out.</>,
+        actions: <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className={btn.sun}>WhatsApp iSkillLink<PillArrow /></a>
+      };
+    }
+    if (applicationNotSent) {
+      return {
+        title: 'Finish your application to start teaching',
+        description: 'Tell us about your craft, what you teach and your workshop. It takes about ten minutes, then we arrange your checks on WhatsApp.',
+        actions: <button onClick={() => navigate(APPLY_PATH)} className={btn.sun}>Continue your application<PillArrow /></button>
+      };
+    }
+    if (!isLive) {
+      return {
+        title: `${progress.passed} of ${progress.total} checks done`,
+        description: 'Learners can book you as soon as all four pass. We’ll contact you on WhatsApp to arrange each one.',
+        actions: <button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.sun}>Preview your profile<PillArrow /></button>
+      };
+    }
+    if (pendingBookings.length > 0) {
+      const b = pendingBookings[0];
+      return {
+        title: pendingBookings.length === 1 ? `${b.learnerUser?.name?.split(' ')[0] || 'A learner'} wants to book you` : `${pendingBookings.length} learners want to book you`,
+        description: pendingBookings.length === 1
+          ? <>{b.skill_name} on {longDate(b.scheduled_date)} at {b.start_time}. Accept it so they can pay and lock in the time.</>
+          : 'Accept the ones that suit you so learners can pay and lock in the time.',
+        actions: <><button onClick={() => goTo('bookings')} className={btn.sun}>Review requests<PillArrow /></button><button onClick={() => navigate(messageLink(b))} className={btn.glass}>Message {learnerFirst(b)}</button></>
+      };
+    }
+    if (paidUpcoming[0]) {
+      const b = paidUpcoming[0];
+      return {
+        title: `Next up: ${b.skill_name}`,
+        description: <>With {b.learnerUser?.name || 'your learner'} on {longDate(b.scheduled_date)} at {b.start_time}. They’ve paid, so the money is held for you.</>,
+        actions: <><button onClick={() => navigate(messageLink(b))} className={btn.sun}>Message {learnerFirst(b)}<PillArrow /></button><button onClick={() => goTo('bookings')} className={btn.glass}>See bookings</button></>
+      };
+    }
+    return {
+      title: 'Teach your skill, grow your name',
+      description: 'Your profile is live. Share it with people who want to learn your skill, or look at open requests from learners.',
+      actions: <><button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.sun}>View your profile<PillArrow /></button><button onClick={() => goTo('leads')} className={btn.glass}>See leads</button></>
+    };
+  })();
+  const nextSession = paidUpcoming[0] || pendingBookings[0];
+
+  return (
+    <DashboardShell role="educator" navItems={navItems} sidebarPeople={{ title: 'Your learners', people: contacts.map(c => ({ ...c, subtitle: c.subtitle, href: `/dashboard/educator/messages?with=${c.id}` })) }}>
+      <div className="mx-auto max-w-[78rem] space-y-6">
+        {activeTab !== 'overview' && (
+          <DashboardHeader
+            eyebrow={isLive ? 'Educator' : 'Application in review'}
+            title={TAB_HEADERS[activeTab].title}
+            description={TAB_HEADERS[activeTab].description}
+            actions={activeTab === 'profile' || activeTab === 'reviews'
+              ? <button onClick={() => navigate(`/educators/${educator?.id}`)} className={btn.outline}><Eye className="h-4 w-4" aria-hidden="true" />View public profile</button>
+              : undefined}
+          />
+        )}
+
+        {actionError && <Alert onDismiss={() => setActionError('')}>{actionError}</Alert>}
+
+        {/* ===== OVERVIEW ===== */}
+        {activeTab === 'overview' && (
+          <div className="grid items-start gap-6 pt-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="min-w-0 space-y-6">
+              <DashboardBanner eyebrow={`Welcome back, ${firstName}`} title={banner.title} description={banner.description} actions={banner.actions} />
+
+              {isLive ? (
+                <>
+                  <StatRow className="sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4" stats={[
+                    { label: 'Learners taught', value: educator?.total_students ?? 0, detail: 'With a finished session', icon: Users, accent: 'sky' },
+                    { label: 'Coming up', value: paidUpcoming.length + awaitingPayment.length, detail: `${pendingBookings.length} waiting for your reply`, icon: Calendar, accent: 'violet' },
+                    { label: 'Paid out', value: formatUGX(paidOut), detail: heldPayout > 0 ? `${formatUGX(heldPayout)} held for you` : 'Sent to your MoMo', icon: Wallet, accent: 'forest' },
+                    { label: 'Rating', value: educator?.rating ? `${educator.rating.toFixed(1)}★` : '–', detail: `From ${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'}`, icon: Star, accent: 'amber' }
+                  ]} />
+
+                  <Panel
+                    id="requests"
+                    title={pendingBookings.length > 0 ? `Booking requests (${pendingBookings.length})` : 'Booking requests'}
+                    action={<button onClick={() => goTo('bookings')} className={btn.quiet}>All bookings<ArrowRight className="h-4 w-4" aria-hidden="true" /></button>}
+                    bodyClassName="space-y-3"
                   >
-                    <div>
-                      <div className="font-bold text-ink-900 text-sm">{b.learnerUser?.name || 'A learner'} wants to learn {b.skill_name}</div>
-                      <p className="text-xs text-ink-700 mt-1">
-                        {formatShortDate(b.scheduled_date)} at {b.start_time} · {b.duration_hours} {b.duration_hours === 1 ? 'hour' : 'hours'} · you’d receive {formatUGX(b.educator_payout_ugx)}
-                      </p>
-                      {b.notes && <p className="text-xs text-ink-500 italic mt-0.5">"{b.notes}"</p>}
-                    </div>
+                    {pendingBookings.length > 0 ? pendingBookings.map(b => (
+                      <div key={b.id} className="flex flex-col gap-4 rounded-[20px] border border-amber-200 bg-amber-50/50 p-4 md:flex-row md:items-center">
+                        <DateTile date={b.scheduled_date} />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-ink-900">{b.learnerUser?.name || 'A learner'} wants to learn {b.skill_name}</p>
+                          <p className="mt-0.5 text-sm text-ink-600">{b.start_time} · {b.duration_hours} {b.duration_hours === 1 ? 'hour' : 'hours'} · you’d receive {formatUGX(b.educator_payout_ugx)}</p>
+                          {b.notes && <p className="mt-1 text-sm italic text-ink-500">“{b.notes}”</p>}
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleUpdateBookingStatus(b.id, 'declined')} className={btn.outline}>Decline</button>
+                          <button onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')} className={btn.primary}>Accept</button>
+                        </div>
+                      </div>
+                    )) : (
+                      <p className="py-2 text-sm text-ink-500">Nothing to reply to. New booking requests show up here.</p>
+                    )}
+                  </Panel>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')}
-                        className="px-4 py-2.5 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shadow-level-1"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleUpdateBookingStatus(b.id, 'declined')}
-                        className="px-4 py-2.5 min-h-[44px] rounded-control bg-ink-50 hover:bg-ink-100 text-ink-700 font-bold text-xs border border-ink-200"
-                      >
-                        Decline
-                      </button>
+                  <section aria-labelledby="upcoming-heading">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h2 id="upcoming-heading" className="text-lg font-bold text-ink-900">Upcoming sessions</h2>
+                      <button onClick={() => goTo('bookings')} className="text-sm font-semibold text-forest-600 hover:text-forest-700">See all</button>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <p className="py-4 text-ink-600 text-sm">Nothing to reply to. New booking requests show up here.</p>
+                    {[...awaitingPayment, ...paidUpcoming].length > 0 ? (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {upcomingBookings([...awaitingPayment, ...paidUpcoming]).slice(0, 3).map(b => {
+                          const stage = bookingStage(b, 'educator');
+                          const categoryId = educator?.skills?.find(sk => sk.skill_name === b.skill_name)?.category_id;
+                          return (
+                            <article key={b.id} className="dash-card flex flex-col p-3">
+                              <img src={skillPhoto(categoryId, b.skill_name)} alt="" className="h-32 w-full rounded-[14px] object-cover" loading="lazy" />
+                              <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
+                                <Badge variant={stage.variant} size="sm" dot className="self-start">{stage.label}</Badge>
+                                <h3 className="mt-2 line-clamp-2 font-semibold leading-snug text-ink-900">{b.skill_name}</h3>
+                                <p className="mt-0.5 text-xs text-ink-400">{formatShortDate(b.scheduled_date)} · {b.start_time} · {b.duration_hours} h</p>
+                                <div className="mt-3 flex items-center gap-2.5 border-t border-[#F0F1F5] pt-3">
+                                  <Avatar src={b.learnerUser?.avatar_url} name={b.learnerUser?.name} className="h-8 w-8 rounded-full" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-semibold text-ink-900">{b.learnerUser?.name || 'A learner'}</p>
+                                    <p className="text-xs text-ink-400">Learner</p>
+                                  </div>
+                                  <button onClick={() => navigate(messageLink(b))} className="grid h-8 w-8 place-items-center rounded-full border border-[#E3E5EC] text-ink-500 hover:text-forest-600" aria-label={`Message ${b.learnerUser?.name || 'the learner'}`}>
+                                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                                  </button>
+                                </div>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="dash-card px-6 py-8 text-center text-sm text-ink-500">No sessions booked yet. Accepted bookings show up here.</div>
+                    )}
+                  </section>
+
+                  <Panel id="payouts-table" title="Recent payouts" action={<button onClick={() => goTo('earnings')} className="text-sm font-semibold text-forest-600 hover:text-forest-700">See all</button>} bodyClassName="p-0 sm:p-0 pt-0 sm:pt-0">
+                    {payments.length > 0 ? (
+                      <div className="overflow-x-auto pb-2">
+                        <table className="w-full min-w-[34rem] text-left text-sm">
+                          <thead>
+                            <tr className="text-[11px] uppercase tracking-[0.12em] text-ink-400">
+                              <th className="px-6 py-3 font-semibold">Learner</th>
+                              <th className="px-3 py-3 font-semibold">Session</th>
+                              <th className="px-3 py-3 font-semibold">Status</th>
+                              <th className="px-6 py-3 text-right font-semibold">You get</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#F0F1F5]">
+                            {[...payments].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 4).map(p => {
+                              const booking = bookings.find(b => b.id === p.booking_id);
+                              return (
+                                <tr key={p.id}>
+                                  <td className="px-6 py-3.5">
+                                    <span className="flex items-center gap-2.5">
+                                      <Avatar src={booking?.learnerUser?.avatar_url} name={booking?.learnerUser?.name} className="h-8 w-8 rounded-full" />
+                                      <span>
+                                        <span className="block font-semibold text-ink-900">{booking?.learnerUser?.name || 'A learner'}</span>
+                                        <span className="block text-xs text-ink-400">{formatShortDate(p.created_at)}</span>
+                                      </span>
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-3.5"><span className="rounded-pill bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-600">{booking?.skill_name || 'Session'}</span></td>
+                                  <td className="px-3 py-3.5"><PaymentStatusBadge status={p.status} audience="educator" /></td>
+                                  <td className="px-6 py-3.5 text-right font-semibold text-ink-900">{formatUGX(p.payout_amount_ugx)}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="px-6 pb-6 text-sm text-ink-500">No payments yet. They show up here when a learner pays for a session.</p>
+                    )}
+                  </Panel>
+                </>
+              ) : !applicationNotSent && educator?.status !== 'suspended' && (
+                <Panel id="checks" title="Your four checks" description="We’ll contact you on WhatsApp to arrange each one." bodyClassName="space-y-3">
+                  {VERIFICATION_STEPS.map((step, index) => {
+                    const passed = isStepPassed(educator?.verification, step);
+                    const isNext = index === nextStepIndex;
+                    return (
+                      <div key={step.key} className={cn('flex items-start gap-4 rounded-[20px] border p-4', passed ? 'border-forest-200 bg-forest-50/50' : isNext ? 'border-ink-300 bg-white shadow-soft' : 'border-[#ECEEF3] bg-white')}>
+                        {passed
+                          ? <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-forest-600" aria-hidden="true" />
+                          : <Circle className={cn('mt-0.5 h-6 w-6 shrink-0', isNext ? 'text-forest-700' : 'text-ink-300')} aria-hidden="true" />}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-semibold text-ink-900">Check {index + 1}: {step.label}</p>
+                            <Badge variant={passed ? 'success' : isNext ? 'warning' : 'neutral'} size="sm">{passed ? 'Done' : isNext ? 'Next' : 'Waiting'}</Badge>
+                          </div>
+                          <p className="mt-0.5 text-sm text-ink-600">{step.applicantDetail}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </Panel>
+              )}
+            </div>
+
+            <div className="space-y-6">
+              <ProfileSummaryCard
+                title="Statistic"
+                name={user?.name}
+                avatarUrl={user?.avatar_url}
+                percent={isLive ? (educator?.rating ? educator.rating * 20 : undefined) : (progress.passed / progress.total) * 100}
+                percentLabel={isLive ? 'average rating' : 'of your checks done'}
+                greeting={greetingForNow(firstName)}
+                subline={educator?.title}
+                stats={[
+                  { label: 'Sessions', value: completedSessions },
+                  { label: 'Learners', value: educator?.total_students ?? 0 },
+                  { label: 'Rating', value: educator?.rating ? educator.rating.toFixed(1) : '–' }
+                ]}
+                chartTitle={isLive ? 'Earnings' : undefined}
+                bars={earningsByMonth}
+                formatValue={formatUGX}
+                emptyChartText="Your earnings show here after your first paid session."
+              />
+
+              <Panel id="activity" title="Recent activity" bodyClassName="px-5 py-4 sm:px-6">
+                {notifications.length > 0 ? (
+                  <ol className="relative space-y-5 before:absolute before:bottom-2 before:left-[15px] before:top-2 before:w-px before:bg-ink-200">
+                    {notifications.slice(0, 5).map(n => (
+                      <li key={n.id} className="relative flex gap-3">
+                        <span className={cn('relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full ring-4 ring-white', n.is_read ? 'bg-[#EEF0F5] text-ink-500' : 'bg-forest-700 text-white')} aria-hidden="true">
+                          {n.title.startsWith('New message') ? <MessageSquare className="h-3.5 w-3.5" /> : n.type === 'payment_update' ? <Wallet className="h-3.5 w-3.5" /> : n.type === 'booking_request' ? <Calendar className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+                        </span>
+                        <button type="button" onClick={() => n.link && navigate(n.link)} className="min-w-0 flex-1 text-left">
+                          <p className="text-sm font-semibold text-ink-900">{n.title}</p>
+                          <p className="line-clamp-2 text-xs text-ink-500">{n.message}</p>
+                          <p className="mt-0.5 text-[12px] text-ink-400">{formatTimeAgo(n.created_at)}</p>
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-sm text-ink-500">Bookings, payments and messages show up here.</p>
+                )}
+              </Panel>
+
+              {contacts.length > 0 && (
+                <Panel id="learners" title="Your learners" bodyClassName="p-2 sm:p-2">
+                  <ul>
+                    {contacts.slice(0, 4).map(person => (
+                      <li key={person.id} className="flex items-center gap-3 rounded-[16px] px-3 py-2.5 hover:bg-[#F7F8FB]">
+                        <Avatar src={person.avatar_url} name={person.name} className="h-10 w-10 rounded-full" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-ink-900">{person.name}</p>
+                          <p className="truncate text-xs text-ink-500">{person.subtitle}</p>
+                        </div>
+                        <button onClick={() => navigate(`/dashboard/educator/messages?with=${person.id}`)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-pill border border-forest-200 px-3 text-xs font-semibold text-forest-800 hover:bg-forest-50">
+                          <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />Message
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </Panel>
               )}
             </div>
           </div>
-          )}
-        </div>
-      )}
+        )}
 
-      {/* BOOKINGS TAB */}
-      {activeTab === 'bookings' && (
-        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
-          <div>
-            <h2 className="text-base font-bold text-ink-900">{bookings.length} {bookings.length === 1 ? 'booking' : 'bookings'}</h2>
-            <p className="text-xs text-ink-600">Set progress as you go. Mark a session done after it happens — that’s when your payout is released.</p>
-          </div>
-
-          {bookings.length === 0 && (
+        {/* ===== BOOKINGS (board) ===== */}
+        {activeTab === 'bookings' && (
+          bookings.length === 0 ? (
             <EmptyState
-              icon={<Calendar className="w-6 h-6" />}
+              icon={<Calendar className="h-6 w-6" />}
               title="No bookings yet"
-              description="When a learner books you, the request shows up here and on your overview."
+              description={isLive ? 'When a learner books you, the request shows up here.' : 'Learners can book you once your four checks pass.'}
             />
-          )}
+          ) : (
+            <div className="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-4">
+              {BOARD.map(column => (
+                <section key={column.key} className="rounded-[20px] bg-[#EBEDF2]/70 p-3" aria-labelledby={`col-${column.key}`}>
+                  <h2 id={`col-${column.key}`} className="flex items-center gap-2 px-2 pb-3 pt-1 text-sm font-semibold text-ink-800">
+                    <span className={cn('h-2 w-2 rounded-full', column.dot)} aria-hidden="true" />
+                    {column.title}
+                    <span className="ml-auto rounded-pill bg-white px-2 py-0.5 text-[12px] font-semibold text-ink-600">{column.items.length}</span>
+                  </h2>
+                  <div className="space-y-3">
+                    {column.items.length > 0 ? column.items.map(boardCard) : (
+                      <p className="rounded-[16px] border border-dashed border-[#D8DBE4] px-4 py-6 text-center text-xs text-ink-500">{column.empty}</p>
+                    )}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )
+        )}
 
-          <div className="space-y-4">
-            {bookings.map(b => (
-              <div
-                key={b.id}
-                className="p-5 rounded-card border border-ink-200 bg-white space-y-4"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-ink-900 text-base">{b.skill_name}</h3>
-                      <StatusBadge status={b.status} />
+        {/* ===== LEADS ===== */}
+        {activeTab === 'leads' && (
+          sortedLeads.length === 0 ? (
+            <EmptyState icon={<Clock className="h-6 w-6" />} title="No open requests right now" description="When a learner posts a request, it shows up here. Requests for your skill are listed first." />
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {sortedLeads.map(req => (
+                <article key={req.id} className="dash-card flex flex-col p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-bold text-ink-900">{req.skill_name}</h2>
+                        {matchesTrade(req) && <Badge variant="success" size="sm">Matches your skill</Badge>}
+                      </div>
+                      <p className="mt-1 text-sm leading-relaxed text-ink-600">{req.learning_goal}</p>
                     </div>
-                    <div className="text-xs text-ink-600 mt-1">
-                      with <strong className="text-ink-900">{b.learnerUser?.name || 'a learner'}</strong>{b.learnerUser?.phone ? ` · ${b.learnerUser.phone}` : ''}
+                    <div className="shrink-0 text-right">
+                      <p className="font-bold text-forest-800">{formatUGX(req.budget_ugx)}</p>
+                      <p className="text-[12px] text-ink-500">Budget</p>
                     </div>
                   </div>
-
-                  <div className="text-right">
-                    <div className="text-base font-bold text-ink-900">{formatUGX(b.educator_payout_ugx || b.total_amount_ugx * 0.9)}</div>
-                    <div className="mt-1"><PaymentStatusBadge status={b.payment?.status || 'pending'} audience="educator" /></div>
+                  <dl className="mt-4 grid grid-cols-2 gap-3 rounded-[18px] bg-[#F7F8FB] p-4 text-sm">
+                    <div><dt className="text-xs text-ink-500">Learner</dt><dd className="text-ink-800">{req.learner_name}</dd></div>
+                    <div><dt className="text-xs text-ink-500">Where</dt><dd className="text-ink-800">{req.location}</dd></div>
+                    <div><dt className="text-xs text-ink-500">How</dt><dd className="text-ink-800">{FORMAT_LABELS[req.format_preference]?.replace('your', 'a') || req.format_preference}</dd></div>
+                    <div><dt className="text-xs text-ink-500">When</dt><dd className="text-ink-800">{req.preferred_schedule || 'Flexible'}</dd></div>
+                  </dl>
+                  <div className="mt-5 flex justify-end">
+                    <a href={introductionLink(req)} target="_blank" rel="noopener noreferrer" className={btn.outline}>Ask us to introduce you<ArrowRight className="h-4 w-4" aria-hidden="true" /></a>
                   </div>
-                </div>
+                </article>
+              ))}
+            </div>
+          )
+        )}
 
-                {/* Progress only means something while the session is under way */}
-                {(b.status === 'confirmed' || b.status === 'in_progress') && (
-                <div className="bg-ink-50 p-3.5 rounded-card border border-ink-200 space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-semibold text-ink-700">Progress the learner sees</span>
-                    <span className="font-bold text-forest-800">{b.milestone_progress}%</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {[0, 25, 50, 75, 100].map(pct => (
-                      <button
-                        key={pct}
-                        onClick={() => handleUpdateProgress(b.id, pct)}
-                        aria-pressed={b.milestone_progress === pct}
-                        className={`px-3 min-h-[44px] md:min-h-[40px] rounded-control text-xs font-bold transition border ${
-                          b.milestone_progress === pct
-                            ? 'bg-forest-700 text-white border-forest-700'
-                            : 'bg-white text-ink-700 border-ink-200 hover:bg-ink-50'
-                        }`}
-                      >
-                        {pct}%
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                )}
+        {/* ===== MESSAGES ===== */}
+        {activeTab === 'messages' && user && (
+          <MessagesPanel
+            currentUserId={user.id}
+            contacts={contacts}
+            messages={messages}
+            onSend={send}
+            onMarkRead={markConversationRead}
+            emptyTitle="No conversations yet"
+            emptyDescription="When a learner books you, you can talk to them here about the time, tools and what to bring."
+            emptyAction={<button onClick={() => goTo('leads')} className={btn.primary}>See leads</button>}
+            suggestions={['Thanks for booking! See you then.', 'Please bring a notebook.', 'Can we move the time?']}
+          />
+        )}
 
-                {/* Session Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-ink-600">
-                  <div><strong>When:</strong> {formatShortDate(b.scheduled_date)} at {b.start_time}</div>
-                  <div><strong>How:</strong> {FORMAT_LABELS[b.format] || b.format}</div>
-                  <div><strong>Where:</strong> {b.location_or_link}</div>
-                </div>
+        {/* ===== EARNINGS ===== */}
+        {activeTab === 'earnings' && (
+          <>
+            <StatRow className="xl:grid-cols-3" stats={[
+              { label: 'Held for you', value: formatUGX(heldPayout), detail: 'Sent after each session is done', icon: ShieldCheck, accent: 'clay' },
+              { label: 'Paid out to you', value: formatUGX(paidOut), detail: 'Sent to your MoMo', icon: Wallet, accent: 'forest' },
+              { label: 'iSkillLink fee (10%)', value: formatUGX(platformFees), detail: 'Kept from paid sessions', icon: Inbox, accent: 'ink' }
+            ]} />
+            <Panel title="Payouts" bodyClassName="p-0 sm:p-0">
+              {payments.length === 0 ? (
+                <p className="px-6 py-8 text-center text-sm text-ink-500">No payments yet. They show up here when a learner pays for a session.</p>
+              ) : (
+                <ul className="divide-y divide-[#F0F1F5]">
+                  {[...payments].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(p => {
+                    const booking = bookings.find(b => b.id === p.booking_id);
+                    return (
+                      <li key={p.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
+                        <Avatar src={booking?.learnerUser?.avatar_url} name={booking?.learnerUser?.name} className="hidden h-10 w-10 rounded-full sm:block" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-semibold text-ink-900">{booking ? `${booking.skill_name} with ${booking.learnerUser?.name || 'a learner'}` : 'Session'}</p>
+                          <p className="text-xs text-ink-500">{formatShortDate(p.created_at)} · {METHOD_LABELS[p.method] || p.method} · learner paid {formatUGX(p.amount_ugx)}, fee {formatUGX(p.platform_fee_ugx)}</p>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 sm:justify-end">
+                          <PaymentStatusBadge status={p.status} audience="educator" />
+                          <span className="font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Panel>
+          </>
+        )}
 
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-100">
-                  {b.status === 'pending' && (
-                    <>
-                      <button onClick={() => handleUpdateBookingStatus(b.id, 'declined')} className="px-4 min-h-[44px] rounded-control bg-white hover:bg-ink-50 text-ink-700 font-bold text-xs border border-ink-200">Decline</button>
-                      <button onClick={() => handleUpdateBookingStatus(b.id, 'confirmed')} className="px-4 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs">Accept</button>
-                    </>
-                  )}
-                  {(b.status === 'confirmed' || b.status === 'in_progress') && (
-                    b.payment?.status === 'paid' ? (
-                      <button
-                        onClick={() => handleUpdateBookingStatus(b.id, 'completed')}
-                        className="px-4 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs flex items-center gap-1.5"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-                        Mark session done
-                      </button>
+        {/* ===== REVIEWS ===== */}
+        {activeTab === 'reviews' && (
+          reviews.length === 0 ? (
+            <EmptyState icon={<Star className="h-6 w-6" />} title="No reviews yet" description="Learners can review you after a session is marked done." />
+          ) : (
+            <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+              <section className="dash-card p-6 text-center" aria-label="Rating summary">
+                <p className="text-5xl font-bold text-ink-950">{(educator?.rating || 0).toFixed(1)}</p>
+                <div className="mt-2 flex justify-center gap-0.5" aria-hidden="true">
+                  {Array.from({ length: 5 }).map((_, i) => <Star key={i} className={cn('h-5 w-5', i < Math.round(educator?.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-ink-200')} />)}
+                </div>
+                <p className="mt-2 text-sm text-ink-500">From {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</p>
+                <ul className="mt-5 space-y-1.5 text-left">
+                  {[5, 4, 3, 2, 1].map(stars => {
+                    const count = reviews.filter(r => Math.round(r.rating) === stars).length;
+                    return (
+                      <li key={stars} className="flex items-center gap-2 text-xs text-ink-600">
+                        <span className="w-6">{stars}★</span>
+                        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#EEF0F5]"><span className="block h-full rounded-full bg-amber-400" style={{ width: `${(count / reviews.length) * 100}%` }} /></span>
+                        <span className="w-4 text-right">{count}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+              <div className="space-y-4">
+                {reviews.map(r => (
+                  <article key={r.id} className="dash-card p-5 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={r.learner_avatar} name={r.learner_name} className="h-10 w-10 rounded-full" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-ink-900">{r.learner_name}</p>
+                        <p className="text-xs text-ink-500">{formatShortDate(r.created_at)}</p>
+                      </div>
+                      <div className="flex gap-0.5" role="img" aria-label={`${r.rating} out of 5 stars`}>
+                        {Array.from({ length: 5 }).map((_, i) => <Star key={i} className={cn('h-4 w-4', i < r.rating ? 'fill-amber-400 text-amber-400' : 'text-ink-200')} aria-hidden="true" />)}
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-ink-700">“{r.comment}”</p>
+                    {r.educator_reply ? (
+                      <div className="mt-4 rounded-[16px] bg-forest-50/70 p-3 text-sm text-ink-700">
+                        <span className="block text-xs font-semibold text-forest-800">Your reply</span>
+                        {r.educator_reply}
+                      </div>
                     ) : (
-                      // Completing an unpaid session would leave nothing in escrow to release.
-                      <span className="text-sm text-ink-600">Waiting for {b.learnerUser?.name?.split(' ')[0] || 'the learner'} to pay</span>
-                    )
-                  )}
-                  {b.status === 'completed' && <span className="text-sm text-ink-600">Done{b.payment?.status === 'completed' ? ' · paid out' : ' · payout on its way'}</span>}
-                </div>
+                      <div className="mt-4 flex items-center gap-2">
+                        <label htmlFor={`reply-${r.id}`} className="sr-only">Reply to {r.learner_name}</label>
+                        <input
+                          id={`reply-${r.id}`}
+                          type="text"
+                          value={replyText[r.id] || ''}
+                          onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleReplyReview(r.id); }}
+                          placeholder="Reply publicly: thank them, or answer a concern"
+                          className="min-h-[44px] flex-1 rounded-pill border border-[#E3E5EC] bg-[#F7F8FB] px-4 text-base text-ink-900 focus:border-forest-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest-100 sm:text-sm"
+                        />
+                        <button onClick={() => handleReplyReview(r.id)} disabled={!replyText[r.id]?.trim()} className={btn.primary}>Reply</button>
+                      </div>
+                    )}
+                  </article>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          )
+        )}
 
-      {/* STUDENT LEADS TAB */}
-      {activeTab === 'leads' && (
-        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
-          <div>
-            <h2 className="text-base font-bold text-ink-900">Open learner requests</h2>
-            <p className="text-xs text-ink-500">Learners who described what they want to learn. Ones that match your skill are listed first — ask us and we’ll introduce you.</p>
-          </div>
-
-          {sortedLeads.length === 0 && (
-            <EmptyState
-              icon={<Clock className="w-6 h-6" />}
-              title="No open requests right now"
-              description="When a learner posts a request, it shows up here. Requests for your skill are listed first."
-            />
-          )}
-
-          <div className="space-y-4">
-            {sortedLeads.map(req => (
-              <div
-                key={req.id}
-                className="p-5 rounded-card border border-ink-200 bg-white space-y-3"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
-                      {matchesTrade(req) && <span className="text-[12px] font-semibold px-2 py-0.5 rounded-pill bg-forest-50 text-forest-800 border border-forest-200">Matches your skill</span>}
-                    </div>
-                    <p className="text-xs text-ink-600 mt-1">{req.learning_goal}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-forest-800">{formatUGX(req.budget_ugx)}</div>
-                    <div className="text-[12px] text-ink-500">Learner’s budget</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-ink-50 p-3 rounded-lg text-ink-600">
-                  <div><strong>Learner:</strong> {req.learner_name}</div>
-                  <div><strong>Location:</strong> {req.location}</div>
-                  <div><strong>Format:</strong> <span className="capitalize">{req.format_preference}</span></div>
-                  <div><strong>Schedule:</strong> {req.preferred_schedule}</div>
+        {/* ===== PROFILE ===== */}
+        {activeTab === 'profile' && (
+          <div className="grid items-start gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
+            <section className="dash-card p-6 text-center" aria-label="Your photo">
+              <Avatar src={user?.avatar_url} name={user?.name} className="mx-auto h-24 w-24 rounded-full" />
+              <p className="mt-4 text-xl font-bold text-ink-900">{user?.name}</p>
+              <p className="text-sm text-ink-500">{educator?.title}</p>
+              <div className="mt-3 flex justify-center">{educator?.status && <StatusBadge status={educator.status} />}</div>
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-500"><MapPin className="h-3.5 w-3.5" aria-hidden="true" />{educator?.location}</p>
+              <button type="button" onClick={() => setShowPhotoModal(true)} className={cn(btn.outline, 'mt-5')}>
+                <Camera className="h-4 w-4" aria-hidden="true" />{user?.avatar_url ? 'Change photo' : 'Add a photo'}
+              </button>
+            </section>
+            <Panel title="What learners see" description="Changes show on your public profile straight away.">
+              <form onSubmit={handleSaveProfile} className="space-y-5">
+                {profileMessage && <Alert tone={profileMessage.tone} onDismiss={() => setProfileMessage(null)}>{profileMessage.text}</Alert>}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="What you teach (your title)" htmlFor="edu-title" required>
+                    <Input id="edu-title" value={profileForm.title} onChange={(e) => setProfileForm({ ...profileForm, title: e.target.value })} required />
+                  </Field>
+                  <Field label="Your rate per hour (UGX)" htmlFor="edu-rate" required hint="Learners see this before they book.">
+                    <Input id="edu-rate" type="number" inputMode="numeric" min={5000} step={1000} value={profileForm.hourly_rate_ugx || ''} onChange={(e) => setProfileForm({ ...profileForm, hourly_rate_ugx: Number(e.target.value) })} required />
+                  </Field>
+                  <Field label="Where your workshop is" htmlFor="edu-location" required>
+                    <Input id="edu-location" value={profileForm.location} onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })} required />
+                  </Field>
+                  <Field label="Where else you teach" htmlFor="edu-area">
+                    <Input id="edu-area" value={profileForm.service_area} onChange={(e) => setProfileForm({ ...profileForm, service_area: e.target.value })} placeholder="e.g. Anywhere in Mbarara city" />
+                  </Field>
+                  <Field label="Tools learners will use" htmlFor="edu-tools" className="sm:col-span-2" hint="e.g. Two industrial straight-stitch machines, an overlocker and a cutting table.">
+                    <Textarea id="edu-tools" rows={3} value={profileForm.equipment_provided} onChange={(e) => setProfileForm({ ...profileForm, equipment_provided: e.target.value })} />
+                  </Field>
                 </div>
                 <div className="flex justify-end">
-                  <a
-                    href={introductionLink(req)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-control border border-forest-700 text-forest-800 hover:bg-forest-50 text-xs font-bold"
-                  >
-                    Ask us to introduce you
-                  </a>
+                  <Button type="submit" isLoading={savingProfile}>Save changes</Button>
                 </div>
-              </div>
-            ))}
+              </form>
+            </Panel>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* EARNINGS & PAYOUTS TAB */}
-      {activeTab === 'earnings' && (
-        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
-          <div>
-            <h2 className="text-base font-bold text-ink-900">Earnings</h2>
-            <p className="text-xs text-ink-500">Learners pay into escrow when they book. After the session is done, we send 90% to your MoMo and keep 10%.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
-              <div className="text-xs text-ink-500 font-semibold">Held in escrow</div>
-              <div className="text-xl font-bold text-ink-900 mt-1">{formatUGX(heldPayout)}</div>
-              <div className="text-[12px] text-ink-500 mt-0.5">Released after each session is done</div>
-            </div>
-            <div className="p-4 rounded-card bg-forest-50 border border-forest-200">
-              <div className="text-xs text-forest-800 font-semibold">Paid out to you</div>
-              <div className="text-xl font-bold text-forest-900 mt-1">{formatUGX(paidOut)}</div>
-              <div className="text-[12px] text-forest-800 mt-0.5">Sent to your MoMo</div>
-            </div>
-            <div className="p-4 rounded-card bg-ink-50 border border-ink-200">
-              <div className="text-xs text-ink-500 font-semibold">iSkillLink fee (10%)</div>
-              <div className="text-xl font-bold text-ink-700 mt-1">{formatUGX(platformFees)}</div>
-            </div>
-          </div>
-
-          {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto pt-2">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-ink-50 text-ink-700 uppercase font-bold border-y border-ink-200">
-                <tr>
-                  <th className="p-3">Payment Ref</th>
-                  <th className="p-3">Gross Amount</th>
-                  <th className="p-3">Platform Fee (10%)</th>
-                  <th className="p-3">Your Net Share (90%)</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ink-100 text-ink-700">
-                {payments.map(p => (
-                  <tr key={p.id} className="hover:bg-ink-50/50">
-                    <td className="p-3 font-mono font-semibold text-ink-900">{p.payment_reference}</td>
-                    <td className="p-3 font-bold text-ink-900">{formatUGX(p.amount_ugx)}</td>
-                    <td className="p-3 text-ink-500">{formatUGX(p.platform_fee_ugx)}</td>
-                    <td className="p-3 font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</td>
-                    <td className="p-3">
-                      <PaymentStatusBadge status={p.status} audience="educator" />
-                    </td>
-                    <td className="p-3 text-ink-500">{formatShortDate(p.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Mobile Cards */}
-          <div className="md:hidden space-y-3 pt-2">
-            {payments.map(p => (
-              <div key={p.id} className="p-4 rounded-card border border-ink-200 bg-white shadow-level-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-ink-900">{p.payment_reference}</span>
-                  <PaymentStatusBadge status={p.status} audience="educator" />
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div><span className="text-ink-500">Gross:</span> <span className="font-bold">{formatUGX(p.amount_ugx)}</span></div>
-                  <div><span className="text-ink-500">Net:</span> <span className="font-bold text-forest-800">{formatUGX(p.payout_amount_ugx)}</span></div>
-                  <div><span className="text-ink-500">Fee:</span> <span className="text-ink-600">{formatUGX(p.platform_fee_ugx)}</span></div>
-                  <div><span className="text-ink-500">Date:</span> <span className="text-ink-600">{formatShortDate(p.created_at)}</span></div>
-                </div>
-              </div>
-            ))}
-            {payments.length === 0 && <div className="text-center py-8 text-xs text-ink-500">No payments yet. They appear here when a learner books you.</div>}
-          </div>
-        </div>
-      )}
-
-      {/* REVIEWS & FEEDBACK TAB */}
-      {activeTab === 'reviews' && (
-        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
-          <div>
-            <h2 className="text-base font-bold text-ink-900">Reviews from learners</h2>
-            <p className="text-xs text-ink-600">Shown on your public profile. A short, kind reply goes a long way.</p>
-          </div>
-
-          {reviews.length === 0 && (
-            <EmptyState
-              icon={<Star className="w-6 h-6" />}
-              title="No reviews yet"
-              description="Learners can review you after a session is marked done."
-            />
-          )}
-
-          <div className="space-y-4">
-            {reviews.map(r => (
-              <div
-                key={r.id}
-                className="p-5 rounded-card border border-ink-200 bg-white space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-ink-900 text-sm block">{r.learner_name}</span>
-                    <span className="text-[12px] text-ink-600">{formatShortDate(r.created_at)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    <Star className="w-3.5 h-3.5 fill-amber-500" />
-                    <span>{r.rating}.0</span>
-                  </div>
-                </div>
-
-                <p className="text-xs text-ink-700 leading-relaxed bg-ink-50 p-3 rounded-lg border border-ink-100">
-                  "{r.comment}"
-                </p>
-
-                {r.educator_reply ? (
-                  <div className="ml-4 pl-3 border-l-2 border-forest-600 bg-forest-50/40 p-2.5 rounded-r-lg text-xs">
-                    <span className="font-semibold text-forest-950 block text-[12px]">Your reply</span>
-                    <p className="text-ink-700 mt-0.5">{r.educator_reply}</p>
-                  </div>
-                ) : (
-                  <div className="pt-2 flex items-center gap-2">
-                    <label htmlFor={`reply-${r.id}`} className="sr-only">Reply to {r.learner_name}</label>
-                    <input
-                      id={`reply-${r.id}`}
-                      type="text"
-                      value={replyText[r.id] || ''}
-                      onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
-                      placeholder="Reply publicly — thank them, or answer a concern"
-                      className="flex-1 text-base sm:text-sm px-3 min-h-[44px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700"
-                    />
-                    <button
-                      onClick={() => handleReplyReview(r.id)}
-                      disabled={!replyText[r.id]?.trim()}
-                      className="px-4 min-h-[44px] rounded-control bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs disabled:opacity-50"
-                    >
-                      Reply
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* PROFILE TAB — what learners see on the public profile */}
-      {activeTab === 'profile' && (
-        <form onSubmit={handleSaveProfile} className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6 max-w-3xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ink-100">
-            <div className="flex items-center gap-4">
-              <Avatar src={user?.avatar_url} name={user?.name} className="w-20 h-20 rounded-card" />
-              <div className="space-y-1.5">
-                <div className={`text-sm font-semibold ${isLive ? 'text-forest-700' : 'text-ink-600'}`}>{isLive ? 'Verified educator' : 'Application in review'}</div>
-                <button
-                  type="button"
-                  onClick={() => setShowPhotoModal(true)}
-                  className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-control border border-ink-200 bg-white text-ink-800 text-xs font-bold hover:bg-ink-50 inline-flex items-center gap-1.5"
-                >
-                  <Camera className="w-3.5 h-3.5" aria-hidden="true" />
-                  {user?.avatar_url ? 'Change photo' : 'Add a photo'}
-                </button>
-              </div>
-            </div>
-            <button type="button" onClick={() => navigate(`/educators/${educator?.id}`)} className="self-start sm:self-auto px-4 min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 text-xs font-bold text-ink-800">
-              View public profile
-            </button>
-          </div>
-
-          {profileMessage && (
-            <Alert tone={profileMessage.tone} onDismiss={() => setProfileMessage(null)}>{profileMessage.text}</Alert>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="What you teach (your title)" htmlFor="edu-title" required>
-              <Input id="edu-title" value={profileForm.title} onChange={(e) => setProfileForm({ ...profileForm, title: e.target.value })} required />
-            </Field>
-            <Field label="Your rate per hour (UGX)" htmlFor="edu-rate" required hint="Learners see this before they book.">
-              <Input
-                id="edu-rate"
-                type="number"
-                inputMode="numeric"
-                min={5000}
-                step={1000}
-                value={profileForm.hourly_rate_ugx || ''}
-                onChange={(e) => setProfileForm({ ...profileForm, hourly_rate_ugx: Number(e.target.value) })}
-                required
-              />
-            </Field>
-            <Field label="Where your workshop is" htmlFor="edu-location" required>
-              <Input id="edu-location" value={profileForm.location} onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })} required />
-            </Field>
-            <Field label="Where else you teach" htmlFor="edu-area">
-              <Input id="edu-area" value={profileForm.service_area} onChange={(e) => setProfileForm({ ...profileForm, service_area: e.target.value })} placeholder="e.g. Anywhere in Mbarara city" />
-            </Field>
-            <Field label="Tools learners will use" htmlFor="edu-tools" className="sm:col-span-2" hint="e.g. Two industrial straight-stitch machines, an overlocker and a cutting table.">
-              <Textarea id="edu-tools" rows={3} value={profileForm.equipment_provided} onChange={(e) => setProfileForm({ ...profileForm, equipment_provided: e.target.value })} />
-            </Field>
-          </div>
-
-          <div className="flex justify-end">
-            <Button type="submit" isLoading={savingProfile}>Save changes</Button>
-          </div>
-        </form>
-      )}
-
-      {/* Global Profile Photo Upload Modal */}
-      <ProfilePhotoUploadModal
-        isOpen={showPhotoModal}
-        onClose={() => setShowPhotoModal(false)}
-      />
-    </div>
+        <ProfilePhotoUploadModal isOpen={showPhotoModal} onClose={() => setShowPhotoModal(false)} />
+      </div>
     </DashboardShell>
   );
 };

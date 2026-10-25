@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Notification } from '../types';
 import { api } from '../services/api';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +18,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
   markNotificationAsRead: (id: string) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
   activeRole: 'learner' | 'educator' | 'admin' | 'secondary_admin' | 'guest';
 }
 
@@ -171,6 +173,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const markAllNotificationsRead = async () => {
+    const unread = notifications.filter(n => !n.is_read);
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    try {
+      await Promise.all(unread.map(n => api.markNotificationRead(n.id)));
+    } catch (e) {
+      console.error('Error marking notifications read:', e);
+    }
+  };
+
+  // New bookings, payments and messages arrive without a reload.
+  useAutoRefresh(refreshNotifications, 30000, !!user);
+
   const unreadNotificationCount = notifications.filter(n => !n.is_read).length;
 
   return (
@@ -190,6 +205,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logout,
         refreshNotifications,
         markNotificationAsRead,
+        markAllNotificationsRead,
         activeRole: user ? user.role : 'guest'
       }}
     >

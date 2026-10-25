@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { resolveMediaUrl } from '../../services/api';
 
 // Stock photos the app used to assign when someone had no photo. Older records still
 // store them, so they are treated as "no photo" rather than shown as the person's face.
@@ -37,7 +38,7 @@ export const Avatar: React.FC<AvatarProps> = ({ src, name, className = '' }) => 
   const [failed, setFailed] = useState(false);
 
   if (isRealPhoto(src) && !failed) {
-    return <img src={src} alt={name || ''} className={`object-cover ${className}`} onError={() => setFailed(true)} />;
+    return <img src={resolveMediaUrl(src)} alt={name || ''} className={`object-cover ${className}`} onError={() => setFailed(true)} />;
   }
 
   return (

@@ -270,7 +270,6 @@ export const AdminDashboard: React.FC = () => {
       <DashboardHeader
         title={TAB_HEADERS[activeTab].title}
         description={TAB_HEADERS[activeTab].description}
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Operations', href: '/dashboard/admin' }, { label: TAB_HEADERS[activeTab].label }]}
         actions={<button onClick={loadAdminData} className="inline-flex items-center min-h-[44px] rounded-control border border-ink-200 bg-white hover:bg-ink-50 px-4 text-xs font-semibold text-ink-800"><RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />Refresh</button>}
       />
 

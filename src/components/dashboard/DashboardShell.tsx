@@ -36,7 +36,7 @@ const roleItems: Record<DashboardRole, DashboardNavItem[]> = {
   guest: [],
 };
 
-export const DashboardShell: React.FC<DashboardShellProps> = ({ children, role: roleOverride, navItems, className }) => {
+export const DashboardShell: React.FC<DashboardShellProps> = ({ children, role: roleOverride, navItems, sidebarPeople, className }) => {
   const { activeRole } = useAuth();
   const role = roleOverride || activeRole;
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,13 +50,13 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children, role: 
   }, [sidebarOpen]);
 
   return (
-    <div className={cn('min-h-screen bg-white', className)}>
+    <div className={cn('dash-canvas min-h-screen', className)}>
       {sidebarOpen && <button type="button" className="fixed inset-0 z-40 bg-ink-950/40 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close navigation overlay" />}
       <div className="flex min-h-screen">
-        <DashboardSidebar items={items} role={role} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <DashboardSidebar items={items} role={role} people={sidebarPeople} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex min-w-0 flex-1 flex-col">
           <DashboardTopbar onMenuClick={() => setSidebarOpen(true)} />
-          <main id="main-content" className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+          <main id="main-content" className="flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8">{children}</main>
         </div>
       </div>
     </div>

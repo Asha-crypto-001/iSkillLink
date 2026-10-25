@@ -7,9 +7,11 @@ if (process.env.VERCEL && !process.env.VITE_API_URL) {
   process.env.VITE_API_URL = '/api';
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: process.env.NETLIFY || process.env.VERCEL ? '/' : '/iSkillLink/',
+  // GitHub Pages serves the build from /iSkillLink/; the dev server and other hosts serve from /,
+  // so reloading a page such as /dashboard/learner works locally.
+  base: command === 'build' && !process.env.NETLIFY && !process.env.VERCEL ? '/iSkillLink/' : '/',
   build: {
     assetsInlineLimit: 0,
   },
@@ -28,4 +30,4 @@ export default defineConfig({
       }
     }
   }
-});
+}));

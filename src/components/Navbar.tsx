@@ -111,7 +111,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navLinks = [
     { id: 'find-skill', label: 'Explore skills' },
     { id: 'become-educator', label: 'Teach' },
-    { id: 'how-it-works', label: 'How it works' },
     { id: 'about', label: 'About' },
     { id: 'contact', label: 'Contact' }
   ];
@@ -285,7 +284,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             {unreadNotificationCount > 0 && <span className="text-caption text-rose-700">{unreadNotificationCount} new</span>}
                           </div>
                           {notifications.slice(0, 2).map(n => (
-                            <button key={n.id} role="menuitem" onClick={() => { markNotificationAsRead(n.id); setCurrentView(getDashboardTarget()); setUserDropdownOpen(false); }} className="w-full text-left px-1.5 py-2 rounded-control hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-forest-700">
+                            <button key={n.id} role="menuitem" onClick={() => { markNotificationAsRead(n.id); if (n.link) navigate(n.link); else setCurrentView(getDashboardTarget()); setUserDropdownOpen(false); }} className="w-full text-left px-1.5 py-2 rounded-control hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-forest-700">
                               <span className="flex items-center gap-2 text-xs font-semibold text-ink-900">
                                 {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-forest-600 shrink-0" aria-hidden="true" />}
                                 <span className="truncate">{n.title}</span>
