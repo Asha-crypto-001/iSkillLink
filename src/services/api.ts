@@ -27,6 +27,15 @@ if (import.meta.env.PROD && !CONFIGURED_API_URL) {
  */
 const LOCAL_FALLBACK_ENABLED = !CONFIGURED_API_URL;
 
+/**
+ * Files saved to the API's own disk come back as paths such as /uploads/avatars/x.jpg. When the
+ * API lives on another host (VITE_API_URL is a full URL), those paths must point at that host.
+ */
+export function resolveMediaUrl(url: string): string {
+  if (!url.startsWith('/uploads/') || !/^https?:\/\//.test(API_BASE)) return url;
+  return new URL(API_BASE).origin + url;
+}
+
 let authToken: string | null = null;
 
 function mapSupabaseUser(user: any) {
