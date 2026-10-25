@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage';
 import { FindSkillPage } from './pages/FindSkillPage';
 import { EducatorProfilePage } from './pages/EducatorProfilePage';
 import { BecomeEducatorPage } from './pages/BecomeEducatorPage';
+import { EducatorApplicationPage } from './pages/EducatorApplicationPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
@@ -210,10 +211,7 @@ const AppContent: React.FC = () => {
           } />
           <Route path="/educators/:id" element={<EducatorProfilePage />} />
           <Route path="/become-educator" element={
-            <BecomeEducatorPage
-              onApplicationSubmitted={() => showToast('Educator application received in verification queue!')}
-              setCurrentView={setCurrentView}
-            />
+            <BecomeEducatorPage setCurrentView={setCurrentView} />
           } />
           <Route path="/how-it-works" element={
             <HowItWorksPage
@@ -247,6 +245,11 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard/educator" element={
             <RequireAuth>
               <EducatorDashboard onViewProfileModal={handleViewEducator} />
+            </RequireAuth>
+          } />
+          <Route path="/dashboard/educator/apply" element={
+            <RequireAuth roles={['educator']} denied={<Navigate to="/become-educator" replace />}>
+              <EducatorApplicationPage onApplicationSubmitted={() => showToast('Application sent. We’ll be in touch on WhatsApp.')} />
             </RequireAuth>
           } />
           <Route path="/dashboard/educator/*" element={

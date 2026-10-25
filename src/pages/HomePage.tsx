@@ -7,12 +7,10 @@ import { Alert } from '../components/ui/Alert';
 import { EducatorCardSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { categoryColor } from '../utils/categoryColors';
+import { CategoryIcon } from '../utils/categoryIcons';
 import {
   Search, ArrowRight, ArrowUpRight, Star, Plus, Minus, MessageCircle,
-  Award, Briefcase, Sparkles, BadgeCheck, CalendarCheck, Users, Smartphone,
-  Scissors, Code, Utensils, Zap, Hammer, ShieldCheck,
-  Wrench, Sprout, Camera, Palette, TrendingUp, ChevronRight,
-  Droplets, Car, MessageSquare, Music, Building2, Feather, Cpu, Info
+  Award, Briefcase, BadgeCheck, CalendarCheck, Users, Hammer, ShieldCheck, ChevronRight, Info
 } from 'lucide-react';
 import carpentry480 from '../assets/photos/carpentry-480.webp';
 import carpentry736 from '../assets/photos/carpentry-736.webp';
@@ -25,17 +23,6 @@ import studentsWidePhoto from '../assets/photos/students-wide.webp';
 import teacherPhoto from '../assets/photos/teacher.webp';
 import teacherWidePhoto from '../assets/photos/teacher-wide.webp';
 import classroomPhoto from '../assets/photos/classroom.webp';
-
-// One icon per seeded category (see Category.icon_name); unknown names fall back to a briefcase.
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Scissors, Code, Smartphone, Utensils, Zap, Hammer, Wrench, Sprout, Camera, Palette,
-  Briefcase, TrendingUp, Sparkles, Droplets, Car, MessageSquare, Music, Building2, Feather, Cpu
-};
-
-const renderCategoryIcon = (iconName: string) => {
-  const Icon = CATEGORY_ICONS[iconName] || Briefcase;
-  return <Icon className="w-5 h-5" />;
-};
 
 interface Photo { src: string; srcSet?: string; width: number; height: number; alt: string }
 
@@ -374,7 +361,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     className="group flex items-center gap-3.5 p-3.5 sm:p-4 min-h-[4.5rem] rounded-card glass text-left transition hover:border-forest-300 hover:shadow-level-2 focus-visible:ring-2 focus-visible:ring-forest-700"
                   >
                     <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${categoryColor(cat.id)}`} aria-hidden="true">
-                      {renderCategoryIcon(cat.icon_name)}
+                      <CategoryIcon iconName={cat.icon_name} />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] font-semibold text-ink-900 leading-snug">{cat.name}</span>

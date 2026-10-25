@@ -26,7 +26,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   // Visitors sent here from a guarded page or a form get a reason, and are returned afterwards.
   const returningTo = searchParams.get('next');
   const [mode, setMode] = useState<'login' | 'register'>(searchParams.get('mode') === 'register' ? 'register' : defaultMode);
-  const [role, setRole] = useState<'learner' | 'educator'>('learner');
+  // The Teach page links here with ?role=educator.
+  const [role, setRole] = useState<'learner' | 'educator'>(searchParams.get('role') === 'educator' ? 'educator' : 'learner');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
