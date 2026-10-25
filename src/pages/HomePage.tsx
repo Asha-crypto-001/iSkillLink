@@ -74,13 +74,13 @@ const ROAD_PATH = 'M0 360 L150 360 C300 360 300 170 450 170 C600 170 600 360 750
 
 const STEPS = {
   learners: [
-    { icon: Search, t: 'Find your trade', d: 'Search for what you want to make, or browse all the trades.' },
+    { icon: Search, t: 'Find your skill', d: 'Search for what you want to make, or browse all the skills.' },
     { icon: CalendarCheck, t: 'Book a session', d: 'Pick a date and time. The educator confirms it.' },
     { icon: Hammer, t: 'Learn at the bench', d: 'Real tools and real jobs, side by side with the educator.' },
     { icon: Star, t: 'Share your success', d: 'Leave a review and show the next learner what you made.' }
   ],
   educators: [
-    { icon: Briefcase, t: 'Apply to teach', d: 'Tell us your trade, your rate and where you work.' },
+    { icon: Briefcase, t: 'Apply to teach', d: 'Tell us your skill, your rate and where you work.' },
     { icon: ShieldCheck, t: 'Get checked', d: 'We verify your ID and visit your workshop.' },
     { icon: CalendarCheck, t: 'Accept bookings', d: 'Confirm the sessions that suit you, on your own bench.' },
     { icon: Star, t: 'Grow your name', d: 'Reviews from learners bring you the next booking.' }
@@ -88,11 +88,11 @@ const STEPS = {
 };
 
 const FAQS = [
-  { q: 'How do I find an educator?', a: 'Search for what you want to learn, or open a trade to see who teaches it. If nobody does yet, send us a request and we’ll match you as soon as an educator for it is verified.' },
+  { q: 'How do I find an educator?', a: 'Search for what you want to learn, or open a skill to see who teaches it. If nobody does yet, send us a request and we’ll match you as soon as an educator for it is verified.' },
   { q: 'Are the educators checked?', a: 'Yes. Before anyone can take bookings, our team verifies their national ID and visits their workshop.' },
-  { q: 'Where do lessons happen?', a: 'Mostly at the educator’s own workshop, so you learn with real tools. Some trades, like web development, can also be taught online.' },
+  { q: 'Where do lessons happen?', a: 'Mostly at the educator’s own workshop, so you learn with real tools. Some skills, like web development, can also be taught online.' },
   { q: 'How do I book a session?', a: 'Open an educator’s profile, choose a date and time, and send the booking. The educator confirms it and you get a notification.' },
-  { q: 'Can I teach on iSkillLink?', a: 'If you are good at a trade, apply to teach. Tell us about your work and your rate, and we’ll arrange the checks.' }
+  { q: 'Can I teach on iSkillLink?', a: 'If you have a skill, apply to teach. Tell us about your work and your rate, and we’ll arrange the checks.' }
 ];
 
 const sectionEyebrow = 'text-xs font-bold uppercase tracking-[0.14em] text-forest-700';
@@ -201,7 +201,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               <div className="space-y-6">
                 <h1 className="font-display font-bold text-ink-900 text-[2.4rem] sm:text-[3.4rem] lg:text-[4rem] xl:text-[4.25rem] leading-[1.02] tracking-[-0.035em]">
-                  Learn a trade at a{' '}
+                  Learn a skill at a{' '}
                   <span className="inline-flex items-center gap-3 sm:gap-4 whitespace-nowrap">
                     real workbench
                     <span aria-hidden="true" className="hidden sm:inline-flex items-center">
@@ -288,7 +288,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div>
             <p className={`${sectionEyebrow} flex items-center gap-2`}><Info className="h-4 w-4" aria-hidden="true" />About iSkillLink</p>
-            <h2 id="about-heading" className={`${sectionTitle} max-w-[22ch]`}>We believe a trade is best learned at the bench, from someone who does it every day.</h2>
+            <h2 id="about-heading" className={`${sectionTitle} max-w-[22ch]`}>We believe a skill is best learned by doing it, with someone who does it every day.</h2>
           </div>
           <button onClick={() => setCurrentView('about')} className="self-start lg:self-auto shrink-0 px-6 min-h-[48px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white font-bold text-sm transition inline-flex items-center gap-2">
             More about us<ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -297,7 +297,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
         <dl className="mt-12 grid sm:grid-cols-3 gap-8 sm:gap-0">
           {[
-            { value: tradesLabel, label: 'Trades to learn', text: 'From tailoring and baking to solar, welding and web development.' },
+            { value: tradesLabel, label: 'Skills to learn', text: 'From tailoring and baking to solar, welding and web development.' },
             { value: '100%', label: 'Checked in person', text: 'Every educator’s ID is verified and their workshop visited before they teach.' },
             { value: '1-on-1', label: 'Lessons at a real bench', text: 'Learn one-to-one or in a small group, on real jobs.' }
           ].map((stat, index) => (
@@ -328,12 +328,12 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ===== TRADES — compact cards, bookable trades first ===== */}
-      <section className="container-app py-16 lg:py-20 border-t border-ink-100" aria-labelledby="trades-heading">
+      <section className="container-app py-16 lg:py-20 border-t border-ink-100" aria-labelledby="skills-heading">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <p className={sectionEyebrow}>Trades</p>
-          <h2 id="trades-heading" className={sectionTitle}>Trades you can learn</h2>
+          <p className={sectionEyebrow}>Skills</p>
+          <h2 id="skills-heading" className={sectionTitle}>Skills you can learn</h2>
           <p className="text-base text-ink-600 mt-2">
-            Learn where the work happens. Trades with educators ready to teach are listed first.
+            Learn where the work happens. Skills with educators ready to teach are listed first.
           </p>
         </div>
 
@@ -377,7 +377,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => setCurrentView('find-skill')}
                 className="inline-flex items-center gap-1.5 px-5 min-h-[48px] rounded-pill bg-white border border-ink-200 hover:border-forest-300 text-ink-800 text-sm font-bold shadow-soft transition"
               >
-                <span>{categories.length > 0 ? `See all ${categories.length} trades` : 'See all trades'}</span>
+                <span>{categories.length > 0 ? `See all ${categories.length} skills` : 'See all skills'}</span>
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
@@ -604,7 +604,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-14 items-center">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-sun-300">For educators</p>
-              <h2 id="teach-heading" className="mt-2 text-[1.75rem] sm:text-4xl font-bold text-white tracking-[-0.02em] font-display leading-[1.1]">Good at a trade? Teach it here.</h2>
+              <h2 id="teach-heading" className="mt-2 text-[1.75rem] sm:text-4xl font-bold text-white tracking-[-0.02em] font-display leading-[1.1]">Have a skill? Teach it here.</h2>
               <p className="mt-3 text-base text-forest-100/85 leading-relaxed max-w-lg">
                 Bring learners to your workshop and get paid for what you already know. We find the learners and handle the bookings.
               </p>
@@ -621,7 +621,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <ul className="space-y-3">
               {[
                 { icon: BadgeCheck, title: 'Set your own rate', text: 'Charge per hour or per course.' },
-                { icon: Users, title: 'Learners come to you', text: 'People who want your trade find you here.' },
+                { icon: Users, title: 'Learners come to you', text: 'People who want to learn your skill find you here.' },
                 { icon: Hammer, title: 'Teach on your own bench', text: 'Your workshop, your tools, your hours.' }
               ].map(({ icon: Icon, title, text }) => (
                 <li key={title} className="glass-dark flex items-start gap-4 rounded-card p-4 sm:p-5">

@@ -221,7 +221,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         <EmptyState
           icon={<GraduationCap className="w-6 h-6" />}
           title="No educator profile yet"
-          description="Complete the educator application so the iSkillLink team can verify your trade credentials and list you for learners."
+          description="Complete the educator application so the iSkillLink team can check your skills and list you for learners."
           action={<button onClick={() => navigate('/dashboard/educator/apply')} className="rounded-pill bg-forest-700 px-5 min-h-[44px] text-sm font-semibold text-white">Start your application</button>}
         />
       </div>
@@ -467,14 +467,14 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
         <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-6">
           <div>
             <h2 className="text-base font-bold text-ink-900">Open learner requests</h2>
-            <p className="text-xs text-ink-500">Learners who described what they want to learn. Ones that match your trade are listed first — ask us and we’ll introduce you.</p>
+            <p className="text-xs text-ink-500">Learners who described what they want to learn. Ones that match your skill are listed first — ask us and we’ll introduce you.</p>
           </div>
 
           {sortedLeads.length === 0 && (
             <EmptyState
               icon={<Clock className="w-6 h-6" />}
               title="No open requests right now"
-              description="When a learner posts a request, it shows up here. Requests in your trade are listed first."
+              description="When a learner posts a request, it shows up here. Requests for your skill are listed first."
             />
           )}
 
@@ -488,7 +488,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold text-ink-900 text-base">{req.skill_name}</h3>
-                      {matchesTrade(req) && <span className="text-[12px] font-semibold px-2 py-0.5 rounded-pill bg-forest-50 text-forest-800 border border-forest-200">Matches your trade</span>}
+                      {matchesTrade(req) && <span className="text-[12px] font-semibold px-2 py-0.5 rounded-pill bg-forest-50 text-forest-800 border border-forest-200">Matches your skill</span>}
                     </div>
                     <p className="text-xs text-ink-600 mt-1">{req.learning_goal}</p>
                   </div>

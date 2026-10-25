@@ -193,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="mt-1 flex items-center justify-between gap-3 rounded-control bg-ink-50 px-3 py-2.5">
                         <button onClick={() => { setCurrentView('find-skill'); setExploreOpen(false); }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-forest-700 hover:text-forest-800 min-h-[36px]">
-                          Browse all trades<ArrowRight className="h-4 w-4" aria-hidden="true" />
+                          Browse all skills<ArrowRight className="h-4 w-4" aria-hidden="true" />
                         </button>
                         <button onClick={() => { onOpenSkillRequest(); setExploreOpen(false); }} className="text-sm text-ink-600 hover:text-ink-900 min-h-[36px]">
                           Can’t find yours? <span className="font-semibold underline underline-offset-2">Request it</span>

@@ -16,7 +16,7 @@ const LEARNER_STEPS = [
 ];
 
 const EDUCATOR_STEPS = [
-  { title: 'Apply', body: 'Tell us your trade, your rate and where you teach. It takes about ten minutes, or apply on WhatsApp.' },
+  { title: 'Apply', body: 'Tell us your skill, your rate and where you teach. It takes about ten minutes, or apply on WhatsApp.' },
   { title: 'Pass four checks', body: 'We check your ID and background, talk with you, and visit your workshop (details below).' },
   { title: 'Accept the bookings that suit you', body: 'Learners send requests; you confirm the ones that fit your time and bench.' },
   { title: 'Teach, then get paid', body: 'After the session is done, 90% goes to your MoMo. iSkillLink keeps 10%.' }
