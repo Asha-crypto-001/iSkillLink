@@ -32,7 +32,7 @@ export const ContactPage: React.FC = () => {
     },
     {
       q: 'Can I learn skills in-person at a workshop or online?',
-      a: 'Both options are available! Most vocational and artisan trades (such as Tailoring, Solar Installation, Baking, Welding, Phone Repair, Dairy Farming) are taught hands-on at verified workshops in Mbarara, Kampala, and regional hubs. Tech and business skills are available both online and in-person.'
+      a: 'Both options are available! Most hands-on skills (such as Tailoring, Solar Installation, Baking, Welding, Phone Repair, Dairy Farming) are taught hands-on at verified workshops in Mbarara, Kampala, and regional hubs. Tech and business skills are available both online and in-person.'
     },
     {
       q: 'What if an educator cancels or does not show up?',

@@ -20,7 +20,7 @@
   }
 
   body {
-    @apply bg-ink-50 text-ink-900 antialiased font-sans selection:bg-forest-100 selection:text-forest-900;
+    @apply bg-white text-ink-900 antialiased font-sans selection:bg-forest-100 selection:text-forest-900;
     overflow-x: clip;
     max-width: 100vw;
     /* Respect safe-area for notched devices */
@@ -70,6 +70,15 @@
   /* Card base — level-1 elevation, card radius, ink border */
   .card {
     @apply bg-white rounded-card border border-ink-200 shadow-level-1;
+  }
+
+  /* Frosted glass — for surfaces that float over something (sticky bars, cards on photos or colour) */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl backdrop-saturate-150 border border-ink-200/70 shadow-[0_8px_30px_rgba(15,23,42,0.06)];
+  }
+
+  .glass-dark {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20;
   }
 
   .card-hover {

@@ -213,7 +213,7 @@ export const AdminDashboard: React.FC = () => {
   const TAB_HEADERS: Record<AdminTab, { label: string; title: string; description?: string }> = {
     metrics: { label: 'Overview', title: 'Operations' },
     users: { label: 'Users', title: 'People', description: 'Everyone on iSkillLink, how to reach them, and who has admin access.' },
-    interests: { label: 'Interests', title: 'What people want to learn', description: 'Requests learners have sent and the interests they picked, so you know which trades to recruit for.' },
+    interests: { label: 'Interests', title: 'What people want to learn', description: 'Requests learners have sent and the interests they picked, so you know which skills to recruit for.' },
     verification: { label: 'Verification', title: 'Applicants', description: 'Each educator passes four checks before learners can book them.' },
     matchmaker: { label: 'Matchmaker', title: 'Match requests to educators', description: 'Live educators ranked by skill, teaching format, location, budget and experience. Matching tells the learner who you picked.' },
     educators: { label: 'Educators', title: 'Educators', description: 'Everyone who teaches or has applied to, and where each one stands.' },

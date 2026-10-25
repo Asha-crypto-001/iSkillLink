@@ -94,7 +94,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             type="text"
             value={userSearchQuery}
             onChange={(e) => setUserSearchQuery(e.target.value)}
-            placeholder="Name, phone, email or trade"
+            placeholder="Name, phone, email or skill"
             className="w-full text-base sm:text-sm min-h-[44px] pl-9 pr-3 rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 bg-white"
           />
         </label>

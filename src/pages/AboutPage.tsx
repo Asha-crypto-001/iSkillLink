@@ -22,7 +22,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
       <header className="max-w-2xl space-y-3">
         <h1 className="text-3xl sm:text-4xl font-bold text-ink-900 font-display">Why iSkillLink exists</h1>
         <p className="text-lg text-ink-700 leading-relaxed">
-          Every year, thousands of young people in Mbarara and across Uganda want a trade they can earn from. And in workshops,
+          Every year, thousands of young people in Mbarara and across Uganda want a skill they can earn from. And in workshops,
           market stalls and kitchens all over the region, there are people who already do that work well — with no simple,
           trusted way to teach it and be paid for it.
         </p>
