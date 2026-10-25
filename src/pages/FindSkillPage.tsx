@@ -192,14 +192,14 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
   const filterControls = (idPrefix: string) => (
     <>
       <div>
-        <label htmlFor={`${idPrefix}-category`} className="block text-sm font-bold text-ink-800 mb-2">Trade</label>
+        <label htmlFor={`${idPrefix}-category`} className="block text-sm font-bold text-ink-800 mb-2">Category</label>
         <select
           id={`${idPrefix}-category`}
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
           className="w-full text-base sm:text-sm rounded-control border-ink-200 border px-2.5 min-h-[44px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
         >
-          <option value="all">All trades</option>
+          <option value="all">All skills</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </div>
@@ -271,7 +271,7 @@ export const FindSkillPage: React.FC<FindSkillPageProps> = ({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="A trade, a skill or a name — e.g. tailoring, solar, Grace"
+              placeholder="A skill or a name, e.g. tailoring, solar, Grace"
               className="w-full text-base pl-11 pr-12 min-h-[48px] rounded-control border border-ink-200 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:border-forest-700 bg-white placeholder:text-ink-500"
               aria-label="Search educators"
             />

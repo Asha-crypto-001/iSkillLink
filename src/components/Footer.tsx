@@ -73,7 +73,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
 
           {/* Trades */}
           <nav className="md:col-span-2" aria-labelledby="footer-trades">
-            <h3 id="footer-trades" className="text-sm font-semibold text-white mb-3">Learn a trade</h3>
+            <h3 id="footer-trades" className="text-sm font-semibold text-white mb-3">Learn a skill</h3>
             <ul className="md:space-y-2 text-sm text-forest-100/70">
               {TRADE_LINKS.map(link => (
                 <li key={link.categoryId}>
@@ -98,7 +98,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           <div className="col-span-2 md:col-span-3">
             <h3 className="text-sm font-semibold text-white mb-1">New educators near you</h3>
             <p className="text-sm text-forest-100/70 leading-relaxed mb-3">
-              An email when someone new starts teaching a trade. No spam.
+              An email when someone new starts teaching a skill. No spam.
             </p>
             {subscribed ? (
               <p className="flex items-center gap-2 text-sm text-forest-300" role="status">

@@ -27,7 +27,7 @@ const EDUCATOR_TYPES = [
   { id: 'practitioner', label: 'Practitioner', desc: 'Working technician' },
   { id: 'professional', label: 'Professional', desc: 'Certified specialist' },
   { id: 'trainer', label: 'Trainer', desc: 'Formal instructor' },
-  { id: 'mentor', label: 'Mentor', desc: 'Business or trade coach' }
+  { id: 'mentor', label: 'Mentor', desc: 'Business or skills coach' }
 ] as const;
 
 const FORMATS: { id: TeachingFormat; label: string; desc: string }[] = [
@@ -351,7 +351,7 @@ export const EducatorApplicationPage: React.FC<{ onApplicationSubmitted?: () => 
                   <Field label="Skill you teach" htmlFor="ap-skill" required error={fieldErrors.primarySkill}>
                     <Input id="ap-skill" value={primarySkill} onChange={(e) => { setPrimarySkill(e.target.value); clearError('primarySkill'); }} placeholder="e.g. Pattern drafting and cutting" error={!!fieldErrors.primarySkill} />
                   </Field>
-                  <Field label="Trade" htmlFor="ap-category">
+                  <Field label="Category" htmlFor="ap-category">
                     <Select id="ap-category" value={skillCategory} onChange={(e) => setSkillCategory(e.target.value)}>
                       {(categories.length ? categories : [{ id: 'cat-fashion', name: 'Fashion & Tailoring' } as Category]).map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>

@@ -25,7 +25,7 @@ const STARBURST_POINTS = Array.from({ length: 32 }, (_, i) => {
 }).join(' ');
 
 const BENEFITS = [
-  { icon: Users, tint: 'bg-sky-50 text-sky-600', title: 'Learners come to you', text: 'People who want your trade find you, read your profile and book a session.' },
+  { icon: Users, tint: 'bg-sky-50 text-sky-600', title: 'Learners come to you', text: 'People who want to learn your skill find you, read your profile and book a session.' },
   { icon: Wallet, tint: 'bg-amber-50 text-amber-600', title: 'Your rate, your hours', text: 'Charge per hour or per course, and accept only the sessions that suit you.' },
   { icon: Hammer, tint: 'bg-rose-50 text-rose-600', title: 'Teach on your own bench', text: 'Learners come to your workshop and work with your tools on real jobs.' },
   { icon: Star, tint: 'bg-violet-50 text-violet-600', title: 'Build your name', text: 'Every finished session can earn a review that brings the next learner.' }
@@ -42,7 +42,7 @@ const FAQS = [
   { q: 'Do I need a certificate to teach?', a: 'No. Many of the best educators learned on the job. Add a certificate if you have one; either way, we see your work when we visit your workshop.' },
   { q: 'Is it free to apply?', a: 'Yes. Creating an account and sending your application cost nothing.' },
   { q: 'What happens after I apply?', a: 'We contact you on WhatsApp to arrange the checks: your national ID, a background check, a short interview and a visit to your workshop. You can follow each one from your dashboard.' },
-  { q: 'Can I teach online?', a: 'Yes, for trades that suit it, like web development or design. Most trades are taught in person at your workshop.' },
+  { q: 'Can I teach online?', a: 'Yes, for skills that suit it, like web development or design. Most skills are taught in person at your workshop.' },
   { q: 'I already have a learner account. Can I teach?', a: 'Educator accounts are separate. Sign up with another email, or message us and we’ll help you switch.' }
 ];
 
@@ -111,7 +111,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurre
             <div className="space-y-5">
               <p className={sectionEyebrow}>Teach on iSkillLink</p>
               <h1 className="font-display font-bold text-ink-900 text-[2.4rem] sm:text-[3.4rem] lg:text-[4rem] leading-[1.02] tracking-[-0.035em]">
-                Teach your trade.{' '}
+                Teach your skill.{' '}
                 <span className="inline-flex items-center gap-3 sm:gap-4 whitespace-nowrap">
                   Grow your name
                   <svg aria-hidden="true" viewBox="0 0 100 100" className="hidden sm:block h-11 w-11 lg:h-12 lg:w-12 text-sun-300">
@@ -136,7 +136,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurre
               </defs>
               <text className="font-display" fontSize="10.5" fontWeight="700" fill="#1f1c18">
                 <textPath href="#teach-ring" textLength="562" lengthAdjust="spacing">
-                  TEACH YOUR TRADE • GROW YOUR NAME • TEACH YOUR TRADE • GROW YOUR NAME •
+                  TEACH YOUR SKILL • GROW YOUR NAME • TEACH YOUR SKILL • GROW YOUR NAME •
                 </textPath>
               </text>
             </svg>
@@ -198,10 +198,10 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurre
         </div>
       </section>
 
-      {/* ===== EVERY TRADE ===== */}
-      <section className="container-app pb-16 lg:pb-24 text-center" aria-labelledby="trades-heading">
-        <p className={sectionEyebrow}>Every trade is welcome</p>
-        <h2 id="trades-heading" className={sectionTitle}>Whatever you make, someone wants to learn it</h2>
+      {/* ===== EVERY SKILL ===== */}
+      <section className="container-app pb-16 lg:pb-24 text-center" aria-labelledby="skills-heading">
+        <p className={sectionEyebrow}>Every skill is welcome</p>
+        <h2 id="skills-heading" className={sectionTitle}>Whatever you make, someone wants to learn it</h2>
         <ul className="mt-10 flex flex-wrap justify-center gap-2.5">
           {categories.map(category => (
             <li key={category.id} className="inline-flex items-center gap-2 rounded-pill border border-ink-200 bg-white py-1.5 pl-1.5 pr-4 text-sm font-medium text-ink-800">
@@ -257,7 +257,7 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurre
           <span aria-hidden="true" className="absolute -right-12 -top-16 -z-10 h-56 w-56 rounded-full border border-white/15 bg-white/5" />
           <span aria-hidden="true" className="absolute right-32 -bottom-12 -z-10 h-32 w-32 rounded-full border border-white/15 bg-white/5" />
           <div className="max-w-2xl">
-            <h2 id="cta-heading" className="font-display text-[1.75rem] sm:text-4xl font-bold leading-[1.1] tracking-[-0.02em]">Ready to teach your trade?</h2>
+            <h2 id="cta-heading" className="font-display text-[1.75rem] sm:text-4xl font-bold leading-[1.1] tracking-[-0.02em]">Ready to teach your skill?</h2>
             <p className="mt-3 text-base text-forest-100/85">Create your account, send your application, and we’ll be in touch on WhatsApp.</p>
             <div className="mt-8">{renderActions(true)}</div>
           </div>
