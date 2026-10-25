@@ -11,8 +11,8 @@ import { VERIFICATION_STEPS } from '../utils/verification';
 import { categoryColor } from '../utils/categoryColors';
 import { CategoryIcon } from '../utils/categoryIcons';
 import { APPLY_PATH, hasSentApplication } from '../utils/educatorApplication';
-import carpentry480 from '../assets/photos/carpentry-480.webp';
-import carpentry736 from '../assets/photos/carpentry-736.webp';
+import teacherChalkboardPhoto from '../assets/photos/teacher-chalkboard.webp';
+import educatorsIllustration from '../assets/photos/educators-illustration.webp';
 import teacherWidePhoto from '../assets/photos/teacher-wide.webp';
 
 interface BecomeEducatorPageProps {
@@ -132,45 +132,51 @@ export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurre
             <p className="text-sm text-ink-500">Free to join. About ten minutes to apply once you have an account.</p>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-[23rem]">
-            <div className="relative aspect-[0.7]">
-              <div aria-hidden="true" className="absolute -inset-4 sm:-inset-5 rounded-full border-[1.5px] border-ink-800">
-                <span className="absolute left-[14.6%] bottom-[10.5%] h-4 w-4 -translate-x-1/2 translate-y-1/2 rounded-full bg-ink-900" />
-              </div>
-              <img
-                src={carpentry736}
-                srcSet={`${carpentry480} 480w, ${carpentry736} 736w`}
-                sizes="(min-width: 640px) 23rem, 19rem"
-                width={736}
-                height={981}
-                alt="A carpenter painting a pair of wooden shelves outside his timber workshop"
-                className="absolute inset-0 h-full w-full rounded-full object-cover bg-ink-100"
-              />
-              <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -right-6 -top-3 h-20 w-20 sm:h-24 sm:w-24 text-forest-500">
-                <polygon points={STARBURST_POINTS} fill="currentColor" />
-              </svg>
-            </div>
+          {/* The teacher in a circle, inside a slowly turning ring of words */}
+          <div className="relative mx-auto aspect-square w-full max-w-[20rem] sm:max-w-[26rem]">
+            <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full animate-[spin_40s_linear_infinite] motion-reduce:animate-none" aria-hidden="true">
+              <defs>
+                <path id="teach-ring" d="M100,100 m-90,0 a90,90 0 1,1 180,0 a90,90 0 1,1 -180,0" />
+              </defs>
+              <text className="font-display" fontSize="10.5" fontWeight="700" fill="#1f1c18">
+                <textPath href="#teach-ring" textLength="562" lengthAdjust="spacing">
+                  TEACH YOUR TRADE • GROW YOUR NAME • TEACH YOUR TRADE • GROW YOUR NAME •
+                </textPath>
+              </text>
+            </svg>
+            <img
+              src={teacherChalkboardPhoto}
+              width={518}
+              height={518}
+              alt="A teacher explaining a lesson at the chalkboard"
+              className="absolute inset-[12%] h-[76%] w-[76%] rounded-full object-cover object-[30%_30%] bg-ink-100 shadow-level-3"
+            />
           </div>
         </div>
       </section>
 
-      {/* ===== WHY TEACH ===== */}
+      {/* ===== WHY TEACH — the illustration beside four benefits ===== */}
       <section className="container-app pb-16 lg:pb-24" aria-labelledby="why-heading">
         <div className="max-w-2xl">
           <p className={sectionEyebrow}>Why teach here</p>
           <h2 id="why-heading" className={sectionTitle}>Do the work you know, and pass it on</h2>
         </div>
-        <ul className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {BENEFITS.map(({ icon: Icon, tint, title, text }) => (
-            <li key={title} className="glass rounded-card p-6">
-              <span className={`flex h-12 w-12 items-center justify-center rounded-control ${tint}`} aria-hidden="true">
-                <Icon className="h-6 w-6" />
-              </span>
-              <h3 className="mt-5 text-lg font-bold text-ink-900">{title}</h3>
-              <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">{text}</p>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-10 grid lg:grid-cols-[0.95fr_1.05fr] gap-6 items-stretch">
+          <div className="flex items-end overflow-hidden rounded-[32px] bg-[#f7e4de]">
+            <img src={educatorsIllustration} width={678} height={452} alt="Illustration of four educators holding notebooks" loading="lazy" decoding="async" className="w-full" />
+          </div>
+          <ul className="grid sm:grid-cols-2 gap-4">
+            {BENEFITS.map(({ icon: Icon, tint, title, text }) => (
+              <li key={title} className="glass rounded-card p-6">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-control ${tint}`} aria-hidden="true">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <h3 className="mt-5 text-lg font-bold text-ink-900">{title}</h3>
+                <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">{text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* ===== HOW TO START ===== */}
