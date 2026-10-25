@@ -9,6 +9,7 @@ import {
 import { ProfilePhotoUploadModal } from './ProfilePhotoUploadModal';
 import logoUrl from '../assets/logo.png';
 import { Avatar } from './ui/Avatar';
+import { categoryColor } from '../utils/categoryColors';
 
 // Popular trades for the Explore menu (ids from the seeded categories).
 const EXPLORE_TRADES = [
@@ -160,7 +161,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   aria-expanded={exploreOpen}
                   aria-controls="explore-menu"
                   className={`flex items-center gap-1 px-3.5 min-h-[40px] rounded-pill text-[15px] whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 ${
-                    currentView === 'find-skill' || exploreOpen ? 'font-semibold text-ink-900 bg-ink-100/70' : 'font-medium text-ink-600 hover:text-ink-900 hover:bg-ink-100/70'
+                    currentView === 'find-skill'
+                      ? 'relative font-semibold text-forest-800 bg-forest-50 after:absolute after:left-3.5 after:right-8 after:bottom-1.5 after:h-0.5 after:rounded-full after:bg-forest-600'
+                      : exploreOpen ? 'font-medium text-ink-900 bg-ink-100/70' : 'font-medium text-ink-600 hover:text-ink-900 hover:bg-ink-100/70'
                   }`}
                 >
                   Explore skills
@@ -178,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             onClick={() => { navigate(`/find-skill?category=${categoryId}`); setExploreOpen(false); }}
                             className="group flex items-start gap-3 rounded-control p-3 text-left hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-forest-700"
                           >
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-forest-50 text-forest-700 group-hover:bg-forest-700 group-hover:text-white transition" aria-hidden="true">
+                            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control transition group-hover:scale-105 ${categoryColor(categoryId)}`} aria-hidden="true">
                               <Icon className="h-[18px] w-[18px]" />
                             </span>
                             <span>
@@ -210,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     aria-current={isActive ? 'page' : undefined}
                     className={`relative px-3.5 min-h-[40px] rounded-pill text-[15px] whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 ${
                       isActive
-                        ? 'font-semibold text-ink-900 after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-0.5 after:h-1 after:w-1 after:rounded-full after:bg-forest-600'
+                        ? 'font-semibold text-forest-800 bg-forest-50 after:absolute after:left-3.5 after:right-3.5 after:bottom-1.5 after:h-0.5 after:rounded-full after:bg-forest-600'
                         : 'font-medium text-ink-600 hover:text-ink-900 hover:bg-ink-100/70'
                     }`}
                   >
@@ -356,7 +359,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         key={link.id}
                         onClick={() => { setCurrentView(link.id); setMobileMenuOpen(false); }}
                         aria-current={isActive ? 'page' : undefined}
-                        className={`w-full flex items-center justify-between px-1 min-h-[52px] text-base text-left transition ${isActive ? 'font-semibold text-forest-700' : 'font-medium text-ink-800 hover:text-ink-950'}`}
+                        className={`w-full flex items-center justify-between px-1 min-h-[52px] text-base text-left transition ${isActive ? 'font-semibold text-forest-800 underline decoration-forest-600 decoration-2 underline-offset-[6px]' : 'font-medium text-ink-800 hover:text-ink-950'}`}
                       >
                         {link.label}
                         <ChevronRight className={`w-4 h-4 ${isActive ? 'text-forest-600' : 'text-ink-400'}`} aria-hidden="true" />

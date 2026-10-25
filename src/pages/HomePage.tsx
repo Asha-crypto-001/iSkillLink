@@ -6,6 +6,7 @@ import { EducatorCard } from '../components/EducatorCard';
 import { Alert } from '../components/ui/Alert';
 import { EducatorCardSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { categoryColor } from '../utils/categoryColors';
 import {
   Search, ArrowRight, ArrowUpRight, Star, Plus, Minus, MessageCircle,
   Award, Briefcase, Sparkles, BadgeCheck, CalendarCheck, Users, Smartphone,
@@ -74,9 +75,6 @@ const STARBURST_POINTS = Array.from({ length: 32 }, (_, i) => {
   const a = (Math.PI * i) / 16;
   return `${(50 + r * Math.sin(a)).toFixed(1)},${(50 - r * Math.cos(a)).toFixed(1)}`;
 }).join(' ');
-
-// Icon tints for the trade cards, cycled so the grid isn't one flat colour.
-const CATEGORY_TINTS = ['bg-forest-50 text-forest-700', 'bg-sun-50 text-sun-700', 'bg-ink-100 text-ink-700'];
 
 // The road: four coloured stretches, one station per step (coordinates in the 1200×520 viewBox).
 const ROAD = [
@@ -366,7 +364,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {sortedCategories.slice(0, 8).map((cat, index) => {
+              {sortedCategories.slice(0, 8).map((cat) => {
                 const bookable = (educatorCountByCategory[cat.id] || 0) > 0;
                 return (
                   <button
@@ -375,7 +373,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     title={cat.description}
                     className="group flex items-center gap-3.5 p-3.5 sm:p-4 min-h-[4.5rem] rounded-card glass text-left transition hover:border-forest-300 hover:shadow-level-2 focus-visible:ring-2 focus-visible:ring-forest-700"
                   >
-                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${CATEGORY_TINTS[index % CATEGORY_TINTS.length]}`} aria-hidden="true">
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${categoryColor(cat.id)}`} aria-hidden="true">
                       {renderCategoryIcon(cat.icon_name)}
                     </span>
                     <span className="min-w-0 flex-1">
