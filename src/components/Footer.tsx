@@ -37,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
   const linkClass = 'inline-flex items-center min-h-[44px] md:min-h-0 hover:text-white transition rounded-control';
 
   return (
-    <footer className="bg-forest-950 text-forest-100/80 border-t border-forest-900">
+    <footer className="overflow-hidden bg-forest-950 text-forest-100/80 border-t border-forest-900">
       <div className="container-app py-12">
         <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10">
           {/* Brand + contact */}
@@ -135,6 +135,10 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           <p>Made in Mbarara</p>
         </div>
       </div>
+      {/* The name, set huge and faint, as the last thing on the page */}
+      <p aria-hidden="true" className="select-none overflow-hidden text-center font-display font-bold leading-[0.8] tracking-[-0.05em] text-white/[0.07] text-[21vw] xl:text-[17rem] -mb-[0.08em]">
+        iSkillLink
+      </p>
     </footer>
   );
 };
