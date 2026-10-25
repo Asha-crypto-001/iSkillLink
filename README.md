@@ -83,7 +83,7 @@ Register every production frontend origin in Google Cloud Console. The API must 
 Vercel hosts the frontend and the Express API in one project: [vercel.json](./vercel.json) builds the Vite site, runs the API as a single function at `/api` ([api/index.ts](./api/index.ts)), and sends every other path to the app. Supabase provides PostgreSQL and the email/password accounts.
 
 1. **Database:** in Supabase, open **Connect** and copy the **Transaction pooler** connection string (port `6543`). Use the pooler rather than the direct `db.<project>.supabase.co:5432` address: every Vercel function instance opens its own connections. The API creates its `app_state` table and seeds it on the first request.
-2. **Project:** in Vercel, import this repository. No build settings are needed.
+2. **Project:** in Vercel, import this repository. No build settings are needed. The API runs in Dublin (`"regions": ["dub1"]` in vercel.json), next to a Supabase project in `eu-west-1`. If your database is in another region, change it to the nearest Vercel region, because every request talks to the database.
 3. **Environment variables** (Production and Preview):
    - `DATABASE_URL`: the pooler connection string from step 1
    - `JWT_SECRET`: a long random value
