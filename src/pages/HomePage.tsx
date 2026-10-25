@@ -292,7 +292,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -left-7 -top-3 h-20 w-20 sm:h-24 sm:w-24 text-sun-300">
                   <polygon points={STARBURST_POINTS} fill="currentColor" />
                 </svg>
-                <PhotoFrame photo={PHOTOS.electronics} sizes="9rem" priority className="absolute -left-3 sm:-left-16 bottom-6 h-28 w-28 sm:h-36 sm:w-36 rounded-full border-[6px] border-white shadow-level-3" />
+                <PhotoFrame photo={PHOTOS.electronics} sizes="(min-width: 640px) 12rem, 9.5rem" priority className="absolute -left-4 sm:-left-24 bottom-2 sm:bottom-0 h-44 w-[9.5rem] sm:h-60 sm:w-48 rounded-[28px] border-[6px] border-white shadow-level-3 -rotate-[4deg]" />
               </div>
             </div>
           </div>
