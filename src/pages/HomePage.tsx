@@ -165,13 +165,8 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="overflow-x-clip">
-      {/* ===== HERO — a light panel: the promise and search on the left, real workshops on the right ===== */}
-      <section className="px-2 pt-2 sm:px-4 sm:pt-4">
-        <div className="relative isolate overflow-hidden rounded-[28px] border border-ink-200/70 bg-gradient-to-br from-forest-50 via-[#f8f6ef] to-sun-50">
-          <div aria-hidden="true" className="pointer-events-none absolute -top-32 -left-24 -z-10 h-[28rem] w-[28rem] rounded-full bg-white/80 blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 right-[20%] -z-10 h-[24rem] w-[24rem] rounded-full bg-forest-100/70 blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute bottom-10 left-6 -z-10 h-14 w-24 bg-[radial-gradient(theme(colors.ink.300)_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
-
+      {/* ===== HERO — on plain white: the promise and search on the left, real workshops on the right ===== */}
+      <section className="bg-white">
           <div className="container-app pt-12 pb-14 sm:pt-16 lg:pt-20 lg:pb-20">
             <div className="grid lg:grid-cols-[1fr_1fr] gap-12 lg:gap-12 items-center">
               <div className="space-y-8">
@@ -192,7 +187,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <form
                   onSubmit={handleHeroSearch}
-                  className="bg-white p-2 rounded-display shadow-level-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-[36rem]"
+                  className="bg-white p-2 rounded-display border border-ink-200 shadow-level-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-[36rem]"
                   role="search"
                   aria-label="Find a skill educator"
                 >
@@ -229,7 +224,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <button
                         key={outcome.label}
                         onClick={() => navigate(`/find-skill?search=${encodeURIComponent(outcome.search)}`)}
-                        className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill bg-white/80 hover:bg-white border border-ink-200 hover:border-forest-300 text-ink-800 text-sm font-medium shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                        className="px-3.5 min-h-[44px] md:min-h-[40px] rounded-pill bg-white hover:bg-forest-50 border border-ink-200 hover:border-forest-300 text-ink-800 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-forest-700"
                       >
                         {outcome.label}
                       </button>
@@ -256,38 +251,32 @@ export const HomePage: React.FC<HomePageProps> = ({
                 )}
               </div>
 
-              {/* Two workshop photos: the big one stands in a colour block with its top rising above it,
-                  the small one overlaps the bottom-left corner. Small dots and the Uganda flag are decoration. */}
-              <div className="relative mx-auto w-full max-w-[36rem] aspect-[1.15]">
-                <div aria-hidden="true" className="absolute right-0 top-[24%] h-[46%] w-[80%] rounded-[44px] sm:rounded-[56px] bg-forest-500" />
-                <div aria-hidden="true" className="absolute right-[3%] bottom-[6%] h-16 w-28 bg-[radial-gradient(theme(colors.ink.300)_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
-                <div aria-hidden="true" className="absolute left-[30%] top-[2%] h-12 w-20 bg-[radial-gradient(theme(colors.ink.300)_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
-
+              {/* Two workshop photos: the big one is centred on a colour block with its round top rising above it
+                  and its bottom flush with the block; the small one overlaps the bottom-left corner. */}
+              <div className="relative mx-auto w-full max-w-[34rem] aspect-[1.1]">
+                <div aria-hidden="true" className="absolute left-[12%] right-[6%] top-[28%] bottom-[22%] rounded-[32px] sm:rounded-[40px] bg-forest-500" />
                 <WorkshopPhoto
                   photo={HERO_PHOTOS.carpentry}
-                  sizes="(min-width: 1024px) 17rem, 46vw"
+                  sizes="(min-width: 1024px) 16rem, 46vw"
                   priority
                   caption={false}
-                  className="absolute right-[14%] top-0 h-[70%] w-[46%] [border-radius:50%_50%_0_0/34%_34%_0_0]"
+                  className="absolute left-[30%] w-[46%] top-0 bottom-[22%] rounded-t-full"
                 />
                 <WorkshopPhoto
                   photo={HERO_PHOTOS.electronics}
-                  sizes="(min-width: 1024px) 19rem, 52vw"
+                  sizes="(min-width: 1024px) 16rem, 46vw"
                   priority
                   caption={false}
-                  className="absolute left-0 top-[60%] h-[36%] w-[54%] border-[5px] sm:border-[7px] border-white shadow-level-3 [border-radius:36%_14%_14%_36%/50%_20%_20%_50%]"
+                  className="absolute left-0 bottom-[4%] h-[32%] w-[46%] rounded-[22px] sm:rounded-[28px] border-[5px] sm:border-[6px] border-white shadow-level-3"
                 />
-
-                <span aria-hidden="true" className="absolute left-[19%] top-[18%] h-9 w-9 sm:h-11 sm:w-11 rounded-full ring-[3px] ring-white shadow-level-2 bg-[linear-gradient(#000_0_16.67%,#fcdc04_16.67%_33.33%,#d90000_33.33%_50%,#000_50%_66.67%,#fcdc04_66.67%_83.33%,#d90000_83.33%)]" />
-                <span aria-hidden="true" className="absolute right-[3%] top-[10%] h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-sun-300 ring-[3px] ring-white shadow-level-1" />
-                <span aria-hidden="true" className="absolute right-[8%] top-[76%] h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-forest-700 ring-[3px] ring-white shadow-level-2" />
-                <svg aria-hidden="true" viewBox="0 0 64 16" className="absolute left-[2%] top-[50%] h-4 w-14 sm:w-16 text-forest-500">
+                <span aria-hidden="true" className="absolute left-[7%] top-[23%] h-10 w-10 sm:h-12 sm:w-12 rounded-full ring-4 ring-white shadow-level-2 bg-[linear-gradient(#000_0_16.67%,#fcdc04_16.67%_33.33%,#d90000_33.33%_50%,#000_50%_66.67%,#fcdc04_66.67%_83.33%,#d90000_83.33%)]" />
+                <span aria-hidden="true" className="absolute right-[12%] top-[17%] h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-sun-300" />
+                <svg aria-hidden="true" viewBox="0 0 64 16" className="absolute right-[4%] bottom-[10%] h-4 w-16 text-forest-400">
                   <path d="M2 8c5-6 9-6 14 0s9 6 14 0 9-6 14 0 9 6 14 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
           </div>
-        </div>
       </section>
 
       {/* ===== TRUST — the reasons it’s safe to learn from someone new ===== */}
@@ -338,7 +327,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     key={cat.id}
                     onClick={() => onSelectCategory(cat.id)}
                     title={cat.description}
-                    className="group flex items-center gap-3.5 p-3.5 sm:p-4 min-h-[4.5rem] rounded-card border border-ink-200 bg-white text-left shadow-soft transition hover:border-forest-300 hover:shadow-level-2 focus-visible:ring-2 focus-visible:ring-forest-700"
+                    className="group flex items-center gap-3.5 p-3.5 sm:p-4 min-h-[4.5rem] rounded-card glass text-left transition hover:border-forest-300 hover:shadow-level-2 focus-visible:ring-2 focus-visible:ring-forest-700"
                   >
                     <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${CATEGORY_TINTS[index % CATEGORY_TINTS.length]}`} aria-hidden="true">
                       {renderCategoryIcon(cat.icon_name)}
@@ -365,72 +354,56 @@ export const HomePage: React.FC<HomePageProps> = ({
         )}
       </section>
 
-      {/* ===== HOW IT WORKS — steps beside a workshop photo ===== */}
-      <section className="bg-white border-y border-ink-200 py-16 lg:py-24" aria-labelledby="how-heading">
-        <div className="container-app grid lg:grid-cols-[1fr_0.9fr] gap-12 lg:gap-20 items-center">
-          <div>
+      {/* ===== HOW IT WORKS — four steps for each side ===== */}
+      <section className="py-16 lg:py-20" aria-labelledby="how-heading">
+        <div className="container-app">
+          <div className="text-center max-w-2xl mx-auto">
             <p className={sectionEyebrow}>How it works</p>
             <h2 id="how-heading" className={sectionTitle}>From your first search to your first session.</h2>
-
-            <div className="mt-6 inline-flex p-1 bg-ink-100 rounded-control text-sm font-semibold" role="tablist" aria-label="Show steps for">
+            <div className="mt-6 inline-flex p-1 bg-ink-100 rounded-pill text-sm font-semibold" role="tablist" aria-label="Show steps for">
               {([['learners', 'I want to learn'], ['educators', 'I want to teach']] as const).map(([key, label]) => (
                 <button
                   key={key}
                   role="tab"
                   aria-selected={howTab === key}
                   onClick={() => setHowTab(key)}
-                  className={`px-4 min-h-[44px] md:min-h-[40px] rounded-[9px] transition ${howTab === key ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
+                  className={`px-5 min-h-[44px] md:min-h-[40px] rounded-pill transition ${howTab === key ? 'bg-white text-ink-900 shadow-soft' : 'text-ink-600 hover:text-ink-900'}`}
                 >
                   {label}
                 </button>
               ))}
             </div>
-
-            <ol className="mt-8">
-              {(howTab === 'learners' ? [
-                { t: 'Find someone', d: 'Browse educators near you, or tell us what you want to learn and your budget.' },
-                { t: 'Agree a session', d: 'Pick a date and time. The educator confirms it.' },
-                { t: 'Learn at the bench', d: 'Work with real tools on real jobs, side by side with the educator.' },
-                { t: 'Leave a review', d: 'Tell the next learner how it went with an honest review.' }
-              ] : [
-                { t: 'Apply', d: 'Tell us your trade and your rate. We check your ID and visit your workshop.' },
-                { t: 'Set your terms', d: 'Your rate, the tools you provide, and where you teach.' },
-                { t: 'Accept bookings', d: 'Confirm the sessions that suit you and teach on your own bench.' },
-                { t: 'Get paid', d: 'You’re paid once each session is done.' }
-              ]).map((step, index, steps) => (
-                <li key={step.t} className="relative grid grid-cols-[auto_1fr] gap-4 pb-7 last:pb-0">
-                  {index < steps.length - 1 && <span className="absolute left-5 top-11 bottom-1 w-px bg-ink-200" aria-hidden="true" />}
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-forest-700 bg-white font-display text-sm font-bold text-forest-700 tabular-nums" aria-hidden="true">
-                    {index + 1}
-                  </span>
-                  <div className="pt-1.5">
-                    <h3 className="text-base font-bold text-ink-900">{step.t}</h3>
-                    <p className="mt-1 text-sm text-ink-600 leading-relaxed max-w-md">{step.d}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            <div className="mt-9 flex flex-wrap gap-3">
-              {howTab === 'learners' ? (
-                <button onClick={() => setCurrentView('find-skill')} className="px-6 min-h-[48px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition inline-flex items-center gap-2">Find an educator<ArrowRight className="w-4 h-4" aria-hidden="true" /></button>
-              ) : (
-                <button onClick={() => setCurrentView('become-educator')} className="px-6 min-h-[48px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition inline-flex items-center gap-2">Apply to teach<ArrowRight className="w-4 h-4" aria-hidden="true" /></button>
-              )}
-              <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[48px] rounded-control bg-white text-ink-800 font-bold text-sm border border-ink-200 hover:bg-ink-50 transition">More detail</button>
-            </div>
           </div>
 
-          {/* A real workshop, framed the same way as the hero */}
-          <div className="relative mx-auto w-full max-w-[26rem] aspect-[0.9]">
-            <div aria-hidden="true" className="absolute left-0 right-[12%] top-[14%] bottom-0 rounded-[44px] bg-sun-100" />
-            <WorkshopPhoto
-              photo={HERO_PHOTOS.baking}
-              sizes="(min-width: 1024px) 22rem, 80vw"
-              caption={false}
-              className="absolute right-0 left-[12%] top-0 bottom-[8%] rounded-[36px] shadow-level-3"
-            />
-            <div aria-hidden="true" className="absolute left-[2%] bottom-[2%] h-14 w-24 bg-[radial-gradient(theme(colors.ink.300)_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
+          <ol className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(howTab === 'learners' ? [
+              { t: 'Find someone', d: 'Browse educators near you, or tell us what you want to learn and your budget.' },
+              { t: 'Agree a session', d: 'Pick a date and time. The educator confirms it.' },
+              { t: 'Learn at the bench', d: 'Work with real tools on real jobs, side by side with the educator.' },
+              { t: 'Leave a review', d: 'Tell the next learner how it went with an honest review.' }
+            ] : [
+              { t: 'Apply', d: 'Tell us your trade and your rate. We check your ID and visit your workshop.' },
+              { t: 'Set your terms', d: 'Your rate, the tools you provide, and where you teach.' },
+              { t: 'Accept bookings', d: 'Confirm the sessions that suit you and teach on your own bench.' },
+              { t: 'Get paid', d: 'You’re paid once each session is done.' }
+            ]).map((step, index) => (
+              <li key={step.t} className="glass rounded-card p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-forest-50 font-display text-sm font-bold text-forest-700 tabular-nums" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <h3 className="mt-5 text-base font-bold text-ink-900">{step.t}</h3>
+                <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">{step.d}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-3">
+            {howTab === 'learners' ? (
+              <button onClick={() => setCurrentView('find-skill')} className="px-6 min-h-[48px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition inline-flex items-center gap-2">Find an educator<ArrowRight className="w-4 h-4" aria-hidden="true" /></button>
+            ) : (
+              <button onClick={() => setCurrentView('become-educator')} className="px-6 min-h-[48px] rounded-control bg-forest-700 text-white font-bold text-sm hover:bg-forest-800 transition inline-flex items-center gap-2">Apply to teach<ArrowRight className="w-4 h-4" aria-hidden="true" /></button>
+            )}
+            <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[48px] rounded-control bg-white text-ink-800 font-bold text-sm border border-ink-200 hover:bg-ink-50 transition">More detail</button>
           </div>
         </div>
       </section>
@@ -512,10 +485,11 @@ export const HomePage: React.FC<HomePageProps> = ({
         </section>
       )}
 
-      {/* ===== TEACH — the educator pitch, on the same dark surface as the hero ===== */}
+      {/* ===== TEACH — the educator pitch over a workshop photo, with frosted-glass cards ===== */}
       <section className="container-app pb-20" aria-labelledby="teach-heading">
         <div className="relative isolate overflow-hidden rounded-display bg-forest-950 px-6 py-10 sm:p-12 lg:p-14 text-white">
-          <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 -z-10 h-[26rem] w-[26rem] rounded-full bg-forest-500/25 blur-3xl" />
+          <img src={HERO_PHOTOS.baking.large} alt="" aria-hidden="true" loading="lazy" decoding="async" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-forest-950/80" />
           <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-14 items-center">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-sun-300">For educators</p>
@@ -527,7 +501,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button onClick={() => setCurrentView('become-educator')} className="px-6 min-h-[48px] rounded-control bg-sun-300 hover:bg-sun-200 text-ink-950 font-bold text-sm flex items-center justify-center gap-2 transition focus-visible:ring-sun-300 focus-visible:ring-offset-forest-950">
                   <span>Apply to teach</span><ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
-                <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[48px] rounded-control bg-white/5 hover:bg-white/10 text-white font-bold text-sm border border-white/20 flex items-center justify-center gap-2 transition focus-visible:ring-white focus-visible:ring-offset-forest-950">
+                <button onClick={() => setCurrentView('how-it-works')} className="px-6 min-h-[48px] rounded-control glass-dark hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center gap-2 transition focus-visible:ring-white focus-visible:ring-offset-forest-950">
                   <span>How vetting works</span><ShieldCheck className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
@@ -539,7 +513,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 { icon: Users, title: 'Learners come to you', text: 'People who want your trade find you here.' },
                 { icon: Hammer, title: 'Teach on your own bench', text: 'Your workshop, your tools, your hours.' }
               ].map(({ icon: Icon, title, text }) => (
-                <li key={title} className="flex items-start gap-4 rounded-card border border-white/10 bg-white/5 p-4 sm:p-5">
+                <li key={title} className="glass-dark flex items-start gap-4 rounded-card p-4 sm:p-5">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-sun-300/15 text-sun-300" aria-hidden="true">
                     <Icon className="h-5 w-5" />
                   </span>
