@@ -471,7 +471,18 @@ class Database {
   public findEducatorById(id: string) {
     const educator = this.data.educators.find(e => e.id === id);
     if (!educator) return null;
-    const user = this.findUserById(educator.user_id);
+    // Educator records are public (profiles, search, matches), so they carry only the fields a
+    // learner sees: never the password hash, sign-in ids or email address.
+    const account = this.findUserById(educator.user_id);
+    const user = account ? {
+      id: account.id,
+      name: account.name,
+      role: account.role,
+      phone: account.phone,
+      avatar_url: account.avatar_url,
+      location: account.location,
+      created_at: account.created_at
+    } : undefined;
     const skills = this.data.educatorSkills.filter(s => s.educator_id === educator.id);
     const qualifications = this.data.qualifications.filter(q => q.educator_id === educator.id);
     const portfolios = this.data.portfolios.filter(p => p.educator_id === educator.id);
