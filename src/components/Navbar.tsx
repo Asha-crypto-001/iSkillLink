@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  ChevronDown, User, LogOut,
-  Menu, X, GraduationCap, ArrowRight,
-  Settings, PlusCircle, Camera, Sparkles
+  ChevronDown, ChevronRight, LogOut, Menu, X,
+  Camera, LayoutDashboard, ClipboardList
 } from 'lucide-react';
 import { ProfilePhotoUploadModal } from './ProfilePhotoUploadModal';
 import logoUrl from '../assets/logo.png';
@@ -98,213 +97,181 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'contact', label: 'Contact' }
   ];
 
+  const roleLabel = (() => {
+    if (user?.role === 'admin') return 'Lead admin';
+    if (user?.role === 'secondary_admin') return 'Admin';
+    if (user?.role === 'educator') return 'Educator';
+    return 'Learner';
+  })();
+
+  const menuItemClass = 'w-full flex items-center gap-3 px-3 min-h-[44px] rounded-control text-sm font-medium text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-left transition focus-visible:ring-2 focus-visible:ring-forest-700';
+
   return (
     <>
-      <header className={`sticky top-0 z-40 transition-shadow duration-200 ${isScrolled ? 'shadow-level-2' : 'shadow-none'}`}>
-        {/* Main bar — glass premium */}
-        <div className="bg-white/90 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-white/60 border-b border-ink-200/60">
-          <div className="container-app">
-            <div className="flex items-center justify-between gap-4 h-[64px] lg:h-[68px]">
-              {/* Brand lockup */}
-              <button
-                onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className="flex items-center gap-3 text-left group shrink-0 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 rounded-control -ml-1 px-1 py-1 min-h-[44px]"
-                aria-label="iSkillLink home"
-              >
-                <img src={logoUrl} alt="" className="w-9 h-9 lg:w-10 lg:h-10 object-contain transition-transform group-hover:scale-105" aria-hidden="true" />
-                <span className="leading-none">
-                  <span className="block font-display text-[19px] lg:text-[21px] font-bold tracking-[-0.02em] text-ink-900">iSkillLink</span>
-                  <span className="block text-[12px] font-medium text-ink-500 mt-0.5">Where Skills Meet Opportunity</span>
-                </span>
-              </button>
+      <header
+        className={`sticky top-0 z-40 bg-white/80 backdrop-blur-xl backdrop-saturate-150 border-b transition-[border-color,box-shadow] duration-200 ${
+          isScrolled ? 'border-ink-200/80 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.25)]' : 'border-ink-100'
+        }`}
+      >
+        <div className="container-app">
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6 h-16 lg:h-[72px]">
+            {/* Brand */}
+            <button
+              onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className="flex items-center gap-2.5 rounded-control -ml-1 px-1 min-h-[44px] focus-visible:ring-2 focus-visible:ring-forest-700"
+              aria-label="iSkillLink home"
+            >
+              <img src={logoUrl} alt="" className="w-8 h-8 lg:w-9 lg:h-9 object-contain" aria-hidden="true" />
+              <span className="font-display text-[19px] lg:text-[21px] font-bold tracking-[-0.02em] text-ink-900">iSkillLink</span>
+            </button>
 
-              {/* Center nav */}
-              <nav className="hidden lg:flex items-center gap-1 p-1 rounded-pill bg-ink-50 border border-ink-200/70" aria-label="Primary">
-                {navLinks.map(link => {
-                  const isActive = currentView === link.id;
-                  return (
-                    <button
-                      key={link.id}
-                      onClick={() => setCurrentView(link.id)}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`px-3.5 py-1.5 text-[14px] font-semibold whitespace-nowrap rounded-pill transition-all focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-1 ${
-                        isActive
-                          ? 'bg-white text-ink-900 shadow-soft border border-ink-200'
-                          : 'text-ink-600 hover:text-ink-900 hover:bg-white/70 border border-transparent'
-                      }`}
-                    >
-                      {link.label}
-                    </button>
-                  );
-                })}
-              </nav>
-
-              {/* Right actions — modern, spacious, 44px */}
-              <div className="hidden sm:flex items-center gap-2">
-                <button
-                  onClick={onOpenSkillRequest}
-                  className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 min-h-[44px] md:min-h-[40px] rounded-pill bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:text-ink-900 text-[14px] font-semibold shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-forest-600" aria-hidden="true" />
-                  <span>Custom Request</span>
-                </button>
-
-                {user ? (
-                  <div className="relative" ref={dropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      aria-expanded={userDropdownOpen}
-                      aria-haspopup="menu"
-                      aria-label="User menu"
-                      onKeyDown={(e) => { if (e.key === 'Escape') setUserDropdownOpen(false); if (e.key === 'ArrowDown' && !userDropdownOpen) setUserDropdownOpen(true); }}
-                      className={`flex items-center gap-2.5 pl-1.5 pr-2.5 py-1 rounded-pill border transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 ${
-                        userDropdownOpen
-                          ? 'bg-ink-900 text-white border-ink-900 shadow-level-1'
-                          : 'bg-white text-ink-800 border-ink-200 hover:border-ink-300 shadow-soft'
-                      }`}
-                    >
-                      <span className="relative">
-                        <Avatar src={user.avatar_url} name={user.name} className="w-8 h-8 rounded-full border border-ink-200" />
-                        {unreadNotificationCount > 0 && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" aria-hidden="true" />}
-                      </span>
-                      <span className="text-left leading-none hidden sm:block pr-1">
-                        <span className="block text-[14px] font-bold max-w-[108px] truncate">{user.name.split(' ')[0]}</span>
-                        <span className={`block text-[12px] font-bold uppercase tracking-wider ${userDropdownOpen ? 'text-forest-300' : user.role === 'admin' ? 'text-amber-600' : user.role === 'educator' ? 'text-forest-700' : 'text-ink-500'}`}>{user.role}</span>
-                      </span>
-                      <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform hidden sm:block ${userDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                    </button>
-
-                    {userDropdownOpen && (
-                      <div role="menu" aria-label="User menu" onKeyDown={(e)=>{ if(e.key==='Escape') setUserDropdownOpen(false); }} className="absolute right-0 mt-3 w-80 bg-white rounded-card shadow-level-3 border border-ink-200 overflow-hidden z-50 animate-fadeIn">
-                        <div className="p-4 bg-white border-b border-ink-100 flex items-center gap-3">
-                          <Avatar src={user.avatar_url} name={user.name} className="w-11 h-11 rounded-xl border border-ink-200 shadow-soft shrink-0" />
-                          <div className="min-w-0">
-                            <div className="font-bold text-sm text-ink-900 truncate">{user.name}</div>
-                            <div className="text-xs text-ink-500 truncate">{user.email}</div>
-                            <span className="inline-flex mt-1 px-2 py-0.5 rounded-pill bg-forest-50 border border-forest-200 text-forest-700 text-[12px] font-bold uppercase tracking-wider">{user.role}</span>
-                          </div>
-                          <button onClick={() => { setShowPhotoModal(true); setUserDropdownOpen(false); }} className="ml-auto p-2 rounded-xl bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Change photo">
-                            <Camera className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        <div className="p-2 space-y-1">
-                          <button onClick={() => { setCurrentView(getDashboardTarget()); setUserDropdownOpen(false); }} className="w-full p-3 rounded-xl bg-ink-900 hover:bg-black text-white font-bold text-sm flex items-center justify-between transition shadow-soft focus-visible:ring-2 focus-visible:ring-ink-900">
-                            <span className="flex items-center gap-2">
-                              {user.role === 'admin' && <Settings className="w-4 h-4 text-amber-300" />}
-                              {user.role === 'educator' && <GraduationCap className="w-4 h-4 text-forest-300" />}
-                              {user.role === 'learner' && <User className="w-4 h-4 text-forest-300" />}
-                              <span>{getDashboardLabel()}</span>
-                            </span>
-                            <ArrowRight className="w-4 h-4 opacity-70" />
-                          </button>
-                          <button onClick={() => { onOpenSkillRequest(); setUserDropdownOpen(false); }} className="w-full p-2.5 rounded-xl text-ink-700 hover:bg-ink-50 font-medium flex items-center gap-2 text-left transition text-sm focus-visible:ring-2 focus-visible:ring-forest-700">
-                            <PlusCircle className="w-4 h-4 text-forest-700" />
-                            <span>Submit Custom Skill Request</span>
-                          </button>
-                          <button onClick={() => { setShowPhotoModal(true); setUserDropdownOpen(false); }} className="w-full p-2.5 rounded-xl text-ink-700 hover:bg-ink-50 font-medium flex items-center gap-2 text-left transition text-sm focus-visible:ring-2 focus-visible:ring-forest-700">
-                            <Camera className="w-4 h-4 text-ink-500" />
-                            <span>Update Profile Picture</span>
-                          </button>
-                        </div>
-
-                        {notifications.length > 0 && (
-                          <div className="px-3 py-3 bg-ink-50/70 border-t border-ink-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[12px] font-bold text-ink-500 uppercase tracking-wider">Recent Activity</span>
-                              {unreadNotificationCount > 0 && <span className="text-[12px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-pill border border-rose-200">{unreadNotificationCount} new</span>}
-                            </div>
-                            <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                              {notifications.slice(0, 2).map(n => (
-                                <button key={n.id} onClick={() => { markNotificationAsRead(n.id); setCurrentView(getDashboardTarget()); setUserDropdownOpen(false); }} className="w-full text-left p-3 rounded-xl bg-white border border-ink-200 hover:border-forest-200 hover:shadow-soft transition focus-visible:ring-2 focus-visible:ring-forest-700">
-                                  <div className="font-semibold text-ink-900 text-xs flex items-center justify-between gap-2">
-                                    <span className="truncate">{n.title}</span>
-                                    {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-forest-600 shrink-0" aria-hidden="true" />}
-                                  </div>
-                                  <p className="text-ink-500 text-xs truncate mt-1">{n.message}</p>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="p-2 border-t border-ink-100 bg-ink-50/50">
-                          <button onClick={() => { logout(); setUserDropdownOpen(false); }} className="w-full p-2.5 rounded-xl text-rose-700 hover:bg-white hover:shadow-soft border border-transparent hover:border-rose-100 font-bold text-sm flex items-center gap-2 transition focus-visible:ring-2 focus-visible:ring-rose-500">
-                            <LogOut className="w-4 h-4" />
-                            <span>Sign Out</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => onOpenAuth('login')} className="px-4 py-2 min-h-[44px] md:min-h-[40px] whitespace-nowrap text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-50 rounded-pill transition focus-visible:ring-2 focus-visible:ring-forest-700">
-                      Sign In
-                    </button>
-                    <button onClick={() => onOpenAuth('register')} className="px-5 py-2 min-h-[44px] md:min-h-[40px] whitespace-nowrap text-sm font-bold rounded-pill bg-forest-700 hover:bg-forest-800 text-white shadow-soft flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-forest-700">
-                      <span>Get Started</span>
-                      <ArrowRight className="w-4 h-4 text-white/90" aria-hidden="true" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Mobile */}
-              <div className="flex lg:hidden items-center gap-2">
-                {user && (
-                  <button onClick={() => setShowPhotoModal(true)} className="relative after:absolute after:-inset-1.5 after:content-[''] p-0.5 rounded-full ring-2 ring-forest-200 hover:ring-forest-300 transition focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Update photo">
-                    <Avatar src={user.avatar_url} name={user.name} className="w-8 h-8 rounded-full" />
+            {/* Primary links */}
+            <nav className="hidden lg:flex items-center justify-center gap-1" aria-label="Primary">
+              {navLinks.map(link => {
+                const isActive = currentView === link.id;
+                return (
+                  <button
+                    key={link.id}
+                    onClick={() => setCurrentView(link.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`relative px-3.5 min-h-[40px] rounded-pill text-[15px] whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 ${
+                      isActive
+                        ? 'font-semibold text-ink-900 after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-0.5 after:h-1 after:w-1 after:rounded-full after:bg-forest-600'
+                        : 'font-medium text-ink-600 hover:text-ink-900 hover:bg-ink-100/70'
+                    }`}
+                  >
+                    {link.label}
                   </button>
-                )}
-                <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className={`p-2.5 rounded-xl border transition min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-forest-700 ${mobileMenuOpen ? 'bg-ink-900 text-white border-ink-900' : 'bg-white text-ink-700 border-ink-200 hover:bg-ink-50'}`}
-                  aria-label="Toggle navigation menu"
-                  aria-expanded={mobileMenuOpen}
-                  aria-haspopup="dialog"
-                >
-                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </button>
-              </div>
+                );
+              })}
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-1.5">
+              <button
+                onClick={onOpenSkillRequest}
+                className="hidden xl:inline-flex items-center px-3 min-h-[40px] rounded-pill text-[15px] font-medium text-ink-600 hover:text-ink-900 hover:bg-ink-100/70 whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700"
+              >
+                Request a skill
+              </button>
+              <span className="hidden xl:block h-5 w-px bg-ink-200 mx-1.5" aria-hidden="true" />
+
+              {user ? (
+                <div className="relative hidden sm:block" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    aria-expanded={userDropdownOpen}
+                    aria-haspopup="menu"
+                    aria-label="Account menu"
+                    onKeyDown={(e) => { if (e.key === 'Escape') setUserDropdownOpen(false); if (e.key === 'ArrowDown' && !userDropdownOpen) setUserDropdownOpen(true); }}
+                    className={`flex items-center gap-2 pl-1 pr-2.5 min-h-[44px] rounded-pill border bg-white transition focus-visible:ring-2 focus-visible:ring-forest-700 ${userDropdownOpen ? 'border-ink-300 shadow-soft' : 'border-ink-200 hover:border-ink-300'}`}
+                  >
+                    <span className="relative">
+                      <Avatar src={user.avatar_url} name={user.name} className="w-8 h-8 rounded-full" />
+                      {unreadNotificationCount > 0 && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" aria-hidden="true" />}
+                    </span>
+                    <span className="text-sm font-semibold text-ink-900 max-w-[110px] truncate">{user.name.split(' ')[0]}</span>
+                    <ChevronDown className={`w-4 h-4 text-ink-500 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                  </button>
+
+                  {userDropdownOpen && (
+                    <div role="menu" aria-label="Account menu" onKeyDown={(e) => { if (e.key === 'Escape') setUserDropdownOpen(false); }} className="absolute right-0 mt-2 w-72 bg-white rounded-card shadow-level-3 border border-ink-200 p-1.5 z-50 animate-fadeIn">
+                      <div className="flex items-center gap-3 px-3 py-3">
+                        <Avatar src={user.avatar_url} name={user.name} className="w-10 h-10 rounded-full shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-ink-900 truncate">{user.name}</div>
+                          <div className="text-xs text-ink-500 truncate">{user.email}</div>
+                        </div>
+                        <span className="ml-auto shrink-0 rounded-pill bg-ink-100 px-2 py-0.5 text-caption text-ink-700">{roleLabel}</span>
+                      </div>
+
+                      <div className="border-t border-ink-100 pt-1.5 mt-0.5 space-y-0.5">
+                        <button role="menuitem" onClick={() => { setCurrentView(getDashboardTarget()); setUserDropdownOpen(false); }} className={menuItemClass}>
+                          <LayoutDashboard className="w-4 h-4 text-ink-500" aria-hidden="true" />
+                          {getDashboardLabel()}
+                        </button>
+                        <button role="menuitem" onClick={() => { onOpenSkillRequest(); setUserDropdownOpen(false); }} className={menuItemClass}>
+                          <ClipboardList className="w-4 h-4 text-ink-500" aria-hidden="true" />
+                          Request a skill
+                        </button>
+                        <button role="menuitem" onClick={() => { setShowPhotoModal(true); setUserDropdownOpen(false); }} className={menuItemClass}>
+                          <Camera className="w-4 h-4 text-ink-500" aria-hidden="true" />
+                          Change profile photo
+                        </button>
+                      </div>
+
+                      {notifications.length > 0 && (
+                        <div className="border-t border-ink-100 mt-1.5 pt-2 px-1.5">
+                          <div className="flex items-center justify-between px-1.5 mb-1">
+                            <span className="text-caption text-ink-500">Recent activity</span>
+                            {unreadNotificationCount > 0 && <span className="text-caption text-rose-700">{unreadNotificationCount} new</span>}
+                          </div>
+                          {notifications.slice(0, 2).map(n => (
+                            <button key={n.id} role="menuitem" onClick={() => { markNotificationAsRead(n.id); setCurrentView(getDashboardTarget()); setUserDropdownOpen(false); }} className="w-full text-left px-1.5 py-2 rounded-control hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-forest-700">
+                              <span className="flex items-center gap-2 text-xs font-semibold text-ink-900">
+                                {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-forest-600 shrink-0" aria-hidden="true" />}
+                                <span className="truncate">{n.title}</span>
+                              </span>
+                              <span className="block text-xs text-ink-500 truncate mt-0.5">{n.message}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="border-t border-ink-100 mt-1.5 pt-1.5">
+                        <button role="menuitem" onClick={() => { logout(); setUserDropdownOpen(false); }} className={`${menuItemClass} text-rose-700 hover:text-rose-800 hover:bg-rose-50`}>
+                          <LogOut className="w-4 h-4" aria-hidden="true" />
+                          Sign out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <button onClick={() => onOpenAuth('login')} className="px-4 min-h-[44px] md:min-h-[40px] rounded-pill text-[15px] font-medium text-ink-700 hover:text-ink-900 hover:bg-ink-100/70 whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700">
+                    Sign in
+                  </button>
+                  <button onClick={() => onOpenAuth('register')} className="px-5 min-h-[44px] md:min-h-[42px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2">
+                    Get started
+                  </button>
+                </div>
+              )}
+
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden ml-1 flex items-center justify-center min-h-[44px] min-w-[44px] rounded-pill border border-ink-200 bg-white text-ink-800 hover:bg-ink-50 transition focus-visible:ring-2 focus-visible:ring-forest-700"
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-haspopup="dialog"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu — modern bottom sheet */}
+        {/* Mobile menu — a sheet under the bar */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-            <div className="absolute inset-0 bg-ink-950/40 backdrop-blur-xl animate-fadeIn" onClick={() => setMobileMenuOpen(false)} aria-hidden="true" />
-            <div className="relative bg-white w-full max-h-[88vh] overflow-y-auto rounded-b-display shadow-level-3 border-b border-ink-200 animate-slideUp flex flex-col">
-              <div className="sticky top-0 bg-white/90 backdrop-blur-xl border-b border-ink-100 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img src={logoUrl} alt="" className="w-8 h-8 object-contain" aria-hidden="true" />
-                  <span className="font-bold text-ink-900">iSkillLink</span>
-                </div>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-xl bg-ink-50 border border-ink-200 text-ink-700 hover:bg-ink-100 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-forest-700" aria-label="Close menu">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="px-4 pt-4 pb-6 space-y-4">
+          <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-50" role="dialog" aria-modal="true" aria-label="Menu">
+            <div className="absolute inset-0 bg-ink-950/30 backdrop-blur-sm animate-fadeIn" onClick={() => setMobileMenuOpen(false)} aria-hidden="true" />
+            <div className="relative bg-white border-b border-ink-200 shadow-level-3 max-h-full overflow-y-auto animate-slideUp">
+              <div className="container-app py-4 space-y-4">
                 {user && (
-                  <div className="p-4 rounded-card bg-ink-50 border border-ink-200 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar src={user.avatar_url} name={user.name} className="w-10 h-10 rounded-xl border border-ink-200 shadow-sm" />
-                      <div>
-                        <div className="font-bold text-sm text-ink-900">{user.name}</div>
-                        <div className="text-xs font-bold text-forest-700 uppercase tracking-wide">{user.role} Portal</div>
-                      </div>
+                  <div className="flex items-center gap-3 px-1">
+                    <Avatar src={user.avatar_url} name={user.name} className="w-10 h-10 rounded-full" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-ink-900 truncate">{user.name}</div>
+                      <div className="text-xs text-ink-500">{roleLabel}</div>
                     </div>
-                    <button onClick={() => { setShowPhotoModal(true); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white border border-ink-200 rounded-xl text-xs font-bold text-ink-700 flex items-center gap-1.5 shadow-soft min-h-[44px] md:min-h-[40px] focus-visible:ring-2 focus-visible:ring-forest-700">
-                      <Camera className="w-3.5 h-3.5 text-forest-700" aria-hidden="true" />
-                      <span>Photo</span>
+                    <button onClick={() => { setShowPhotoModal(true); setMobileMenuOpen(false); }} className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-pill border border-ink-200 text-ink-700 hover:bg-ink-50" aria-label="Change profile photo">
+                      <Camera className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 )}
 
-                <nav aria-label="Mobile primary" className="space-y-1">
+                <nav aria-label="Mobile primary" className="divide-y divide-ink-100 border-y border-ink-100">
                   {navLinks.map(link => {
                     const isActive = currentView === link.id;
                     return (
@@ -312,46 +279,38 @@ export const Navbar: React.FC<NavbarProps> = ({
                         key={link.id}
                         onClick={() => { setCurrentView(link.id); setMobileMenuOpen(false); }}
                         aria-current={isActive ? 'page' : undefined}
-                        className={`w-full text-left px-4 py-3.5 rounded-xl text-sm font-bold transition flex items-center justify-between min-h-[48px] focus-visible:ring-2 focus-visible:ring-forest-700 ${
-                          isActive ? 'bg-forest-700 text-white shadow-soft' : 'text-ink-700 hover:bg-ink-50 border border-transparent'
-                        }`}
+                        className={`w-full flex items-center justify-between px-1 min-h-[52px] text-base text-left transition ${isActive ? 'font-semibold text-forest-700' : 'font-medium text-ink-800 hover:text-ink-950'}`}
                       >
-                        <span>{link.label}</span>
-                        {isActive && <span className="w-2 h-2 rounded-full bg-white" aria-hidden="true" />}
+                        {link.label}
+                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-forest-600' : 'text-ink-400'}`} aria-hidden="true" />
                       </button>
                     );
                   })}
+                  <button onClick={() => { onOpenSkillRequest(); setMobileMenuOpen(false); }} className="w-full flex items-center justify-between px-1 min-h-[52px] text-base font-medium text-ink-800 text-left">
+                    Request a skill
+                    <ChevronRight className="w-4 h-4 text-ink-400" aria-hidden="true" />
+                  </button>
                 </nav>
 
-                <div className="pt-4 border-t border-ink-100 space-y-2">
-                  <button onClick={() => { onOpenSkillRequest(); setMobileMenuOpen(false); }} className="w-full py-3.5 px-4 text-sm font-bold rounded-xl bg-white border border-ink-200 hover:bg-ink-50 text-ink-800 flex items-center justify-center gap-2 min-h-[48px] focus-visible:ring-2 focus-visible:ring-forest-700">
-                    <PlusCircle className="w-4 h-4 text-forest-700" aria-hidden="true" />
-                    <span>Submit Custom Skill Request</span>
-                  </button>
-
-                  {user ? (
-                    <>
-                      <button onClick={() => { setCurrentView(getDashboardTarget()); setMobileMenuOpen(false); }} className="w-full py-3.5 px-4 text-sm font-bold rounded-xl bg-ink-900 hover:bg-black text-white flex items-center justify-center gap-2 min-h-[48px] focus-visible:ring-2 focus-visible:ring-ink-900">
-                        {user.role === 'admin' && <Settings className="w-4 h-4 text-amber-300" />}
-                        {user.role === 'educator' && <GraduationCap className="w-4 h-4" />}
-                        {user.role === 'learner' && <User className="w-4 h-4" />}
-                        <span>Open {getDashboardLabel()}</span>
-                      </button>
-                      <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full py-3.5 px-4 text-sm font-bold rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-100 min-h-[48px] focus-visible:ring-2 focus-visible:ring-rose-500">
-                        Sign Out
-                      </button>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => { onOpenAuth('login'); setMobileMenuOpen(false); }} className="py-3.5 text-sm font-bold rounded-xl text-ink-800 bg-white border border-ink-200 hover:bg-ink-50 min-h-[48px] focus-visible:ring-2 focus-visible:ring-forest-700">
-                        Sign In
-                      </button>
-                      <button onClick={() => { onOpenAuth('register'); setMobileMenuOpen(false); }} className="py-3.5 text-sm font-bold rounded-xl bg-forest-700 text-white hover:bg-forest-800 min-h-[48px] focus-visible:ring-2 focus-visible:ring-forest-700">
-                        Get Started
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {user ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => { setCurrentView(getDashboardTarget()); setMobileMenuOpen(false); }} className="min-h-[48px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold">
+                      Dashboard
+                    </button>
+                    <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="min-h-[48px] rounded-pill border border-ink-200 text-rose-700 text-sm font-semibold hover:bg-rose-50">
+                      Sign out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => { onOpenAuth('login'); setMobileMenuOpen(false); }} className="min-h-[48px] rounded-pill border border-ink-200 text-ink-900 text-sm font-semibold hover:bg-ink-50">
+                      Sign in
+                    </button>
+                    <button onClick={() => { onOpenAuth('register'); setMobileMenuOpen(false); }} className="min-h-[48px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold">
+                      Get started
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
