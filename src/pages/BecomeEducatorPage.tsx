@@ -1,921 +1,268 @@
-import React, { useState, useEffect } from 'react';
-import { TeachingFormat, EducatorStatus } from '../types';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Category } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { formatUGX } from '../utils/formatters';
 import {
-  ShieldCheck, CheckCircle2, ArrowRight, ArrowLeft, Upload,
-  Award, Wrench, Briefcase, DollarSign, FileText, Lock,
-  Sparkles, UserCheck, Star
+  ArrowRight, ArrowUpRight, BadgeCheck, CalendarCheck, ClipboardList, Hammer,
+  Minus, Plus, Star, UserPlus, Users, Wallet
 } from 'lucide-react';
-import { Field } from '../components/ui/Field';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
-import { Textarea } from '../components/ui/Textarea';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
-import { Alert } from '../components/ui/Alert';
-import { VERIFICATION_STEPS } from '../utils/verification';
+import { categoryColor } from '../utils/categoryColors';
+import { CategoryIcon } from '../utils/categoryIcons';
+import { APPLY_PATH, hasSentApplication } from '../utils/educatorApplication';
+import teacherChalkboardPhoto from '../assets/photos/teacher-chalkboard.webp';
+import educatorsIllustration from '../assets/photos/educators-illustration.webp';
 
 interface BecomeEducatorPageProps {
-  onApplicationSubmitted: () => void;
   setCurrentView: (view: string) => void;
 }
 
-const STEP_NAMES = ['About you', 'Your craft', 'What you teach', 'Your workshop', 'Proof & consent'];
+// A 16-point starburst (same shape as on the landing page).
+const STARBURST_POINTS = Array.from({ length: 32 }, (_, i) => {
+  const r = i % 2 ? 36 : 50;
+  const a = (Math.PI * i) / 16;
+  return `${(50 + r * Math.sin(a)).toFixed(1)},${(50 - r * Math.cos(a)).toFixed(1)}`;
+}).join(' ');
 
-export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({
-  onApplicationSubmitted,
-  setCurrentView
-}) => {
-  const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedSuccess, setSubmittedSuccess] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+const BENEFITS = [
+  { icon: Users, tint: 'bg-sky-50 text-sky-600', title: 'Learners come to you', text: 'People who want your trade find you, read your profile and book a session.' },
+  { icon: Wallet, tint: 'bg-amber-50 text-amber-600', title: 'Your rate, your hours', text: 'Charge per hour or per course, and accept only the sessions that suit you.' },
+  { icon: Hammer, tint: 'bg-rose-50 text-rose-600', title: 'Teach on your own bench', text: 'Learners come to your workshop and work with your tools on real jobs.' },
+  { icon: Star, tint: 'bg-violet-50 text-violet-600', title: 'Build your name', text: 'Every finished session can earn a review that brings the next learner.' }
+];
 
-  const isValidUgPhone = (p: string) => {
-    const digits = p.replace(/[^0-9]/g, '');
-    return digits.length >= 12 && digits.startsWith('256') && /^2567\d{8}$/.test(digits) || /^0?7\d{8}$/.test(p.replace(/\s/g,''));
-  };
-  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-  const isValidHourlyRate = (r: number) => r >= 15000 && r <= 100000;
+const START_STEPS = [
+  { icon: UserPlus, title: 'Create your account', text: 'Sign up as an educator. It takes a minute.' },
+  { icon: ClipboardList, title: 'Send your application', text: 'From your account: your craft, what you teach and your workshop. About ten minutes.' },
+  { icon: BadgeCheck, title: 'Get checked', text: 'We check your ID, talk to you, and visit your workshop.' },
+  { icon: CalendarCheck, title: 'Start teaching', text: 'Your profile goes live and learners can book you.' }
+];
 
-  // Step 1: Personal & Contact Details
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState(user?.phone || '+256 ');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [location, setLocation] = useState(user?.location || 'Mbarara City');
-  const [nationalIdNumber, setNationalIdNumber] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+const FAQS = [
+  { q: 'Do I need a certificate to teach?', a: 'No. Many of the best educators learned on the job. Add a certificate if you have one; either way, we see your work when we visit your workshop.' },
+  { q: 'Is it free to apply?', a: 'Yes. Creating an account and sending your application cost nothing.' },
+  { q: 'What happens after I apply?', a: 'We contact you on WhatsApp to arrange the checks: your national ID, a background check, a short interview and a visit to your workshop. You can follow each one from your dashboard.' },
+  { q: 'Can I teach online?', a: 'Yes, for trades that suit it, like web development or design. Most trades are taught in person at your workshop.' },
+  { q: 'I already have a learner account. Can I teach?', a: 'Educator accounts are separate. Sign up with another email, or message us and we’ll help you switch.' }
+];
 
-  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const size = Math.min(img.width, img.height);
-        const startX = (img.width - size) / 2;
-        const startY = (img.height - size) / 2;
-        const targetDim = 320;
-        canvas.width = targetDim;
-        canvas.height = targetDim;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, startX, startY, size, size, 0, 0, targetDim, targetDim);
-          setAvatarUrl(canvas.toDataURL('image/jpeg', 0.85));
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  };
+const sectionEyebrow = 'text-xs font-bold uppercase tracking-[0.14em] text-forest-700';
+const sectionTitle = 'mt-2 text-[1.75rem] sm:text-4xl font-bold text-ink-900 tracking-[-0.02em] font-display leading-[1.1]';
 
-  // Step 2: Educator Type & Experience
-  const [educatorType, setEducatorType] = useState<'artisan' | 'professional' | 'trainer' | 'practitioner' | 'mentor'>('artisan');
-  const [title, setTitle] = useState('');
-  const [yearsExperience, setYearsExperience] = useState(5);
-  const [bio, setBio] = useState('');
-  const [languages, setLanguages] = useState(['English', 'Runyankore-Rukiga', 'Luganda']);
+export const BecomeEducatorPage: React.FC<BecomeEducatorPageProps> = ({ setCurrentView }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Step 3: Skills Taught & Pricing
-  const [primarySkill, setPrimarySkill] = useState('');
-  const [skillCategory, setSkillCategory] = useState('cat-fashion');
-  const [skillProficiency, setSkillProficiency] = useState<'beginner' | 'intermediate' | 'advanced'>('advanced');
-  const [hourlyRateUGX, setHourlyRateUGX] = useState<number>(35000);
-  const [calcHoursPerWeek, setCalcHoursPerWeek] = useState(8);
-  const monthlyTakeHome = Math.round((hourlyRateUGX || 0) * calcHoursPerWeek * 4 * 0.9);
-  const [packageRateUGX, setPackageRateUGX] = useState<number>(350000);
-  const [skillDescription, setSkillDescription] = useState('');
+  useEffect(() => {
+    api.getCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
-  // Step 4: Teaching Format, Service Area & Equipment
-  const [teachingFormats, setTeachingFormats] = useState<TeachingFormat[]>(['in-person', 'hybrid']);
-  const [serviceArea, setServiceArea] = useState('Mbarara City, Kakoba, Kamukuzi, Booma');
-  const [equipmentProvided, setEquipmentProvided] = useState('');
-  const [availabilitySummary, setAvailabilitySummary] = useState('Weekdays after 3pm & Full Day Saturdays');
+  const signUpUrl = `/auth?mode=register&role=educator&next=${encodeURIComponent(APPLY_PATH)}`;
+  const signInUrl = `/auth?next=${encodeURIComponent(APPLY_PATH)}`;
+  const isAdmin = user?.role === 'admin' || user?.role === 'secondary_admin';
 
-  // Step 5: Qualifications, Portfolio, References & Consents
-  const [qualificationTitle, setQualificationTitle] = useState('');
-  const [qualificationInstitution, setQualificationInstitution] = useState('');
-  const [qualificationYear, setQualificationYear] = useState(2018);
-  const [portfolioTitle, setPortfolioTitle] = useState('');
-  const [portfolioDescription, setPortfolioDescription] = useState('');
-  const [portfolioImageUrl, setPortfolioImageUrl] = useState('');
-  const [referenceContact, setReferenceContact] = useState('');
+  // The one thing to do next, depending on who is looking.
+  const renderActions = (onDark = false) => {
+    const primary = `group inline-flex items-center gap-2.5 pl-6 pr-1.5 min-h-[52px] rounded-pill text-sm font-semibold transition ${onDark ? 'bg-sun-300 hover:bg-sun-200 text-ink-950' : 'bg-forest-700 hover:bg-forest-800 text-white'}`;
+    const arrow = (
+      <span className={`flex h-10 w-10 items-center justify-center rounded-full transition-transform group-hover:rotate-45 ${onDark ? 'bg-ink-950 text-sun-300' : 'bg-white text-forest-800'}`} aria-hidden="true">
+        <ArrowUpRight className="h-4 w-4" />
+      </span>
+    );
+    const secondary = `inline-flex items-center px-6 min-h-[52px] rounded-pill text-sm font-semibold transition ${onDark ? 'glass-dark text-white hover:bg-white/20' : 'border border-ink-200 bg-white text-ink-900 hover:bg-ink-50'}`;
 
-  // Consents
-  const [conductAgreed, setConductAgreed] = useState(false);
-  const [verificationAgreed, setVerificationAgreed] = useState(false);
-  const [privacyAgreed, setPrivacyAgreed] = useState(false);
-
-  const toggleFormat = (fmt: TeachingFormat) => {
-    if (teachingFormats.includes(fmt)) {
-      if (teachingFormats.length > 1) {
-        setTeachingFormats(teachingFormats.filter(f => f !== fmt));
-      }
-    } else {
-      setTeachingFormats([...teachingFormats, fmt]);
+    if (!user) {
+      return (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button onClick={() => navigate(signUpUrl)} className={primary}>Create an educator account{arrow}</button>
+          <button onClick={() => navigate(signInUrl)} className={secondary}>I already have an account</button>
+        </div>
+      );
     }
-  };
-
-  const handleNextStep = () => {
-    setErrorMsg('');
-    const errs: Record<string,string> = {};
-    if (currentStep === 1) {
-      if (!name.trim()) errs.name = 'Full legal name is required.';
-      if (!email.trim() || !isValidEmail(email)) errs.email = 'Valid email address is required.';
-      if (!phone.trim() || !isValidUgPhone(phone)) errs.phone = 'Valid Ugandan phone (+256 7XXXXXXXX) is required.';
-      if (!location.trim()) errs.location = 'Location is required.';
-      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please correct the highlighted contact fields.'); return; }
-    } else if (currentStep === 2) {
-      if (!title.trim()) errs.title = 'Professional headline is required.';
-      if (!bio.trim() || bio.trim().length < 20) errs.bio = 'Bio must be at least 20 characters.';
-      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please complete your craft background.'); return; }
-    } else if (currentStep === 3) {
-      if (!primarySkill.trim() || primarySkill.trim().length < 3) errs.primarySkill = 'Primary skill must be at least 3 characters.';
-      if (!hourlyRateUGX || !isValidHourlyRate(hourlyRateUGX)) errs.hourlyRateUGX = 'Hourly rate must be UGX 15,000 – 100,000.';
-      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please correct skill and pricing fields.'); return; }
-    } else if (currentStep === 4) {
-      if (teachingFormats.length === 0) errs.teachingFormats = 'Select at least one teaching format.';
-      if (!serviceArea.trim()) errs.serviceArea = 'Service area is required.';
-      if (Object.keys(errs).length) { setFieldErrors(errs); setErrorMsg('Please complete workshop details.'); return; }
+    if (isAdmin) {
+      return <button onClick={() => setCurrentView('admin-dashboard')} className={primary}>Open the admin dashboard{arrow}</button>;
     }
-    setFieldErrors({});
-    setCurrentStep(prev => prev + 1);
-  };
-
-  const handleSubmitApplication = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user && password.length < 8) {
-      setFieldErrors(prev => ({ ...prev, password: 'Choose a password of at least 8 characters.' }));
-      setErrorMsg('Choose a password so you can sign in and follow your application.');
-      return;
+    if (user.role === 'educator') {
+      return hasSentApplication(user)
+        ? <button onClick={() => setCurrentView('educator-dashboard')} className={primary}>Go to your dashboard{arrow}</button>
+        : <button onClick={() => navigate(APPLY_PATH)} className={primary}>Continue your application{arrow}</button>;
     }
-    if (!conductAgreed || !verificationAgreed || !privacyAgreed) {
-      setErrorMsg('Please agree to the conduct, verification and privacy terms.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMsg('');
-
-    try {
-      await api.submitEducatorOnboarding({
-        name,
-        email,
-        password: password || undefined,
-        phone,
-        location,
-        educator_type: educatorType,
-        title,
-        bio,
-        years_experience: yearsExperience,
-        service_area: serviceArea,
-        teaching_formats: teachingFormats,
-        languages,
-        equipment_provided: equipmentProvided || 'Practical tools provided at workshop bench.',
-        hourly_rate_ugx: hourlyRateUGX,
-        package_rate_ugx: packageRateUGX,
-        national_id_number: nationalIdNumber || 'CM-APP-PENDING',
-        avatar_url: avatarUrl || undefined,
-        skills: [
-          {
-            skill_name: primarySkill,
-            category_id: skillCategory,
-            proficiency_level: skillProficiency,
-            hourly_rate_ugx: hourlyRateUGX,
-            description: skillDescription || `${primarySkill} practical mentorship.`
-          }
-        ],
-        qualifications: qualificationTitle ? [
-          {
-            title: qualificationTitle,
-            institution: qualificationInstitution || 'Uganda Vocational Institute',
-            year: qualificationYear
-          }
-        ] : [],
-        portfolios: portfolioTitle ? [
-          {
-            title: portfolioTitle,
-            description: portfolioDescription,
-            image_url: portfolioImageUrl || '',
-            tag: primarySkill
-          }
-        ] : []
-      });
-
-      setSubmittedSuccess(true);
-      if (onApplicationSubmitted) onApplicationSubmitted();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to submit educator onboarding application.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (submittedSuccess) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6">
-        <div className="w-16 h-16 rounded-card bg-forest-100 text-forest-800 flex items-center justify-center mx-auto shadow-level-1">
-          <CheckCircle2 className="w-10 h-10" />
-        </div>
-
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
-            Application sent — thank you, {name.split(' ')[0]}
-          </h1>
-          <p className="text-xs sm:text-sm text-ink-600 max-w-md mx-auto">
-            We’ll message you on WhatsApp to arrange the checks below.
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-card border border-ink-200 shadow-level-1 text-left space-y-4">
-          <h2 className="text-base font-bold text-ink-900">What happens next</h2>
-          <ol className="space-y-3">
-            {VERIFICATION_STEPS.map((step, index) => (
-              <li key={step.key} className="flex gap-3">
-                <span className="w-6 h-6 shrink-0 rounded-full bg-ink-100 text-ink-700 text-xs font-bold flex items-center justify-center" aria-hidden="true">{index + 1}</span>
-                <div>
-                  <div className="text-sm font-semibold text-ink-900">{step.label}</div>
-                  <p className="text-sm text-ink-600">{step.applicantDetail}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <p className="text-sm text-ink-700">Learners can book you as soon as all four are done. You can follow each one from your dashboard.</p>
-        </div>
-
-        <div className="pt-4 flex items-center justify-center gap-3">
-          <button
-            onClick={() => setCurrentView('educator-dashboard')}
-            className="px-6 py-2.5 text-xs font-bold rounded-card bg-forest-700 hover:bg-forest-800 text-white shadow-level-1"
-          >
-            {user ? 'Follow your application' : 'Sign in to follow your application'}
-          </button>
-          <button
-            onClick={() => setCurrentView('home')}
-            className="px-6 py-2.5 text-xs font-semibold rounded-card bg-white border border-ink-200 text-ink-700 hover:bg-ink-50"
-          >
-            Back to Home
-          </button>
+      <div className={`max-w-lg rounded-card p-5 ${onDark ? 'glass-dark text-white' : 'border border-ink-200 bg-white'}`}>
+        <p className={`text-sm ${onDark ? 'text-forest-100' : 'text-ink-700'}`}>
+          You’re signed in as a learner. Educator accounts are separate: sign out and create one, or message us and we’ll help you switch.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a href="https://wa.me/256744024529?text=Hello%20iSkillLink%2C%20I%27d%20like%20to%20teach%20on%20iSkillLink." target="_blank" rel="noopener noreferrer" className={secondary}>Message us on WhatsApp</a>
+          <button onClick={async () => { await logout(); navigate(signUpUrl); }} className={secondary}>Sign out and sign up</button>
         </div>
       </div>
     );
-  }
+  };
 
   return (
-    <div className="container-app py-10 space-y-8">
-      <header className="max-w-2xl space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-bold text-ink-900 font-display">Teach your trade on iSkillLink</h1>
-        <p className="text-base text-ink-600 leading-relaxed">
-          Set your own rate, teach on your own bench, and keep 90% of every session. It takes about ten minutes —
-          then we check your ID and visit your workshop before learners can book you.
-        </p>
-      </header>
+    <div className="overflow-x-clip">
+      {/* ===== HERO ===== */}
+      <section className="container-app pt-12 pb-20 sm:pt-16 lg:pt-20 lg:pb-24">
+        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-16 lg:gap-10 items-center">
+          <div className="space-y-8">
+            <div className="space-y-5">
+              <p className={sectionEyebrow}>Teach on iSkillLink</p>
+              <h1 className="font-display font-bold text-ink-900 text-[2.4rem] sm:text-[3.4rem] lg:text-[4rem] leading-[1.02] tracking-[-0.035em]">
+                Teach your trade.{' '}
+                <span className="inline-flex items-center gap-3 sm:gap-4 whitespace-nowrap">
+                  Grow your name
+                  <svg aria-hidden="true" viewBox="0 0 100 100" className="hidden sm:block h-11 w-11 lg:h-12 lg:w-12 text-sun-300">
+                    <polygon points={STARBURST_POINTS} fill="currentColor" />
+                  </svg>
+                </span>
+              </h1>
+              <p className="text-base sm:text-lg text-ink-600 leading-relaxed max-w-[34rem]">
+                Bring learners to your workshop and get paid for what you already know. We find the learners, handle the bookings,
+                and check every educator so learners can trust you.
+              </p>
+            </div>
+            {renderActions()}
+            <p className="text-sm text-ink-500">Free to join. About ten minutes to apply once you have an account.</p>
+          </div>
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_20rem] gap-8 lg:gap-12 items-start">
-      <div className="space-y-6 min-w-0">
-      {/* Progress: where you are, in words and as a bar */}
-      <div className="space-y-2" aria-live="polite">
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="font-semibold text-ink-900">Step {currentStep} of 5 · {STEP_NAMES[currentStep - 1]}</span>
-          {currentStep < 5 && <span className="text-ink-600">Next: {STEP_NAMES[currentStep]}</span>}
+          {/* The teacher in a circle, inside a slowly turning ring of words */}
+          <div className="relative mx-auto aspect-square w-full max-w-[20rem] sm:max-w-[26rem]">
+            <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full animate-[spin_40s_linear_infinite] motion-reduce:animate-none" aria-hidden="true">
+              <defs>
+                <path id="teach-ring" d="M100,100 m-90,0 a90,90 0 1,1 180,0 a90,90 0 1,1 -180,0" />
+              </defs>
+              <text className="font-display" fontSize="10.5" fontWeight="700" fill="#1f1c18">
+                <textPath href="#teach-ring" textLength="562" lengthAdjust="spacing">
+                  TEACH YOUR TRADE • GROW YOUR NAME • TEACH YOUR TRADE • GROW YOUR NAME •
+                </textPath>
+              </text>
+            </svg>
+            <img
+              src={teacherChalkboardPhoto}
+              width={518}
+              height={518}
+              alt="A teacher explaining a lesson at the chalkboard"
+              className="absolute inset-[12%] h-[76%] w-[76%] rounded-full object-cover object-[30%_30%] bg-ink-100 shadow-level-3"
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-5 gap-1.5" aria-hidden="true">
-          {STEP_NAMES.map((stepName, index) => (
-            <span key={stepName} className={`h-1.5 rounded-full ${index < currentStep ? 'bg-forest-700' : 'bg-ink-200'}`} />
+      </section>
+
+      {/* ===== WHY TEACH — the illustration beside four benefits ===== */}
+      <section className="container-app pb-16 lg:pb-24" aria-labelledby="why-heading">
+        <div className="max-w-2xl">
+          <p className={sectionEyebrow}>Why teach here</p>
+          <h2 id="why-heading" className={sectionTitle}>Do the work you know, and pass it on</h2>
+        </div>
+        <div className="mt-10 grid lg:grid-cols-[0.95fr_1.05fr] gap-6 items-stretch">
+          <div className="flex items-end overflow-hidden rounded-[32px] bg-[#f7e4de]">
+            <img src={educatorsIllustration} width={678} height={452} alt="Illustration of four educators holding notebooks" loading="lazy" decoding="async" className="w-full" />
+          </div>
+          <ul className="grid sm:grid-cols-2 gap-4">
+            {BENEFITS.map(({ icon: Icon, tint, title, text }) => (
+              <li key={title} className="glass rounded-card p-6">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-control ${tint}`} aria-hidden="true">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <h3 className="mt-5 text-lg font-bold text-ink-900">{title}</h3>
+                <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">{text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ===== HOW TO START ===== */}
+      <section className="bg-ink-50/60 border-y border-ink-100 py-16 lg:py-24" aria-labelledby="start-heading">
+        <div className="container-app">
+          <div className="text-center max-w-2xl mx-auto">
+            <p className={sectionEyebrow}>How to start</p>
+            <h2 id="start-heading" className={sectionTitle}>Four steps to your first learner</h2>
+          </div>
+          <ol className="relative mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+            <span aria-hidden="true" className="absolute left-[12.5%] right-[12.5%] top-7 hidden border-t-2 border-dashed border-forest-200 lg:block" />
+            {START_STEPS.map(({ icon: Icon, title, text }, index) => (
+              <li key={title} className="relative text-center">
+                <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-forest-700 text-white ring-8 ring-ink-50" aria-hidden="true">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <p className="mt-5 text-caption text-forest-700">Step {index + 1}</p>
+                <h3 className="mt-1 text-lg font-bold text-ink-900">{title}</h3>
+                <p className="mt-1.5 text-sm text-ink-600 leading-relaxed max-w-[16rem] mx-auto">{text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ===== EVERY TRADE ===== */}
+      <section className="container-app pb-16 lg:pb-24 text-center" aria-labelledby="trades-heading">
+        <p className={sectionEyebrow}>Every trade is welcome</p>
+        <h2 id="trades-heading" className={sectionTitle}>Whatever you make, someone wants to learn it</h2>
+        <ul className="mt-10 flex flex-wrap justify-center gap-2.5">
+          {categories.map(category => (
+            <li key={category.id} className="inline-flex items-center gap-2 rounded-pill border border-ink-200 bg-white py-1.5 pl-1.5 pr-4 text-sm font-medium text-ink-800">
+              <span className={`flex h-7 w-7 items-center justify-center rounded-full ${categoryColor(category.id)}`} aria-hidden="true">
+                <CategoryIcon iconName={category.icon_name} className="h-3.5 w-3.5" />
+              </span>
+              {category.name}
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </section>
 
-      {/* Application Form Body */}
-      <div className="bg-white p-6 sm:p-8 rounded-card border border-ink-200 shadow-level-1 space-y-6">
-        {errorMsg && (
-          <Alert>{errorMsg}</Alert>
-        )}
-
-        {/* STEP 1: Personal & Contact */}
-        {currentStep === 1 && (
-          <div className="space-y-4">
-            <div className="border-b border-ink-100 pb-3">
-              <h2 className="text-lg font-bold text-ink-900">About you</h2>
-              <p className="text-sm text-ink-600">How learners and our team will know and reach you.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Full Legal Name" htmlFor="be-name" required error={fieldErrors.name}>
-                <Input
-                  id="be-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); if(fieldErrors.name) setFieldErrors(prev=>({...prev, name:''})); }}
-                  placeholder="As on your national ID"
-                  error={!!fieldErrors.name}
-                  required
-                />
-              </Field>
-
-              <Field label="Email Address" htmlFor="be-email" required error={fieldErrors.email}>
-                <Input
-                  id="be-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); if(fieldErrors.email) setFieldErrors(prev=>({...prev, email:''})); }}
-                  placeholder="e.g. joseph.mukasa@gmail.com"
-                  error={!!fieldErrors.email}
-                  required
-                />
-              </Field>
-
-              <Field label="Primary Mobile Phone" htmlFor="be-phone" required error={fieldErrors.phone}>
-                <Input
-                  id="be-phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => { setPhone(e.target.value); if(fieldErrors.phone) setFieldErrors(prev=>({...prev, phone:''})); }}
-                  placeholder="+256 77X XXX XXX"
-                  error={!!fieldErrors.phone}
-                  required
-                />
-              </Field>
-
-              <Field label="WhatsApp Number (Optional)" htmlFor="be-whatsapp">
-                <Input
-                  id="be-whatsapp"
-                  type="tel"
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="+256 70X XXX XXX"
-                />
-              </Field>
-
-              <Field label="General Location / Base" htmlFor="be-location" required error={fieldErrors.location}>
-                <Input
-                  id="be-location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => { setLocation(e.target.value); if(fieldErrors.location) setFieldErrors(prev=>({...prev, location:''})); }}
-                  placeholder="e.g. Kakoba, Mbarara"
-                  error={!!fieldErrors.location}
-                  required
-                />
-              </Field>
-
-              <Field label="National ID (NIN) Number" htmlFor="be-nin" hint="Used strictly for identity verification.">
-                <Input
-                  id="be-nin"
-                  type="text"
-                  value={nationalIdNumber}
-                  onChange={(e) => setNationalIdNumber(e.target.value)}
-                  placeholder="e.g. CM840291038ABK"
-                />
-              </Field>
-
-              <div className="sm:col-span-2 pt-2 border-t border-ink-100">
-                <label className="block text-xs font-semibold text-ink-700 mb-1">
-                  Educator Profile Photo (Optional)
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-card overflow-hidden bg-ink-50 border border-ink-200 flex items-center justify-center shrink-0 shadow-level-1">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <Upload className="w-6 h-6 text-ink-400" />
-                    )}
-                  </div>
-                  <div>
-                    <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-card bg-forest-50 text-forest-800 border border-forest-200 text-xs font-bold hover:bg-forest-100 cursor-pointer transition">
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>{avatarUrl ? 'Change Photo' : 'Upload Profile Photo'}</span>
-                      <input
-                        type="file"
-                        onChange={handleAvatarFile}
-                        accept="image/*"
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-[12px] text-ink-500 mt-1">Photo appears on your verified mentor card across Uganda.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 2: Craft & Experience */}
-        {currentStep === 2 && (
-          <div className="space-y-4">
-            <div className="border-b border-ink-100 pb-3">
-              <h3 className="text-base font-bold text-ink-900">Step 2: Educator Type & Craft Background</h3>
-              <p className="text-xs text-ink-500">Tell learners about your experience and mastery level.</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1.5">
-                  Which best describes you? <span className="text-rose-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                  {[
-                    { id: 'artisan', label: 'Master Artisan', desc: 'Craft/Vocational master' },
-                    { id: 'practitioner', label: 'Practitioner', desc: 'Active trade technician' },
-                    { id: 'professional', label: 'Professional', desc: 'Certified consultant' },
-                    { id: 'trainer', label: 'Trainer', desc: 'Formal instructor' },
-                    { id: 'mentor', label: 'Mentor', desc: 'Business/Trade coach' }
-                  ].map(t => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      onClick={() => setEducatorType(t.id as any)}
-                      aria-pressed={educatorType === t.id}
-                      aria-label={t.label}
-                      className={`p-3 rounded-card border text-left transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 min-h-[44px] ${
-                        educatorType === t.id
-                          ? 'bg-forest-50 border-forest-600 text-forest-950 font-bold ring-2 ring-forest-500/20'
-                          : 'border-ink-200 text-ink-700 hover:bg-ink-50 active:bg-ink-100'
-                      }`}
-                    >
-                      <div className="font-bold text-xs">{t.label}</div>
-                      <div className="text-[12px] text-ink-600 mt-0.5">{t.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Field label="Professional Headline / Title" htmlFor="be-title" required error={fieldErrors.title}>
-                  <Input
-                    id="be-title"
-                    type="text"
-                    value={title}
-                    onChange={(e) => { setTitle(e.target.value); if(fieldErrors.title) setFieldErrors(prev=>({...prev, title:''})); }}
-                    placeholder="e.g. Master Tailor & Pattern Construction Instructor"
-                    error={!!fieldErrors.title}
-                    required
-                  />
-                </Field>
-
-                <Field label="Years of Active Experience" htmlFor="be-years" required>
-                  <Input
-                    id="be-years"
-                    type="number"
-                    min={1}
-                    max={50}
-                    value={String(yearsExperience)}
-                    onChange={(e) => setYearsExperience(Number(e.target.value))}
-                    required
-                  />
-                </Field>
-              </div>
-
-              <Field label="Professional Bio & Teaching Methodology" htmlFor="be-bio" required error={fieldErrors.bio}>
-                <Textarea
-                  id="be-bio"
-                  rows={4}
-                  value={bio}
-                  onChange={(e) => { setBio(e.target.value); if(fieldErrors.bio) setFieldErrors(prev=>({...prev, bio:''})); }}
-                  placeholder="Describe your background, workshops you run, techniques you specialize in, and how you teach apprentices step-by-step..."
-                  error={!!fieldErrors.bio}
-                  required
-                />
-              </Field>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Skills & UGX Pricing */}
-        {currentStep === 3 && (
-          <div className="space-y-4">
-            <div className="border-b border-ink-100 pb-3">
-              <h3 className="text-base font-bold text-ink-900">Step 3: Primary Skill Taught & UGX Pricing</h3>
-              <p className="text-xs text-ink-500">Define what you teach and set your hourly rate in Ugandan Shillings.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Primary Skill Taught" htmlFor="be-primary-skill" required error={fieldErrors.primarySkill}>
-                <Input
-                  id="be-primary-skill"
-                  type="text"
-                  value={primarySkill}
-                  onChange={(e) => { setPrimarySkill(e.target.value); if(fieldErrors.primarySkill) setFieldErrors(prev=>({...prev, primarySkill:''})); }}
-                  placeholder="e.g. Garment Pattern Drafting & Cutting"
-                  error={!!fieldErrors.primarySkill}
-                  required
-                />
-              </Field>
-
-              <Field label="Skill Category" htmlFor="be-skill-category">
-                <Select
-                  id="be-skill-category"
-                  value={skillCategory}
-                  onChange={(e) => setSkillCategory(e.target.value)}
-                >
-                  <option value="cat-fashion">Fashion & Tailoring</option>
-                  <option value="cat-tech">Web Dev & Programming</option>
-                  <option value="cat-repair">Phone Repair & Electronics</option>
-                  <option value="cat-culinary">Cooking & Baking</option>
-                  <option value="cat-electrical">Electrical & Solar</option>
-                  <option value="cat-welding">Welding & Metalwork</option>
-                  <option value="cat-carpentry">Carpentry & Woodwork</option>
-                  <option value="cat-agriculture">Agriculture & Agribusiness</option>
-                  <option value="cat-photography">Photography & Video</option>
-                  <option value="cat-design">Graphic Design & UI/UX</option>
-                  <option value="cat-business">Accounting & Business</option>
-                  <option value="cat-beauty">Beauty & Hair</option>
-                </Select>
-              </Field>
-
-              <Field label="Your Hourly Rate (UGX)" htmlFor="be-hourly-rate" required error={fieldErrors.hourlyRateUGX} hint={!fieldErrors.hourlyRateUGX ? `${formatUGX(hourlyRateUGX)} / hr (You receive 90% via Mobile Money)` : undefined}>
-                <Input
-                  id="be-hourly-rate"
-                  type="number"
-                  step={5000}
-                  min={15000}
-                  max={100000}
-                  value={String(hourlyRateUGX)}
-                  onChange={(e) => { setHourlyRateUGX(Number(e.target.value)); if(fieldErrors.hourlyRateUGX) setFieldErrors(prev=>({...prev, hourlyRateUGX:''})); }}
-                  error={!!fieldErrors.hourlyRateUGX}
-                  required
-                />
-              </Field>
-
-              <Field label="Course Package Rate (Optional)" htmlFor="be-package-rate" hint="e.g. 4-week complete mastery package">
-                <Input
-                  id="be-package-rate"
-                  type="number"
-                  step={10000}
-                  value={String(packageRateUGX)}
-                  onChange={(e) => setPackageRateUGX(Number(e.target.value))}
-                />
-              </Field>
-
-              <div className="sm:col-span-2">
-                <Field label="What will the apprentice learn and build?" htmlFor="be-skill-desc">
-                  <Input
-                    id="be-skill-desc"
-                    type="text"
-                    value={skillDescription}
-                    onChange={(e) => setSkillDescription(e.target.value)}
-                    placeholder="e.g. Drafting manual patterns, taking body measurements, making blazers and trousers."
-                  />
-                </Field>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: Workshop & Formats */}
-        {currentStep === 4 && (
-          <div className="space-y-4">
-            <div className="border-b border-ink-100 pb-3">
-              <h3 className="text-base font-bold text-ink-900">Step 4: Teaching Formats & Workshop Setup</h3>
-              <p className="text-xs text-ink-500">How and where you conduct training sessions.</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-ink-700 mb-1.5">
-                  Select Formats You Offer <span className="text-rose-500">*</span>
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { id: 'in-person' as TeachingFormat, label: 'In-Person Workshop', desc: 'At your physical shop or workspace' },
-                    { id: 'hybrid' as TeachingFormat, label: 'Hybrid Format', desc: 'In-person practicals + online theory' },
-                    { id: 'online' as TeachingFormat, label: 'Online Live', desc: 'Video calls & code/screen share' }
-                  ].map(f => (
-                    <button
-                      type="button"
-                      key={f.id}
-                      onClick={() => { toggleFormat(f.id); if(fieldErrors.teachingFormats) setFieldErrors(prev=>({...prev, teachingFormats:''})); }}
-                      aria-pressed={teachingFormats.includes(f.id)}
-                      className={`p-3 rounded-card border text-left transition focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 min-h-[44px] ${
-                        teachingFormats.includes(f.id)
-                          ? 'bg-forest-50 border-forest-600 text-forest-950 font-bold ring-2 ring-forest-500/20'
-                          : 'border-ink-200 text-ink-600 hover:bg-ink-50 active:bg-ink-100'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold">{f.label}</span>
-                        {teachingFormats.includes(f.id) && <CheckCircle2 className="w-4 h-4 text-forest-700" />}
-                      </div>
-                      <p className="text-[12px] text-ink-500 mt-1">{f.desc}</p>
-                    </button>
-                  ))}
-                </div>
-                {fieldErrors.teachingFormats && <span className="text-[12px] text-rose-600 mt-1 block">{fieldErrors.teachingFormats}</span>}
-              </div>
-
-              <Field label="Service Area & Divisions Covered" htmlFor="be-service-area" required error={fieldErrors.serviceArea}>
-                <Input
-                  id="be-service-area"
-                  type="text"
-                  value={serviceArea}
-                  onChange={(e) => { setServiceArea(e.target.value); if(fieldErrors.serviceArea) setFieldErrors(prev=>({...prev, serviceArea:''})); }}
-                  placeholder="e.g. Kampala Central, Nakawa, Makindye, Wakiso"
-                  error={!!fieldErrors.serviceArea}
-                  required
-                />
-              </Field>
-
-              <Field label="Workshop Tools & Equipment Provided" htmlFor="be-equipment" required>
-                <Textarea
-                  id="be-equipment"
-                  rows={2}
-                  value={equipmentProvided}
-                  onChange={(e) => setEquipmentProvided(e.target.value)}
-                  placeholder="e.g. Juki industrial straight machines, cutting tables, tailoring shears, brown drafting paper and measuring tapes."
-                  required
-                />
-              </Field>
-
-              <Field label="General Availability" htmlFor="be-availability">
-                <Input
-                  id="be-availability"
-                  type="text"
-                  value={availabilitySummary}
-                  onChange={(e) => setAvailabilitySummary(e.target.value)}
-                  placeholder="e.g. Saturdays full day, weekday evenings"
-                />
-              </Field>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5: Proof, Qualifications & Consents */}
-        {currentStep === 5 && (
-          <form onSubmit={handleSubmitApplication} className="space-y-5">
-            <div className="border-b border-ink-100 pb-3">
-              <h3 className="text-base font-bold text-ink-900">Step 5: Credentials, Portfolio & Verification Consent</h3>
-              <p className="text-xs text-ink-500">Provide evidence of your craft to accelerate your verification approval.</p>
-            </div>
-
-            {/* Qualifications */}
-            <div className="bg-ink-50 p-4 rounded-card border border-ink-200 space-y-3">
-              <h4 className="text-xs font-bold text-ink-800 uppercase tracking-wider">
-                Qualification / Certification
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Title / Trade Test</label>
-                  <input
-                    type="text"
-                    value={qualificationTitle}
-                    onChange={(e) => setQualificationTitle(e.target.value)}
-                    placeholder="e.g. DIT Master Artisan Trade Test 1 (Tailoring)"
-                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Year</label>
-                  <input
-                    type="number"
-                    value={qualificationYear}
-                    onChange={(e) => setQualificationYear(Number(e.target.value))}
-                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
-                  />
-                </div>
-                <div className="sm:col-span-3">
-                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Institution / Authority</label>
-                  <input
-                    type="text"
-                    value={qualificationInstitution}
-                    onChange={(e) => setQualificationInstitution(e.target.value)}
-                    placeholder="e.g. Directorate of Industrial Training (DIT) Uganda"
-                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Portfolio sample */}
-            <div className="bg-ink-50 p-4 rounded-card border border-ink-200 space-y-3">
-              <h4 className="text-xs font-bold text-ink-800 uppercase tracking-wider">
-                Sample Work / Practical Portfolio
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Project Title</label>
-                  <input
-                    type="text"
-                    value={portfolioTitle}
-                    onChange={(e) => setPortfolioTitle(e.target.value)}
-                    placeholder="e.g. Bespoke 3-Piece Linen Groom Suit"
-                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Image Link / Work Photo</label>
-                  <input
-                    type="url"
-                    value={portfolioImageUrl}
-                    onChange={(e) => setPortfolioImageUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-[12px] font-semibold text-ink-700 mb-0.5">Work Description</label>
-                  <input
-                    type="text"
-                    value={portfolioDescription}
-                    onChange={(e) => setPortfolioDescription(e.target.value)}
-                    placeholder="e.g. Hand-tailored canvas interlining and custom lapel stitch finish."
-                    className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2 bg-white text-ink-900"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Trade Reference */}
-            <div>
-              <label className="block text-xs font-semibold text-ink-700 mb-1">
-                Professional / Trade Reference (Name & Contact Phone)
-              </label>
-              <input
-                type="text"
-                value={referenceContact}
-                onChange={(e) => setReferenceContact(e.target.value)}
-                placeholder="e.g. Charles Ssemakula (Workshop Chairman Kiyembe) - 0772 334 112"
-                className="w-full text-base sm:text-xs rounded-lg border-ink-200 border p-2.5 bg-white text-ink-900"
-              />
-            </div>
-
-            {!user && (
-              <Field label="Choose a password" htmlFor="be-password" required error={fieldErrors.password} hint="You’ll use it to sign in and follow your application.">
-                <Input
-                  id="be-password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' })); }}
-                  placeholder="At least 8 characters"
-                  minLength={8}
-                  error={!!fieldErrors.password}
-                  required
-                />
-              </Field>
-            )}
-
-            {/* Security & Verification Consents */}
-            <div className="bg-forest-50/60 p-4 rounded-card border border-forest-200 space-y-2.5 text-xs text-forest-950">
-              <h4 className="font-bold text-xs flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-forest-700" />
-                <span>Verification Agreements & Code of Conduct</span>
-              </h4>
-
-              <label className="flex items-start gap-2 cursor-pointer pt-1">
-                <input
-                  type="checkbox"
-                  checked={conductAgreed}
-                  onChange={(e) => setConductAgreed(e.target.checked)}
-                  className="mt-0.5 text-forest-700 rounded focus:ring-forest-700"
-                  required
-                />
-                <span className="text-ink-700 text-[12px]">
-                  <strong>Professional Conduct Agreement:</strong> I agree to maintain safe workshop standards, provide respectful training, and adhere to agreed schedules.
-                </span>
-              </label>
-
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={verificationAgreed}
-                  onChange={(e) => setVerificationAgreed(e.target.checked)}
-                  className="mt-0.5 text-forest-700 rounded focus:ring-forest-700"
-                  required
-                />
-                <span className="text-ink-700 text-[12px]">
-                  <strong>Verification Consent:</strong> I authorize iSkillLink to verify my National ID (NIN), inspect my workshop premises, and contact my trade references.
-                </span>
-              </label>
-
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={privacyAgreed}
-                  onChange={(e) => setPrivacyAgreed(e.target.checked)}
-                  className="mt-0.5 text-forest-700 rounded focus:ring-forest-700"
-                  required
-                />
-                <span className="text-ink-700 text-[12px]">
-                  <strong>Data Privacy:</strong> I understand iSkillLink does NOT store passwords, Mobile Money PINs, or bank access credentials.
-                </span>
-              </label>
-            </div>
-
-            <div className="pt-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(4)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-ink-50 text-ink-700 hover:bg-ink-200 flex items-center gap-1"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back</span>
-              </button>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2.5 text-xs font-bold rounded-card bg-forest-700 hover:bg-forest-800 text-white shadow-level-1 flex items-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <span>Sending…</span>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Send application</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Navigation buttons for Steps 1-4 — Phase 4: 44px thumb-reach */}
-        {currentStep < 5 && (
-          <div className="pt-4 border-t border-ink-100 flex items-center justify-between gap-3 pb-safe">
-            {currentStep > 1 ? (
-              <button
-                type="button"
-                onClick={() => setCurrentStep(prev => prev - 1)}
-                className="px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-control bg-ink-50 text-ink-700 hover:bg-ink-100 border border-ink-200 flex items-center gap-1.5"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back</span>
-              </button>
-            ) : <div></div>}
-
-            <button
-              type="button"
-              onClick={handleNextStep}
-              className="px-6 py-2.5 min-h-[44px] text-xs font-bold rounded-card bg-forest-700 hover:bg-forest-800 text-white shadow-level-1 flex items-center gap-1.5"
-            >
-              <span>Continue</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+      {/* ===== FAQ ===== */}
+      <section className="container-app pb-16 lg:pb-24" aria-labelledby="faq-heading">
+        <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-16">
+          <div>
+            <p className={sectionEyebrow}>Questions</p>
+            <h2 id="faq-heading" className={sectionTitle}>What educators ask us</h2>
+            <p className="mt-3 text-base text-ink-600 leading-relaxed max-w-md">Can’t see your question? Our team in Mbarara answers on WhatsApp.</p>
+            <button onClick={() => setCurrentView('contact')} className="mt-6 inline-flex items-center gap-2 px-6 min-h-[48px] rounded-pill bg-ink-900 hover:bg-forest-800 text-white text-sm font-semibold transition">
+              Contact us<ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
-        )}
-      </div>
-      </div>
+          <ul className="space-y-3">
+            {FAQS.map((faq, index) => {
+              const open = openFaq === index;
+              return (
+                <li key={faq.q} className={`rounded-card border transition ${open ? 'border-forest-200 bg-forest-50/60' : 'border-ink-200 bg-white'}`}>
+                  <h3 className="text-base">
+                    <button
+                      onClick={() => setOpenFaq(open ? null : index)}
+                      aria-expanded={open}
+                      aria-controls={`teach-faq-${index}`}
+                      className="flex w-full items-center justify-between gap-4 px-5 py-4 min-h-[56px] text-left font-semibold text-ink-900 font-sans"
+                    >
+                      {faq.q}
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${open ? 'bg-forest-700 text-white' : 'bg-ink-100 text-ink-700'}`} aria-hidden="true">
+                        {open ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      </span>
+                    </button>
+                  </h3>
+                  {open && <p id={`teach-faq-${index}`} className="px-5 pb-5 -mt-1 text-sm text-ink-700 leading-relaxed">{faq.a}</p>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
 
-      {/* Beside the form: what it's worth, and a way to apply without typing */}
-      <aside className="space-y-4 lg:sticky lg:top-24" aria-label="What you could earn">
-        <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-5 space-y-4">
-          <h2 className="text-base font-bold text-ink-900">What you’d take home</h2>
-          <Field label="Your rate per hour (UGX)" htmlFor="calc-rate">
-            <Input
-              id="calc-rate"
-              type="number"
-              inputMode="numeric"
-              step={1000}
-              min={15000}
-              value={hourlyRateUGX || ''}
-              onChange={(e) => setHourlyRateUGX(Number(e.target.value))}
-            />
-          </Field>
-          <fieldset>
-            <legend className="text-[14px] font-semibold text-ink-700 mb-1.5">Hours you’d teach a week</legend>
-            <div className="grid grid-cols-3 gap-2">
-              {[4, 8, 12].map(hours => (
-                <button
-                  key={hours}
-                  type="button"
-                  onClick={() => setCalcHoursPerWeek(hours)}
-                  aria-pressed={calcHoursPerWeek === hours}
-                  className={`min-h-[44px] md:min-h-[40px] rounded-control border text-sm font-semibold ${calcHoursPerWeek === hours ? 'bg-forest-50 border-forest-600 text-forest-900' : 'border-ink-200 text-ink-700 hover:bg-ink-50'}`}
-                >
-                  {hours} hrs
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <div className="pt-3 border-t border-ink-200">
-            <div className="text-sm text-ink-600">About a month</div>
-            <div className="font-display text-3xl font-bold text-ink-900 tabular-nums">{formatUGX(monthlyTakeHome)}</div>
-            <p className="text-xs text-ink-600 mt-1">{formatUGX(hourlyRateUGX || 0)} × {calcHoursPerWeek} hrs × 4 weeks, after our 10% fee. Your rate here is used in step 3.</p>
+      {/* ===== FINAL CALL ===== */}
+      <section className="container-app pb-20" aria-labelledby="cta-heading">
+        <div className="relative isolate overflow-hidden rounded-display bg-forest-950 px-6 py-12 sm:p-14 text-white">
+          <span aria-hidden="true" className="absolute -right-12 -top-16 -z-10 h-56 w-56 rounded-full border border-white/15 bg-white/5" />
+          <span aria-hidden="true" className="absolute right-32 -bottom-12 -z-10 h-32 w-32 rounded-full border border-white/15 bg-white/5" />
+          <div className="max-w-2xl">
+            <h2 id="cta-heading" className="font-display text-[1.75rem] sm:text-4xl font-bold leading-[1.1] tracking-[-0.02em]">Ready to teach your trade?</h2>
+            <p className="mt-3 text-base text-forest-100/85">Create your account, send your application, and we’ll be in touch on WhatsApp.</p>
+            <div className="mt-8">{renderActions(true)}</div>
           </div>
         </div>
-
-        <div className="rounded-card border border-ink-200 bg-ink-50 p-5 space-y-2">
-          <h2 className="text-sm font-bold text-ink-900">Rather apply by phone?</h2>
-          <p className="text-sm text-ink-600">Send us a WhatsApp and we’ll fill this in with you.</p>
-          <a
-            href="https://wa.me/256744024529?text=Hello%20iSkillLink%2C%20I%27d%20like%20to%20apply%20to%20teach.%20My%20trade%20is%3A%20"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center min-h-[44px] px-4 rounded-control bg-white border border-ink-200 hover:bg-ink-100 text-sm font-bold text-ink-900"
-          >
-            Apply on WhatsApp
-          </a>
-        </div>
-      </aside>
-      </div>
+      </section>
     </div>
   );
 };

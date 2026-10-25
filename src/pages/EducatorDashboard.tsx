@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import { formatUGX, formatShortDate } from '../utils/formatters';
 import { PaymentStatusBadge, StatusBadge } from '../components/ui/Badge';
 import { VERIFICATION_STEPS, isStepPassed, verificationProgress } from '../utils/verification';
+import { APPLY_PATH, REGISTRATION_TITLE } from '../utils/educatorApplication';
 import { ProfilePhotoUploadModal } from '../components/ProfilePhotoUploadModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -173,6 +174,10 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     .reduce((sum, p) => sum + p.platform_fee_ugx, 0);
 
   const isLive = educator?.status === 'active' || educator?.status === 'approved';
+
+  // Registered as an educator but hasn't sent the application from their account yet.
+
+  const applicationNotSent = !!educator && educator.title === REGISTRATION_TITLE;
   const progress = verificationProgress(educator?.verification);
   const nextStepIndex = VERIFICATION_STEPS.findIndex(step => !isStepPassed(educator?.verification, step));
   const reviewCount = educator?.total_reviews || 0;
@@ -217,7 +222,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
           icon={<GraduationCap className="w-6 h-6" />}
           title="No educator profile yet"
           description="Complete the educator application so the iSkillLink team can verify your trade credentials and list you for learners."
-          action={<button onClick={() => navigate('/become-educator')} className="rounded-card bg-forest-700 px-4 py-2 text-xs font-bold text-white">Apply to teach</button>}
+          action={<button onClick={() => navigate('/dashboard/educator/apply')} className="rounded-pill bg-forest-700 px-5 min-h-[44px] text-sm font-semibold text-white">Start your application</button>}
         />
       </div>
       </DashboardShell>
@@ -235,7 +240,7 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
     ]}>
     <div className="container-app space-y-6">
       <DashboardHeader
-        eyebrow={isLive ? 'Educator portal' : 'Application in review'}
+        eyebrow={isLive ? 'Educator portal' : applicationNotSent ? 'Application not sent yet' : 'Application in review'}
         title={user?.name || 'Educator'}
         description={[educator?.title, `${educator?.years_experience || 0} years experience`, ratingSummary, `${formatUGX(educator?.hourly_rate_ugx || 0)}/hr`].filter(Boolean).join(' · ')}
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/educator' }, { label: TAB_LABELS[activeTab] }]}
@@ -254,6 +259,14 @@ export const EducatorDashboard: React.FC<EducatorDashboardProps> = () => {
               <h2 id="hold-heading" className="text-lg font-bold text-ink-900">Your profile is on hold</h2>
               <p className="text-sm text-ink-600">Learners can’t book you right now. {educator.verification_notes ? `Reason: ${educator.verification_notes}. ` : ''}Message us on WhatsApp to sort it out.</p>
               <a href="https://wa.me/256744024529" target="_blank" rel="noopener noreferrer" className="inline-flex px-4 py-2.5 min-h-[44px] items-center rounded-control bg-forest-700 hover:bg-forest-800 text-white text-xs font-bold">WhatsApp iSkillLink</a>
+            </section>
+          ) : applicationNotSent ? (
+            <section className="rounded-display border border-forest-200 bg-forest-50/70 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5" aria-labelledby="finish-heading">
+              <div>
+                <h2 id="finish-heading" className="text-xl font-bold text-ink-900">Finish your application to start teaching</h2>
+                <p className="mt-1 text-sm text-ink-700 max-w-xl">Tell us about your craft, what you teach and your workshop. It takes about ten minutes, then we arrange your checks on WhatsApp.</p>
+              </div>
+              <button onClick={() => navigate(APPLY_PATH)} className="shrink-0 px-6 min-h-[48px] rounded-pill bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold">Continue your application</button>
             </section>
           ) : !isLive ? (
             <section className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-5" aria-labelledby="application-heading">

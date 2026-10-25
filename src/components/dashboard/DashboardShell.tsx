@@ -50,7 +50,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children, role: 
   }, [sidebarOpen]);
 
   return (
-    <div className={cn('min-h-screen bg-ink-50', className)}>
+    <div className={cn('min-h-screen bg-white', className)}>
       {sidebarOpen && <button type="button" className="fixed inset-0 z-40 bg-ink-950/40 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close navigation overlay" />}
       <div className="flex min-h-screen">
         <DashboardSidebar items={items} role={role} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
