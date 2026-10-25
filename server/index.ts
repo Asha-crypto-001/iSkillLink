@@ -140,6 +140,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // AUTHENTICATION & ACCESS CONTROL
 // ==========================================
 
+/** Photos sent at sign-up: an image data URL (cropped client-side, under ~1MB) or an https link. */
+function acceptableAvatar(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  if (value.startsWith('data:image/') && value.length < 1_000_000) return value;
+  if (value.startsWith('https://')) return value;
+  return '';
+}
+
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -148,12 +156,12 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
   const user = db.findUserByEmail(String(email).trim());
   if (!user) {
-    return res.status(401).json({ error: 'Account not found with this email. Please register.' });
+    return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
 
   const isPasswordValid = await comparePassword(password, user.password_hash);
   if (!isPasswordValid) {
-    return res.status(401).json({ error: 'Incorrect password. Please try again.' });
+    return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
 
   // Return every profile the account owns (a learner may also have applied to teach).
@@ -280,7 +288,8 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     role,
     name: String(name).trim(),
     phone: phone || '+256 744 024 529',
-    avatar_url: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+    // Keep the photo chosen at sign-up (a data URL or https link); never substitute a stock face.
+    avatar_url: acceptableAvatar(req.body.avatar_url),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -542,7 +551,7 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
       role: 'educator',
       name: String(name).trim(),
       phone: phone || '+256 744 024 529',
-      avatar_url: req.body.avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+      avatar_url: acceptableAvatar(req.body.avatar_url),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -622,7 +631,7 @@ app.post('/api/educators/onboard', optionalToken, async (req: Request, res: Resp
         educator_id: educatorId,
         title: p.title || 'Work Sample',
         description: p.description || '',
-        image_url: p.image_url || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+        image_url: p.image_url || '',
         tag: p.tag || 'Practical Work'
       });
     });
@@ -1097,6 +1106,14 @@ app.patch('/api/bookings/:id/status', authenticateToken, (req: Request, res: Res
   }
 
   const updated = db.updateBooking(booking.id, updates);
+
+  if (status === 'completed') {
+    const learnersTaught = new Set(
+      db.getBookings().filter(b => b.educator_id === booking.educator_id && b.status === 'completed').map(b => b.learner_id)
+    );
+    db.updateEducator(booking.educator_id, { total_students: learnersTaught.size });
+  }
+
   res.json(updated);
 });
 
@@ -1316,7 +1333,7 @@ app.post('/api/reviews', authenticateToken, requireRole('learner', 'admin'), (re
     educator_id,
     learner_id: effectiveLearnerId,
     learner_name: effectiveName,
-    learner_avatar: learner_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    learner_avatar: learner_avatar || db.findUserById(req.user!.id)?.avatar_url || '',
     rating: Number(rating),
     skill_rating: Number(skill_rating) || Number(rating),
     punctuality_rating: Number(punctuality_rating) || Number(rating),
@@ -1495,6 +1512,13 @@ app.get('/api/admin/verification-queue', authenticateToken, requireRole('admin')
   res.json(queue);
 });
 
+const VERIFICATION_STEP_LABELS: Record<string, string> = {
+  national_id: 'National ID check',
+  background_check: 'Background check',
+  interview: 'Interview',
+  skill_assessment: 'Skill assessment'
+};
+
 app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
   const { educator_id, step, status, notes } = req.body;
   const verification = db.getVerifications().find(v => v.educator_id === educator_id);
@@ -1510,6 +1534,12 @@ app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'
     verified_by_admin_id: adminId,
     notes: notes || verification.notes
   };
+
+  // The ID check can't pass without an ID number to check.
+  const nin = verification.national_id_number || '';
+  if (step === 'national_id' && status === 'verified' && (nin === '' || /^CM-(PENDING|APP-PENDING|NOT)/.test(nin))) {
+    return res.status(409).json({ error: 'This applicant has not submitted a National ID number yet.' });
+  }
 
   if (step === 'national_id') updates.national_id_status = status;
   if (step === 'background_check') updates.background_check_status = status;
@@ -1536,7 +1566,7 @@ app.patch('/api/admin/verification-step', authenticateToken, requireRole('admin'
     action_type: 'UPDATE_VERIFICATION_STEP',
     target_entity: 'Verification',
     target_id: educator_id,
-    details: `Updated ${step} to status: ${status}. Notes: ${notes || 'None'}`
+    details: `${VERIFICATION_STEP_LABELS[step] || step} ${status} for ${db.findEducatorById(educator_id)?.user?.name || 'educator'}.${notes ? ` Note: ${notes}` : ''}`
   });
 
   res.json({ success: true, verification: db.getVerifications().find(v => v.educator_id === educator_id) });
@@ -1548,6 +1578,17 @@ app.patch('/api/admin/educator-status', authenticateToken, requireRole('admin'),
 
   if (!educator) {
     return res.status(404).json({ error: 'Educator not found' });
+  }
+
+  // "Verified" must mean something: an educator only goes live after all four checks pass.
+  const v = educator.verification;
+  const fullyVerified = !!v &&
+    v.national_id_status === 'verified' &&
+    v.background_check_status === 'verified' &&
+    v.interview_status === 'completed' &&
+    v.skill_assessment_status === 'verified';
+  if ((status === 'active' || status === 'approved') && !fullyVerified) {
+    return res.status(409).json({ error: 'Complete all four verification checks before activating this educator.' });
   }
 
   const adminId = req.user?.id || 'usr-admin-ashabahebwa';

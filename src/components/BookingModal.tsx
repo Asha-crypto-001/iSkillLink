@@ -4,8 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatUGX } from '../utils/formatters';
 import {
-  X, Calendar, ShieldCheck, CheckCircle2,
-  AlertCircle
+  X, Calendar, ShieldCheck, CheckCircle2
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Field } from './ui/Field';
@@ -13,6 +12,9 @@ import { Input } from './ui/Input';
 import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
+import { SignInPrompt } from './SignInPrompt';
+import { Alert } from './ui/Alert';
+import { Avatar } from './ui/Avatar';
 
 interface BookingModalProps {
   educator: Educator | null;
@@ -48,7 +50,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
   const [dateError, setDateError] = useState('');
 
-  const hourlyRate = educator.hourly_rate_ugx || 35000;
+  // The price follows the skill chosen (each skill can have its own rate).
+  const selectedSkillRate = educator.skills?.find(s => s.skill_name === selectedSkill)?.hourly_rate_ugx;
+  const hourlyRate = selectedSkillRate || educator.hourly_rate_ugx || 35000;
+  const firstName = educator.user?.name?.split(' ')[0] || 'The educator';
   const totalAmount = hourlyRate * durationHours;
   const platformFee = Math.round(totalAmount * 0.10);
 
@@ -104,38 +109,39 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <Modal isOpen={!!educator} onClose={onClose} titleId="booking-modal-title" title="Book Practical Learning Session" maxWidth="max-w-xl">
-        <div id="booking-modal-title" className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
-          <div className="flex items-center gap-3">
-            <img
-              src={educator.user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-              alt={educator.user?.name}
-              className="w-10 h-10 rounded-card object-cover border border-ink-800"
-            />
-            <div>
-              <h3 className="font-bold text-[15px] text-white font-display">Book Practical Learning Session</h3>
-              <p className="text-xs text-ink-300">With {educator.user?.name} — {educator.title}</p>
+    <Modal isOpen={!!educator} onClose={onClose} titleId="booking-modal-title" title={`Book a session with ${educator.user?.name}`} maxWidth="max-w-xl">
+        <div className="shrink-0 bg-white px-5 py-4 flex items-center justify-between gap-3 border-b border-ink-200">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar src={educator.user?.avatar_url} name={educator.user?.name} className="w-11 h-11 rounded-card" />
+            <div className="min-w-0">
+              <h3 id="booking-modal-title" className="font-bold text-lg text-ink-900 font-display truncate">Book a session with {firstName}</h3>
+              <p className="text-sm text-ink-600 truncate">{educator.title}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close booking"
-            className="p-2 rounded-control bg-ink-800 hover:bg-ink-700 text-ink-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="rounded-control text-ink-500 hover:bg-ink-100 hover:text-ink-900 transition w-11 h-11 shrink-0 flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {!user ? (
+          <SignInPrompt
+            title={`Sign in to book ${educator.user?.name?.split(' ')[0] || 'this educator'}`}
+            description="Bookings are tied to your account so your payment, session and review stay together. It takes a minute."
+            next={`/educators/${educator.id}`}
+            onClose={onClose}
+          />
+        ) : (
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-700 text-[13px] flex items-center gap-2" role="alert">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
-            </div>
+            <Alert>{errorMsg}</Alert>
           )}
 
-          <Field label="Select Skill Focus / Module" htmlFor="booking-skill">
+          <Field label="What do you want to learn?" htmlFor="booking-skill" hint={`${formatUGX(hourlyRate)} an hour`}>
             <Select
               id="booking-skill"
               value={selectedSkill}
@@ -143,44 +149,48 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             >
               {educator.skills?.map(s => (
                 <option key={s.id} value={s.skill_name}>
-                  {s.skill_name} ({formatUGX(s.hourly_rate_ugx)}/hr)
+                  {s.skill_name}
                 </option>
               ))}
-              <option value={educator.title}>General 1-on-1 Apprenticeship & Consultation</option>
+              <option value={educator.title}>Something else — I’ll describe it below</option>
             </Select>
           </Field>
 
-          <div>
-            <label className="block text-[13px] font-semibold text-ink-700 mb-1.5">
-              Learning Format
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {educator.teaching_formats.map(f => (
-                <button
-                  type="button"
-                  key={f}
-                  onClick={() => setFormat(f)}
-                  aria-pressed={format === f}
-                  className={`p-3 text-[13px] font-medium rounded-control border capitalize transition text-center min-h-[44px] ${
-                    format === f
-                      ? 'bg-forest-50 border-forest-600 text-forest-800 font-bold'
-                      : 'border-ink-200 text-ink-600 hover:bg-ink-50'
-                  }`}
-                >
-                  {f === 'in-person' ? 'In-Person Workshop' : f === 'online' ? 'Online Live' : 'Hybrid'}
-                </button>
-              ))}
-            </div>
-          </div>
+          {educator.teaching_formats.length > 1 ? (
+            <fieldset>
+              <legend className="block text-[14px] font-semibold text-ink-700 mb-1.5">How do you want to learn?</legend>
+              <div className="grid grid-cols-3 gap-2">
+                {educator.teaching_formats.map(f => (
+                  <button
+                    type="button"
+                    key={f}
+                    onClick={() => setFormat(f)}
+                    aria-pressed={format === f}
+                    className={`px-2 text-[14px] font-medium rounded-control border transition text-center min-h-[44px] ${
+                      format === f
+                        ? 'bg-forest-50 border-forest-600 text-forest-800 font-bold'
+                        : 'border-ink-200 text-ink-600 hover:bg-ink-50'
+                    }`}
+                  >
+                    {f === 'in-person' ? 'At the workshop' : f === 'online' ? 'Online' : 'Mix of both'}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ) : (
+            <p className="text-sm text-ink-700">
+              {firstName} teaches {format === 'online' ? 'online' : format === 'hybrid' ? 'a mix of online and at the workshop' : 'at their workshop'}.
+            </p>
+          )}
 
           {format !== 'online' && (
-            <Field label="Workshop / Training Location" htmlFor="booking-location" required>
+            <Field label="Where" htmlFor="booking-location" required hint="Prefilled with the educator’s workshop — change it if you agreed somewhere else.">
               <Input
                 id="booking-location"
                 type="text"
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
-                placeholder="e.g. Educator Workshop, Kiyembe Arcade Room 304"
+                placeholder="e.g. Kakoba market, stall 12"
                 required
               />
             </Field>
@@ -199,7 +209,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               />
             </Field>
 
-            <Field label="Start Time" htmlFor="booking-time" required>
+            <Field label="Start time" htmlFor="booking-time" required>
               <Input
                 id="booking-time"
                 type="time"
@@ -209,22 +219,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               />
             </Field>
 
-            <Field label="Duration (Hours)" htmlFor="booking-duration" required>
+            <Field label="How long" htmlFor="booking-duration" required>
               <Select
                 id="booking-duration"
                 value={durationHours}
                 onChange={(e) => setDurationHours(Number(e.target.value))}
               >
-                <option value={1}>1 Hour</option>
-                <option value={2}>2 Hours (Standard Practical)</option>
-                <option value={3}>3 Hours (Intensive Workshop)</option>
-                <option value={4}>4 Hours (Half Day)</option>
-                <option value={8}>8 Hours (Full Day Immersion)</option>
+                <option value={1}>1 hour</option>
+                <option value={2}>2 hours</option>
+                <option value={3}>3 hours</option>
+                <option value={4}>Half day (4 hrs)</option>
+                <option value={8}>Full day (8 hrs)</option>
               </Select>
             </Field>
           </div>
 
-          <Field label="What specific project or skill goal do you want to achieve?" htmlFor="booking-notes" hint="Be specific — educators prepare tools accordingly">
+          <Field label="Anything the educator should know?" htmlFor="booking-notes" hint="What you want to make, what you can already do, what you’ll bring — it helps them prepare.">
             <Textarea
               id="booking-notes"
               rows={2}
@@ -234,23 +244,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             />
           </Field>
 
-          <div className="bg-forest-50/70 rounded-card p-4 border border-forest-200 text-[13px] space-y-2">
-            <div className="flex justify-between items-center text-ink-700">
-              <span>Hourly Rate:</span>
-              <span className="font-semibold">{formatUGX(hourlyRate)} / hr</span>
+          <div className="rounded-card border border-ink-200 bg-ink-50 p-4 space-y-3 text-[14px]">
+            <div className="flex justify-between items-baseline">
+              <span className="text-ink-700">{formatUGX(hourlyRate)} × {durationHours} {durationHours === 1 ? 'hour' : 'hours'}</span>
+              <span className="font-display text-lg font-bold text-ink-900">{formatUGX(totalAmount)}</span>
             </div>
-            <div className="flex justify-between items-center text-ink-700">
-              <span>Duration:</span>
-              <span className="font-semibold">{durationHours} Hours</span>
-            </div>
-            <div className="flex justify-between items-center text-ink-700 border-t border-forest-200 pt-2 font-bold text-[15px] text-ink-900">
-              <span>Total Session Fee:</span>
-              <span className="text-forest-800">{formatUGX(totalAmount)}</span>
-            </div>
-            <p className="text-xs text-ink-600 leading-relaxed pt-1 flex gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-forest-600 shrink-0 mt-0.5" />
-              Funds are held securely in iSkillLink Escrow (via MTN/Airtel MoMo) and released only after the educator completes the scheduled session.
-            </p>
+            <p className="font-semibold text-ink-900">Nothing is charged now.</p>
+            {/* What happens after "Send request" — the escrow promise, step by step */}
+            <ol className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-ink-700">
+              {[
+                'You send this request',
+                `${firstName} confirms`,
+                'You pay with MoMo — we hold it',
+                'Money released after the session'
+              ].map((step, i) => (
+                <li key={step} className="flex gap-1.5">
+                  <span className={`shrink-0 w-5 h-5 rounded-full text-[12px] font-bold flex items-center justify-center ${i === 2 ? 'bg-clay-600 text-white' : 'bg-white border border-ink-300 text-ink-700'}`} aria-hidden="true">{i + 1}</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
           </div>
 
           </div>
@@ -258,11 +271,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <Button variant="outline" size="md" type="button" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="primary" size="md" type="submit" isLoading={isSubmitting} leftIcon={<CheckCircle2 className="w-4 h-4" />}>
-              Confirm & Send Request
+            <Button variant="primary" size="md" type="submit" isLoading={isSubmitting}>
+              Send request
             </Button>
           </div>
         </form>
+        )}
     </Modal>
   );
 };

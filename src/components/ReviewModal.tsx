@@ -3,10 +3,11 @@ import { Booking } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import {
-  X, Star, CheckCircle2, AlertCircle
+  X, Star, CheckCircle2
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
+import { Alert } from './ui/Alert';
 
 interface ReviewModalProps {
   booking: Booking | null;
@@ -58,15 +59,15 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   };
 
   return (
-    <Modal isOpen={!!booking} onClose={onClose} titleId="review-modal-title" title="Leave Verified Review" maxWidth="max-w-lg">
-        <div className="shrink-0 bg-ink-950 text-white p-5 flex items-center justify-between border-b border-ink-800">
+    <Modal isOpen={!!booking} onClose={onClose} titleId="review-modal-title" title="Review your session" maxWidth="max-w-lg">
+        <div className="shrink-0 bg-white px-5 py-4 flex items-center justify-between gap-3 border-b border-ink-200">
           <div>
-            <h3 id="review-modal-title" className="font-bold text-sm text-white font-display">Leave Verified Review</h3>
-            <p className="text-xs text-ink-300">For {booking.educator?.user?.name || 'Educator'} • {booking.skill_name}</p>
+            <h3 id="review-modal-title" className="font-bold text-lg text-ink-900 font-display">How was your session?</h3>
+            <p className="text-sm text-ink-600">{booking.skill_name} with {booking.educator?.user?.name || 'your educator'}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-control bg-ink-800 hover:bg-ink-700 text-ink-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="rounded-control text-ink-500 hover:bg-ink-100 hover:text-ink-900 transition w-11 h-11 shrink-0 flex items-center justify-center"
             aria-label="Close review"
           >
             <X className="w-5 h-5" />
@@ -76,10 +77,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-control bg-rose-50 border border-rose-200 text-rose-800 text-[13px] flex items-center gap-2" role="alert">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
-            </div>
+            <Alert>{errorMsg}</Alert>
           )}
 
           <div className="text-center py-2 space-y-2">
@@ -103,18 +101,18 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                 </button>
               ))}
             </div>
-            <div className="text-[13px] font-bold text-forest-800">
+            <div className="text-[14px] font-bold text-forest-800">
               {rating === 5 ? 'Exceptional Mentor & Master' : rating === 4 ? 'Very Good Experience' : 'Standard'}
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 bg-ink-50 p-3 rounded-card border border-ink-200 text-xs">
             <div>
-              <span className="text-[11px] font-bold text-ink-600 block mb-1">Practical Skill</span>
+              <span className="text-[12px] font-bold text-ink-600 block mb-1">Practical Skill</span>
               <select
                 value={skillRating}
                 onChange={(e) => setSkillRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-base sm:text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Master</option>
                 <option value={4}>4★ High</option>
@@ -122,11 +120,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </select>
             </div>
             <div>
-              <span className="text-[11px] font-bold text-ink-600 block mb-1">Punctuality</span>
+              <span className="text-[12px] font-bold text-ink-600 block mb-1">Punctuality</span>
               <select
                 value={punctualityRating}
                 onChange={(e) => setPunctualityRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-base sm:text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ On Time</option>
                 <option value={4}>4★ Minor delay</option>
@@ -134,11 +132,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </select>
             </div>
             <div>
-              <span className="text-[11px] font-bold text-ink-600 block mb-1">Teaching Clarity</span>
+              <span className="text-[12px] font-bold text-ink-600 block mb-1">Teaching Clarity</span>
               <select
                 value={communicationRating}
                 onChange={(e) => setCommunicationRating(Number(e.target.value))}
-                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-[13px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
+                className="w-full p-2.5 min-h-[44px] rounded-control border border-ink-200 text-base sm:text-[14px] bg-white text-ink-900 focus:ring-2 focus:ring-forest-700"
               >
                 <option value={5}>5★ Clear</option>
                 <option value={4}>4★ Good</option>
@@ -148,7 +146,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-ink-800 mb-1" htmlFor="review-comment">
+            <label className="block text-[14px] font-bold text-ink-800 mb-1" htmlFor="review-comment">
               Your Review for Future Learners <span className="text-rose-500">*</span>
             </label>
             <textarea
@@ -157,7 +155,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Describe what practical skills you practiced, how well the educator explained steps, and what you created..."
-              className="w-full text-[13px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
+              className="w-full text-base sm:text-[14px] min-h-[88px] rounded-control border-ink-200 border p-3 bg-white text-ink-900 focus:ring-2 focus:ring-forest-700 focus:outline-none"
               required
             />
           </div>

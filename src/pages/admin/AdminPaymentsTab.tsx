@@ -1,85 +1,105 @@
 import React from 'react';
-import { Payment } from '../../types';
-import { formatUGX } from '../../utils/formatters';
-import { StatusBadge } from '../../components/ui/Badge';
+import { Booking, Payment } from '../../types';
+import { formatUGX, formatShortDate } from '../../utils/formatters';
+import { PaymentStatusBadge } from '../../components/ui/Badge';
 
 interface AdminPaymentsTabProps {
   payments: Payment[];
-  onReleasePayout: (paymentId: string) => void;
+  bookings: Booking[];
+  onReleasePayout: (payment: Payment, booking?: Booking) => void;
 }
 
 export const AdminPaymentsTab: React.FC<AdminPaymentsTabProps> = ({
   payments,
+  bookings,
   onReleasePayout
 }) => {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
-      <div>
-        <h2 className="text-base font-bold text-gray-900">Platform Escrow Ledger</h2>
-        <p className="text-xs text-gray-500">
-          Escrow deposits held safely in MTN/Airtel MoMo until learner milestones are delivered.
-        </p>
-      </div>
+  const bookingFor = (p: Payment) => bookings.find(b => b.id === p.booking_id);
 
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
-            <tr>
-              <th className="p-3">Reference</th>
-              <th className="p-3">Total UGX</th>
-              <th className="p-3">Educator Net (90%)</th>
-              <th className="p-3">Platform Fee (10%)</th>
-              <th className="p-3">Method</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 text-gray-700">
-            {payments.map(p => (
-              <tr key={p.id} className="hover:bg-gray-50/50">
-                <td className="p-3 font-mono font-bold text-gray-900">{p.payment_reference}</td>
-                <td className="p-3 font-bold text-gray-900">{formatUGX(p.amount_ugx)}</td>
-                <td className="p-3 font-semibold text-emerald-800">{formatUGX(p.payout_amount_ugx)}</td>
-                <td className="p-3 text-slate-600">{formatUGX(p.platform_fee_ugx)}</td>
-                <td className="p-3 uppercase font-semibold text-emerald-900">{p.method.replace('_', ' ')}</td>
-                <td className="p-3">
-                  <StatusBadge status={p.status} />
-                </td>
-                <td className="p-3">
-                  {p.status === 'paid' ? (
-                    <button
-                      onClick={() => onReleasePayout(p.id)}
-                      className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded text-[11px]"
-                    >
-                      Release Payout
-                    </button>
-                  ) : (
-                    <span className="text-gray-400 text-[11px]">{p.status}</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="md:hidden space-y-3">
-        {payments.map(p => (
-          <div key={p.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-mono font-bold text-xs text-gray-900">{p.payment_reference}</span>
-              <StatusBadge status={p.status} />
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div><span className="text-gray-500">Total:</span> <span className="font-bold">{formatUGX(p.amount_ugx)}</span></div>
-              <div><span className="text-gray-500">Net:</span> <span className="font-bold text-emerald-800">{formatUGX(p.payout_amount_ugx)}</span></div>
-              <div><span className="text-gray-500">Fee:</span> <span className="text-gray-600">{formatUGX(p.platform_fee_ugx)}</span></div>
-              <div><span className="text-gray-500">Method:</span> <span className="uppercase font-semibold">{p.method.replace('_',' ')}</span></div>
-            </div>
-            {p.status === 'paid' && <button onClick={() => onReleasePayout(p.id)} className="w-full mt-2 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-xs">Release Payout</button>}
+  // A payout can only go out for money that is held and a session that has happened.
+  const releaseControl = (p: Payment) => {
+    const booking = bookingFor(p);
+    if (p.status !== 'paid') return null;
+    if (booking?.status !== 'completed') {
+      return <span className="text-xs text-ink-600 whitespace-nowrap">Session not done yet</span>;
+    }
+    return (
+      <button
+        onClick={() => onReleasePayout(p, booking)}
+        className="px-3 min-h-[44px] md:min-h-[36px] bg-forest-700 hover:bg-forest-800 text-white font-bold rounded-control text-xs whitespace-nowrap"
+      >
+        Release {formatUGX(p.payout_amount_ugx)}
+      </button>
+    );
+  };
+
+  const sessionLabel = (p: Payment) => {
+    const booking = bookingFor(p);
+    if (!booking) return <span className="text-ink-500">Booking {p.booking_id}</span>;
+    return (
+      <>
+        <div className="font-semibold text-ink-900">{booking.skill_name}</div>
+        <div className="text-xs text-ink-600">
+          {booking.learnerUser?.name || 'Learner'} → {booking.educator?.user?.name || 'Educator'} · {formatShortDate(booking.scheduled_date)}
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="bg-white rounded-card border border-ink-200 shadow-level-1 p-6 space-y-5">
+      <p className="text-sm text-ink-600">
+        Learners’ MoMo payments are held here until their session is done. Releasing sends 90% to the educator and keeps the 10% fee.
+      </p>
+
+      {payments.length === 0 ? (
+        <p className="py-10 text-center text-sm text-ink-600">No payments yet.</p>
+      ) : (
+        <>
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs text-ink-600 border-b border-ink-200">
+                <tr>
+                  <th scope="col" className="py-2 pr-3 font-semibold">Session</th>
+                  <th scope="col" className="py-2 px-3 font-semibold text-right">Paid</th>
+                  <th scope="col" className="py-2 px-3 font-semibold text-right">To educator</th>
+                  <th scope="col" className="py-2 px-3 font-semibold">Status</th>
+                  <th scope="col" className="py-2 pl-3 font-semibold text-right"><span className="sr-only">Action</span></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                {payments.map(p => (
+                  <tr key={p.id}>
+                    <td className="py-3 pr-3">
+                      {sessionLabel(p)}
+                      <div className="font-mono text-[12px] text-ink-500 mt-0.5">{p.payment_reference}</div>
+                    </td>
+                    <td className="py-3 px-3 text-right font-semibold text-ink-900 tabular-nums whitespace-nowrap">{formatUGX(p.amount_ugx)}</td>
+                    <td className="py-3 px-3 text-right text-ink-800 tabular-nums whitespace-nowrap">{formatUGX(p.payout_amount_ugx)}</td>
+                    <td className="py-3 px-3"><PaymentStatusBadge status={p.status} audience="educator" /></td>
+                    <td className="py-3 pl-3 text-right">{releaseControl(p)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
-        {payments.length===0 && <div className="text-center py-8 text-xs text-gray-400">No escrow records yet.</div>}
-      </div>
+
+          <ul className="md:hidden divide-y divide-ink-100">
+            {payments.map(p => (
+              <li key={p.id} className="py-3 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">{sessionLabel(p)}</div>
+                  <PaymentStatusBadge status={p.status} audience="educator" />
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-ink-700">{formatUGX(p.amount_ugx)} paid · {formatUGX(p.payout_amount_ugx)} to educator</span>
+                  {releaseControl(p)}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 };

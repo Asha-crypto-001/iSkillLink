@@ -31,7 +31,7 @@ export const Field: React.FC<FieldProps> = ({
 
   return (
     <div className={`space-y-1.5 ${className}`}>
-      <label htmlFor={htmlFor} className="block text-[13px] font-semibold text-ink-700">
+      <label htmlFor={htmlFor} className="block text-[14px] font-semibold text-ink-700">
         {label} {required && <span className="text-rose-600" aria-hidden="true">*</span>}
       </label>
       {child}

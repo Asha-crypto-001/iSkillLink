@@ -45,7 +45,7 @@ export const initialLocalUsers: User[] = [
     role: 'admin',
     name: 'Ashabahebwa Hassan',
     phone: '+256 744 024 529',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    avatar_url: '',
     location: 'Mbarara City, Uganda',
     created_at: '2026-01-01T08:00:00Z'
   }

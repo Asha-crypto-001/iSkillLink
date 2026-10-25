@@ -17,7 +17,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
     <nav aria-label="Breadcrumb" className="w-full">
       <ol className="flex items-center flex-wrap gap-1 text-body-sm">
         <li>
-          <Link to="/" className="inline-flex items-center gap-1 text-ink-500 hover:text-forest-700 font-medium transition">
+          <Link to="/" className="inline-flex items-center gap-1 text-ink-500 hover:text-forest-700 font-medium transition relative after:absolute after:-inset-y-3 after:-inset-x-1 after:content-['']">
             <Home className="w-3.5 h-3.5" />
             <span>Home</span>
           </Link>
@@ -38,7 +38,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
                     <span className="inline-flex items-center gap-1">{item.icon}{item.label}</span>
                   </span>
                 ) : (
-                  <Link to={item.to} className="text-ink-500 hover:text-forest-700 font-medium transition inline-flex items-center gap-1">
+                  <Link to={item.to} className="text-ink-500 hover:text-forest-700 font-medium transition inline-flex items-center gap-1 relative after:absolute after:-inset-y-3 after:-inset-x-1 after:content-['']">
                     {item.icon}{item.label}
                   </Link>
                 )}

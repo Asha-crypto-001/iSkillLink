@@ -7,90 +7,57 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary — workshop-credible forest (evolved from emerald, deeper trust)
+        // Primary — deep workshop green. Actions only (buttons, links, focus, "done").
         forest: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#0d8a5e',
-          700: '#0F5132',
-          800: '#0f3d26',
-          900: '#0c2e1e',
-          950: '#052e16',
+          50: '#eef5f0',
+          100: '#d8e8dd',
+          200: '#b3d1bd',
+          300: '#86b496',
+          400: '#5a9470',
+          500: '#3a7a55',
+          600: '#276645',
+          700: '#1f5a3d',
+          800: '#184630',
+          900: '#123524',
+          950: '#0b2216',
         },
-        // Neutral — single ink scale (replaces mixed slate/stone/gray)
+        // Neutral — warm "paper and ink" greys instead of cool slate.
         ink: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
+          50: '#f7f5f2',
+          100: '#efebe6',
+          200: '#e2dcd4',
+          300: '#cbc3b8',
+          400: '#a39a8e',
+          500: '#766d62',
+          600: '#5c544a',
+          700: '#453e36',
+          800: '#2e2924',
+          900: '#1f1c18',
+          950: '#14120f',
         },
-        paper: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#eef2f7',
+        // Accent — murram, the red earth of Ugandan roads. Reserved for money held in escrow.
+        clay: {
+          50: '#fbf1ec',
+          100: '#f5dccf',
+          200: '#eab9a0',
+          500: '#c2643a',
+          600: '#b4532a',
+          700: '#8f4020',
+          800: '#6e3119',
         },
-        sand: {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-        },
-        // Keep legacy aliases for gradual migration — mapped to new tokens
-        brand: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#0d8a5e',
-          700: '#0F5132',
-          800: '#0f3d26',
-          900: '#0c2e1e',
-          950: '#052e16',
-        },
-        slate: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          850: '#152033',
-          900: '#0f172a',
-          950: '#020617',
-        },
-        uganda: {
-          forest: '#0F5132',
-          slate: '#1E293B',
-          warm: '#F8FAFC',
-          sand: '#F3F4F6',
-          gold: '#D97706',
-          border: '#E2E8F0',
-        }
       },
       fontFamily: {
-        sans: ['Google Sans', 'Google Sans Text', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        display: ['Google Sans', 'Google Sans Text', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Source Sans 3"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', '"Source Sans 3"', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        // Ensures minimum 13px for functional text — 12 only for captions
-        'caption': ['0.75rem', { lineHeight: '1rem', fontWeight: '500' }],
-        'body-sm': ['0.8125rem', { lineHeight: '1.25rem' }], // 13px
-        'body': ['0.9375rem', { lineHeight: '1.6' }], // 15px
+        // Source Sans 3 has a smaller x-height than the old face, so the small steps sit
+        // one notch larger: functional text is never below 12px, everyday small text is 13px.
+        'xs': ['0.8125rem', { lineHeight: '1.125rem' }], // 13px
+        'sm': ['0.9375rem', { lineHeight: '1.375rem' }], // 15px
+        'caption': ['0.75rem', { lineHeight: '1rem', fontWeight: '500' }], // 12px
+        'body-sm': ['0.875rem', { lineHeight: '1.3125rem' }], // 14px
+        'body': ['1rem', { lineHeight: '1.6' }], // 16px
       },
       borderRadius: {
         'control': '12px',

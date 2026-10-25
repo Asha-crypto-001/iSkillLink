@@ -455,6 +455,20 @@ export const api = {
     );
   },
 
+  async updateEducator(id: string, updates: Partial<Educator>) {
+    return withLocalFallback(
+      () => apiRequest<Educator>(`/educators/${id}`, jsonRequest('PATCH', updates)),
+      () => {
+        const educators = getLocalStorageData<Educator[]>('educators', initialLocalEducators);
+        const index = educators.findIndex(e => e.id === id);
+        if (index === -1) throw new Error('Educator not found');
+        educators[index] = { ...educators[index], ...updates };
+        setLocalStorageData('educators', educators);
+        return educators[index];
+      }
+    );
+  },
+
   async submitEducatorOnboarding(data: any) {
     return withLocalFallback(
       () => apiRequest<any>('/educators/onboard', jsonRequest('POST', data)),
@@ -467,7 +481,7 @@ export const api = {
           role: 'educator',
           name: data.name || 'New Educator',
           phone: data.phone || '+256 744 024 529',
-          avatar_url: data.avatar_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+          avatar_url: data.avatar_url || '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
