@@ -8,7 +8,6 @@ import { FindSkillPage } from './pages/FindSkillPage';
 import { EducatorProfilePage } from './pages/EducatorProfilePage';
 import { BecomeEducatorPage } from './pages/BecomeEducatorPage';
 import { EducatorApplicationPage } from './pages/EducatorApplicationPage';
-import { HowItWorksPage } from './pages/HowItWorksPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { LearnerDashboard } from './pages/LearnerDashboard';
@@ -24,7 +23,6 @@ const viewToPath: Record<string, string> = {
   'home': '/',
   'find-skill': '/find-skill',
   'become-educator': '/become-educator',
-  'how-it-works': '/how-it-works',
   'about': '/about',
   'contact': '/contact',
   'learner-dashboard': '/dashboard/learner',
@@ -37,7 +35,6 @@ function getViewFromPath(pathname: string): string {
   if (pathname === '/' || pathname === '') return 'home';
   if (pathname.startsWith('/find-skill')) return 'find-skill';
   if (pathname.startsWith('/become-educator')) return 'become-educator';
-  if (pathname.startsWith('/how-it-works')) return 'how-it-works';
   if (pathname.startsWith('/about')) return 'about';
   if (pathname.startsWith('/contact')) return 'contact';
   if (pathname.startsWith('/dashboard/learner')) return 'learner-dashboard';
@@ -89,8 +86,9 @@ const AppContent: React.FC = () => {
   const isDashboardRoute = location.pathname.startsWith('/dashboard/');
   const isAuthRoute = location.pathname === '/auth';
 
+  // Links to a section (/about#how-it-works) are scrolled by their page instead.
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!location.hash) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
 
   const toastTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -213,12 +211,8 @@ const AppContent: React.FC = () => {
           <Route path="/become-educator" element={
             <BecomeEducatorPage setCurrentView={setCurrentView} />
           } />
-          <Route path="/how-it-works" element={
-            <HowItWorksPage
-              setCurrentView={setCurrentView}
-              onOpenSkillRequest={() => setShowSkillRequestModal(true)}
-            />
-          } />
+          {/* How it works now lives on the About page */}
+          <Route path="/how-it-works" element={<Navigate to="/about#how-it-works" replace />} />
           <Route path="/about" element={
             <AboutPage
               setCurrentView={setCurrentView}

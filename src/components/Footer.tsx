@@ -87,7 +87,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           <nav className="md:col-span-2" aria-labelledby="footer-platform">
             <h3 id="footer-platform" className="text-sm font-semibold text-white mb-3">iSkillLink</h3>
             <ul className="md:space-y-2 text-sm text-forest-100/70">
-              <li><button onClick={() => setCurrentView('how-it-works')} className={linkClass}>How it works</button></li>
+              <li><Link to="/about#how-it-works" className={linkClass}>How it works</Link></li>
               <li><button onClick={() => setCurrentView('become-educator')} className={linkClass}>Teach on iSkillLink</button></li>
               <li><button onClick={() => setCurrentView('about')} className={linkClass}>About us</button></li>
               <li><button onClick={() => setCurrentView('contact')} className={linkClass}>Help & contact</button></li>
