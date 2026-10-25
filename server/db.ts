@@ -85,9 +85,15 @@ class Database {
   private postgresPool: Pool | null = process.env.DATABASE_URL
     ? new Pool({ connectionString: process.env.DATABASE_URL, max: 5, ssl: { rejectUnauthorized: false } })
     : null;
+  // PostgreSQL bookkeeping: the row version this instance last read or wrote, and its write queue.
+  private postgresVersion: string | null = null;
+  private pendingWrite: Promise<void> = Promise.resolve();
 
   constructor() {
-    this.data = this.loadDatabase();
+    // With PostgreSQL the row is the only source of truth: start from the seed in memory and let
+    // initialize() load the row (or store the seed if there is none). Saving here would race
+    // initialize() and could overwrite live data with the seed on every cold start.
+    this.data = this.postgresPool ? this.buildDefaultState() : this.loadDatabase();
     this.ensurePasswordsHashed();
   }
 
@@ -101,16 +107,43 @@ class Database {
         updated_at timestamptz NOT NULL DEFAULT now()
       )
     `);
-    const result = await this.postgresPool.query<{ state: DatabaseState }>(
-      'SELECT state FROM app_state WHERE id = 1'
+    const result = await this.postgresPool.query<{ state: DatabaseState; version: string }>(
+      'SELECT state, updated_at::text AS version FROM app_state WHERE id = 1'
     );
     if (result.rows[0]?.state) {
       this.data = normalizeState(result.rows[0].state);
+      this.postgresVersion = result.rows[0].version;
       this.ensurePasswordsHashed();
       return;
     }
 
-    await this.persistToPostgres();
+    this.saveData();
+    await this.flush();
+  }
+
+  /**
+   * Picks up writes made by other server instances. Serverless hosts such as Vercel run several
+   * instances, each with its own in-memory copy, so the API refreshes before handling a request.
+   */
+  public async refresh() {
+    if (!this.postgresPool) return;
+    await this.flush();
+    const latest = await this.postgresPool.query<{ version: string }>(
+      'SELECT updated_at::text AS version FROM app_state WHERE id = 1'
+    );
+    const version = latest.rows[0]?.version;
+    if (!version || version === this.postgresVersion) return;
+
+    const result = await this.postgresPool.query<{ state: DatabaseState; version: string }>(
+      'SELECT state, updated_at::text AS version FROM app_state WHERE id = 1'
+    );
+    this.data = normalizeState(result.rows[0].state);
+    this.postgresVersion = result.rows[0].version;
+  }
+
+  /** Resolves once every queued PostgreSQL write has finished, so a response never outruns its save. */
+  public async flush() {
+    await this.pendingWrite;
   }
 
   /**
@@ -151,9 +184,13 @@ class Database {
 
   private saveData(dataToSave?: DatabaseState) {
     if (this.postgresPool) {
-      void this.persistToPostgres(dataToSave).catch(error => {
-        console.error('Failed to persist PostgreSQL application state:', error);
-      });
+      // Snapshot now and write in order: later writes must not be overtaken by earlier ones.
+      const snapshot = JSON.stringify(dataToSave || this.data);
+      this.pendingWrite = this.pendingWrite
+        .then(() => this.persistToPostgres(snapshot))
+        .catch(error => {
+          console.error('Failed to persist PostgreSQL application state:', error);
+        });
       return;
     }
     try {
@@ -169,20 +206,28 @@ class Database {
     }
   }
 
-  private async persistToPostgres(dataToSave?: DatabaseState) {
+  private async persistToPostgres(snapshot: string) {
     if (!this.postgresPool) return;
-    await this.postgresPool.query(
+    const result = await this.postgresPool.query<{ version: string }>(
       `INSERT INTO app_state (id, state, updated_at)
        VALUES (1, $1::jsonb, now())
-       ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state, updated_at = now()`,
-      [JSON.stringify(dataToSave || this.data)]
+       ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state, updated_at = now()
+       RETURNING updated_at::text AS version`,
+      [snapshot]
     );
+    this.postgresVersion = result.rows[0]?.version ?? this.postgresVersion;
   }
 
   public resetToDefault() {
+    this.data = this.buildDefaultState();
+    this.saveData();
+    return this.data;
+  }
+
+  private buildDefaultState(): DatabaseState {
     // Deep-copy the seed collections so runtime writes never mutate the seed module itself
     // (otherwise a later reset would bring back previously written records).
-    this.data = structuredClone({
+    return structuredClone({
       users: createInitialUsers().map(u => ({
         ...u,
         password_hash: u.password_hash.startsWith('$2') ? u.password_hash : hashPasswordSync(u.password_hash)
@@ -208,8 +253,6 @@ class Database {
       inquiries: [],
       newsletterSubscribers: []
     });
-    this.saveData();
-    return this.data;
   }
 
   // Generic Getters

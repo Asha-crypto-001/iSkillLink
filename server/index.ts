@@ -25,6 +25,7 @@ import {
   requireSelfOrAdmin
 } from './middleware/auth.js';
 import multer from 'multer';
+import { put } from '@vercel/blob';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -41,22 +42,23 @@ if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 if (process.env.NODE_ENV === 'production' && !GOOGLE_CLIENT_ID) {
-  console.error('[FATAL] GOOGLE_CLIENT_ID is not set. Refusing to start production authentication without it.');
-  process.exit(1);
+  // The site no longer offers Google sign-in; /api/auth/google answers 503 until this is set.
+  console.warn('[Auth] GOOGLE_CLIENT_ID is not set; Google sign-in is disabled.');
 }
 
-// Ensure upload directory exists (6.4 Binary Media Upload Pipeline)
+// 6.4 Binary Media Upload Pipeline. Vercel's filesystem is read-only, so when a Vercel Blob store
+// is connected (BLOB_READ_WRITE_TOKEN) avatars go there; otherwise they are written to local disk.
+const useBlobStorage = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const uploadsAvailable = useBlobStorage || !process.env.VERCEL;
 const UPLOAD_DIR = path.join(__dirname, '../public/uploads/avatars');
-if (!fs.existsSync(UPLOAD_DIR)) {
+if (!useBlobStorage && uploadsAvailable && !fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
-const storage = multer.diskStorage({
+const avatarFileName = (originalName: string) =>
+  `avatar-${Date.now()}-${Math.random().toString(36).slice(2,6)}${path.extname(originalName) || '.jpg'}`;
+const storage = useBlobStorage ? multer.memoryStorage() : multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    const name = `avatar-${Date.now()}-${Math.random().toString(36).slice(2,6)}${ext}`;
-    cb(null, name);
-  }
+  filename: (_req, file, cb) => cb(null, avatarFileName(file.originalname))
 });
 const upload = multer({
   storage,
@@ -81,20 +83,46 @@ const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',').map(s => s.trim())
   : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173'];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (server-to-server, Postman, mobile apps)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
-      callback(new Error(`CORS policy: Origin '${origin}' is not allowed. Authorized origins: ${allowedOrigins.join(', ')}`));
-    }
-  },
-  credentials: true
+// Same-origin calls (the frontend and API on one host, as on Vercel) are always allowed.
+function isSameOrigin(req: Request, origin: string) {
+  const host = (req.headers['x-forwarded-host'] as string | undefined)?.split(',')[0].trim() || req.headers.host;
+  try {
+    return !!host && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
+app.use(cors((req, callback) => {
+  const origin = req.headers.origin;
+  // Allow requests with no origin (server-to-server, Postman, mobile apps)
+  if (!origin || allowedOrigins.includes(origin) || isSameOrigin(req as Request, origin)) {
+    callback(null, { origin: true, credentials: true });
+  } else {
+    console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
+    callback(new Error(`CORS policy: Origin '${origin}' is not allowed. Authorized origins: ${allowedOrigins.join(', ')}`));
+  }
 }));
 
 app.use(express.json({ limit: '10mb' }));
+
+// Serverless hosts run several instances, each holding its own copy of the state. Load other
+// instances' writes before handling a request, and hold the response until this request's own
+// writes are saved: an instance can be frozen as soon as its response is sent.
+app.use('/api', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    await db.refresh();
+  } catch (err) {
+    console.error('Failed to refresh application state:', err);
+    return res.status(503).json({ error: 'The database is unavailable. Please try again in a moment.' });
+  }
+  const sendJson = res.json.bind(res);
+  res.json = (body?: unknown) => {
+    void db.flush().then(() => sendJson(body));
+    return res;
+  };
+  next();
+});
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
@@ -368,11 +396,28 @@ app.patch('/api/users/:id', authenticateToken, requireSelfOrAdmin(req => String(
 });
 
 // 6.4 Binary Media Upload Pipeline — multipart handling, store file path not Base64
-app.post('/api/uploads/avatar', authenticateToken, upload.single('avatar'), (req: Request, res: Response) => {
+app.post('/api/uploads/avatar', authenticateToken, (_req: Request, res: Response, next: NextFunction) => {
+  if (!uploadsAvailable) {
+    return res.status(503).json({ error: 'Photo uploads are not set up on this server yet.' });
+  }
+  next();
+}, upload.single('avatar'), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file provided. Field name must be \"avatar\".' });
   }
-  const relativeUrl = `/uploads/avatars/${req.file.filename}`;
+  let relativeUrl = `/uploads/avatars/${req.file.filename}`;
+  if (useBlobStorage) {
+    try {
+      const blob = await put(`avatars/${avatarFileName(req.file.originalname)}`, req.file.buffer, {
+        access: 'public',
+        contentType: req.file.mimetype
+      });
+      relativeUrl = blob.url;
+    } catch (err) {
+      console.error('Avatar upload to Vercel Blob failed:', err);
+      return res.status(502).json({ error: 'The photo could not be saved. Please try again.' });
+    }
+  }
   // Optionally update user if userId provided in body and authorized
   const userId = (req.body.userId as string) || req.user?.id;
   if (userId) {
@@ -381,7 +426,7 @@ app.post('/api/uploads/avatar', authenticateToken, upload.single('avatar'), (req
       db.updateUser(String(userId), { avatar_url: relativeUrl });
     }
   }
-  res.json({ success: true, url: relativeUrl, filename: req.file.filename, size: req.file.size });
+  res.json({ success: true, url: relativeUrl, filename: req.file.filename || path.basename(relativeUrl), size: req.file.size });
 });
 
 // ==========================================
