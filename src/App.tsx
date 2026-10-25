@@ -162,7 +162,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ink-50 text-ink-900 font-sans flex flex-col justify-between selection:bg-forest-100 selection:text-forest-900 overflow-x-clip max-w-[100vw]">
+    <div className="min-h-screen bg-white text-ink-900 font-sans flex flex-col justify-between selection:bg-forest-100 selection:text-forest-900 overflow-x-clip max-w-[100vw]">
       <a href="#main-content" className="skip-link">Skip to main content</a>
       {/* Single accessible toast region — Phase 5 polish: dismissible, pause on hover/focus, 44px target, no double announcement */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">{toastMessage}</div>

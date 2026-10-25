@@ -102,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <>
       <header className={`sticky top-0 z-40 transition-shadow duration-200 ${isScrolled ? 'shadow-level-2' : 'shadow-none'}`}>
         {/* Main bar — glass premium */}
-        <div className="bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 border-b border-ink-200/70">
+        <div className="bg-white/90 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-white/60 border-b border-ink-200/60">
           <div className="container-app">
             <div className="flex items-center justify-between gap-4 h-[64px] lg:h-[68px]">
               {/* Brand lockup */}
@@ -177,7 +177,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                     {userDropdownOpen && (
                       <div role="menu" aria-label="User menu" onKeyDown={(e)=>{ if(e.key==='Escape') setUserDropdownOpen(false); }} className="absolute right-0 mt-3 w-80 bg-white rounded-card shadow-level-3 border border-ink-200 overflow-hidden z-50 animate-fadeIn">
-                        <div className="p-4 bg-gradient-to-br from-ink-50 to-white border-b border-ink-100 flex items-center gap-3">
+                        <div className="p-4 bg-white border-b border-ink-100 flex items-center gap-3">
                           <Avatar src={user.avatar_url} name={user.name} className="w-11 h-11 rounded-xl border border-ink-200 shadow-soft shrink-0" />
                           <div className="min-w-0">
                             <div className="font-bold text-sm text-ink-900 truncate">{user.name}</div>
