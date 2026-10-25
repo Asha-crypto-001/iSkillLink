@@ -204,7 +204,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="overflow-x-clip">
-      {/* ===== HERO — headline and search on the left; the workshop photo in an oval frame with an outline ring ===== */}
+      {/* ===== HERO — headline and search on the left; the baking photo in an oval frame with an outline ring ===== */}
       <section className="relative bg-white">
         <div className="container-app pt-12 pb-20 sm:pt-16 lg:pt-20 lg:pb-28">
           <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-16 lg:gap-10 items-center">
@@ -288,7 +288,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div aria-hidden="true" className="absolute -inset-4 sm:-inset-5 rounded-full border-[1.5px] border-ink-800">
                   <span className="absolute right-[14.6%] bottom-[10.5%] h-4 w-4 translate-x-1/2 translate-y-1/2 rounded-full bg-ink-900" />
                 </div>
-                <PhotoFrame photo={PHOTOS.carpentry} sizes="(min-width: 640px) 23rem, 19rem" priority className="absolute inset-0 h-full w-full rounded-full" />
+                <PhotoFrame photo={PHOTOS.baking} sizes="(min-width: 640px) 23rem, 19rem" priority className="absolute inset-0 h-full w-full rounded-full" />
                 <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -left-7 -top-3 h-20 w-20 sm:h-24 sm:w-24 text-sun-300">
                   <polygon points={STARBURST_POINTS} fill="currentColor" />
                 </svg>
