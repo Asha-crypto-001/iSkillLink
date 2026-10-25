@@ -7,19 +7,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary — deep workshop green. Actions only (buttons, links, focus, "done").
+        // Primary — the jade of the logo (#168e60 is 500). Actions only (buttons, links, focus, "done").
+        // 700 is the button/link shade (7.3:1 on white); 950 is the dark brand surface.
         forest: {
-          50: '#eef5f0',
-          100: '#d8e8dd',
-          200: '#b3d1bd',
-          300: '#86b496',
-          400: '#5a9470',
-          500: '#3a7a55',
-          600: '#276645',
-          700: '#1f5a3d',
-          800: '#184630',
-          900: '#123524',
-          950: '#0b2216',
+          50: '#edf8f3',
+          100: '#d3eee1',
+          200: '#a6dcc4',
+          300: '#6fc3a1',
+          400: '#3aa57c',
+          500: '#168e60',
+          600: '#11774f',
+          700: '#0e6343',
+          800: '#0c4f36',
+          900: '#0a3e2b',
+          950: '#062619',
+        },
+        // Highlight — East African sun. Only on dark forest surfaces (8.7:1 on forest-950), never as text on white.
+        sun: {
+          50: '#fff8e7',
+          100: '#feedc3',
+          200: '#fcd97f',
+          300: '#f9c74f',
+          400: '#f2b42c',
+          500: '#db9813',
+          600: '#b4770c',
+          700: '#8c5a0e',
         },
         // Neutral — warm "paper and ink" greys instead of cool slate.
         ink: {
