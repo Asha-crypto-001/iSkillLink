@@ -111,12 +111,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="flex items-center gap-3 text-left group shrink-0 focus-visible:ring-2 focus-visible:ring-forest-700 focus-visible:ring-offset-2 rounded-control -ml-1 px-1 py-1 min-h-[44px]"
                 aria-label="iSkillLink home"
               >
-                <span className="relative flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 bg-white rounded-xl shadow-soft border border-ink-200 p-1 group-hover:border-forest-200 group-hover:shadow-level-1 transition">
-                  <img src={logoUrl} alt="" className="w-full h-full object-contain rounded-lg" aria-hidden="true" />
-                </span>
+                <img src={logoUrl} alt="" className="w-9 h-9 lg:w-10 lg:h-10 object-contain transition-transform group-hover:scale-105" aria-hidden="true" />
                 <span className="leading-none">
-                  <span className="block text-[18px] lg:text-[20px] font-bold tracking-tight text-ink-900">iSkillLink</span>
-                  <span className="block text-[12px] font-medium tracking-tight text-ink-500 -mt-0.5">Where Skills Meet Opportunity</span>
+                  <span className="block font-display text-[19px] lg:text-[21px] font-bold tracking-[-0.02em] text-ink-900">iSkillLink</span>
+                  <span className="block text-[12px] font-medium text-ink-500 mt-0.5">Where Skills Meet Opportunity</span>
                 </span>
               </button>
 
